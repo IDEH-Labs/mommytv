@@ -51,6 +51,22 @@
     <string name="cantPlay">「%1$s」を再生できません。別のチャンネルをお試しください。</string>
     <string name="favAdded">「%1$s」をお気に入りに追加しました</string>
     <string name="favRemoved">「%1$s」をお気に入りから外しました</string>
+    <string name="pairPhone" formatted="false">スマホで操作</string>
+    <string name="pairTitle" formatted="false">スマホをペアリング</string>
+    <string name="pairHelp" formatted="false">スマホの MommyTV アプリで「このアプリについて」→「テレビを操作」を開き、このコードを入力してください。5 分で無効になります。</string>
+    <string name="pairPhones">ペアリング済み：%1$s</string>
+    <string name="pairNone" formatted="false">ペアリングしたスマホはまだありません。</string>
+    <string name="pairNeedsManager" formatted="false">先に MommyTV Manager のリストを読み込んでください。</string>
+    <string name="pairDone">「%1$s」をペアリングしました</string>
+    <string name="remoteTitle" formatted="false">テレビを操作</string>
+    <string name="remoteCode" formatted="false">テレビに表示されたコード</string>
+    <string name="remotePair" formatted="false">ペアリング</string>
+    <string name="remoteWrong" formatted="false">コードが違うか、期限切れです。</string>
+    <string name="remoteLocked" formatted="false">試行回数が多すぎます。10 分お待ちください。</string>
+    <string name="remoteNoTv" formatted="false">MommyTV Manager に接続できません。</string>
+    <string name="remoteOn">テレビで再生中：%1$s</string>
+    <string name="remoteIdle" formatted="false">テレビとペアリング済み</string>
+    <string name="remoteForget" formatted="false">テレビの操作をやめる</string>
     <string name="dChannel" formatted="false">チャンネル</string>
     <string name="dRes" formatted="false">実際の解像度</string>
     <string name="dBuffer" formatted="false">バッファ</string>

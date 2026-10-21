@@ -52,6 +52,22 @@
     <string name="cantPlay">“%1$s” cannot be played. Try another channel.</string>
     <string name="favAdded">“%1$s” added to Favourites</string>
     <string name="favRemoved">“%1$s” removed from Favourites</string>
+    <string name="pairPhone" formatted="false">Control with your phone</string>
+    <string name="pairTitle" formatted="false">Pair a phone</string>
+    <string name="pairHelp" formatted="false">In the MommyTV app on your phone, open About → Control the TV and type this code. It expires in 5 minutes.</string>
+    <string name="pairPhones">Paired: %1$s</string>
+    <string name="pairNone" formatted="false">No phones paired yet.</string>
+    <string name="pairNeedsManager" formatted="false">Load the MommyTV Manager playlist first.</string>
+    <string name="pairDone">“%1$s” is now paired</string>
+    <string name="remoteTitle" formatted="false">Control the TV</string>
+    <string name="remoteCode" formatted="false">Code shown on the TV</string>
+    <string name="remotePair" formatted="false">Pair</string>
+    <string name="remoteWrong" formatted="false">Wrong or expired code.</string>
+    <string name="remoteLocked" formatted="false">Too many attempts. Wait 10 minutes.</string>
+    <string name="remoteNoTv" formatted="false">Could not reach MommyTV Manager.</string>
+    <string name="remoteOn">On the TV: %1$s</string>
+    <string name="remoteIdle" formatted="false">Paired with the TV</string>
+    <string name="remoteForget" formatted="false">Stop controlling the TV</string>
     <string name="dChannel" formatted="false">Channel</string>
     <string name="dRes" formatted="false">Actual resolution</string>
     <string name="dBuffer" formatted="false">Buffer</string>

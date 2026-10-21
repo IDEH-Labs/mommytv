@@ -51,6 +51,22 @@
     <string name="cantPlay">Impossible de lire « %1$s ». Essayez une autre chaîne.</string>
     <string name="favAdded">« %1$s » ajoutée aux favoris</string>
     <string name="favRemoved">« %1$s » retirée des favoris</string>
+    <string name="pairPhone" formatted="false">Contrôler avec le téléphone</string>
+    <string name="pairTitle" formatted="false">Associer un téléphone</string>
+    <string name="pairHelp" formatted="false">Dans l’app MommyTV du téléphone, ouvrez À propos → Contrôler la TV et saisissez ce code. Il expire dans 5 minutes.</string>
+    <string name="pairPhones">Associés : %1$s</string>
+    <string name="pairNone" formatted="false">Aucun téléphone associé pour l’instant.</string>
+    <string name="pairNeedsManager" formatted="false">Chargez d’abord la liste de MommyTV Manager.</string>
+    <string name="pairDone">« %1$s » est associé</string>
+    <string name="remoteTitle" formatted="false">Contrôler la TV</string>
+    <string name="remoteCode" formatted="false">Code affiché sur la TV</string>
+    <string name="remotePair" formatted="false">Associer</string>
+    <string name="remoteWrong" formatted="false">Code incorrect ou expiré.</string>
+    <string name="remoteLocked" formatted="false">Trop de tentatives. Attendez 10 minutes.</string>
+    <string name="remoteNoTv" formatted="false">Impossible de joindre MommyTV Manager.</string>
+    <string name="remoteOn">Sur la TV : %1$s</string>
+    <string name="remoteIdle" formatted="false">Associé à la TV</string>
+    <string name="remoteForget" formatted="false">Ne plus contrôler la TV</string>
     <string name="dChannel" formatted="false">Chaîne</string>
     <string name="dRes" formatted="false">Résolution réelle</string>
     <string name="dBuffer" formatted="false">Réserve</string>

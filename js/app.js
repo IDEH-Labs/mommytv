@@ -10,6 +10,7 @@
   var STORE_WATCH = 'mtvWatch';    // { url: seconds watched }
   var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
   var STORE_HIDDEN = 'mtvHidden';  // channel URLs removed from Favoritos: never added back for being watched
+  var STORE_REMOTE = 'mtvRemote';  // this TV's secret for the phone remote, kept by MommyTV Manager as a hash
   var STORE_TLS = 'mtvLetsEncrypt'; // { ok: bool, at: ms }: can this TV open Let's Encrypt HTTPS?
   var TLS_PROBE = 'https://acme-v02.api.letsencrypt.org/directory'; // official, tiny, allows CORS
   var TLS_MAX_AGE = 7 * 24 * 3600 * 1000;
@@ -36,8 +37,10 @@
   }
   var t = I18N.t;
   var VERSION = '0.1.0';
+  var ABOUT_PAIR = 1; // row that opens the phone pairing code
   var ABOUT = [
     ['heart', t('dedication')],
+    ['phone', t('pairPhone')],
     ['info', 'MommyTV ' + VERSION + ' · ' + t('org')],
     ['info', t('license')],
     ['info', t('source')],
@@ -58,7 +61,8 @@
     bannerTile: $('banner-tile'), bannerNum: $('banner-num'), bannerName: $('banner-name'),
     bannerGroup: $('banner-group'), bannerQ: $('banner-q'), bannerTime: $('banner-time'),
     osd: $('osd'), diag: $('diag'),
-    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots')
+    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots'),
+    pair: $('pair'), pairCode: $('pair-code'), pairMsg: $('pair-msg'), pairPhones: $('pair-phones')
   };
 
   var view = 'setup';
@@ -109,6 +113,7 @@
     ui.hint.className = name === 'browser' ? 'hint' : 'hint hidden';
     if (name === 'setup') renderSetup();
     if (name === 'browser') renderBrowser();
+    reportState();
   }
 
   function pad(n) { return n < 10 ? '0' + n : String(n); }
@@ -480,6 +485,7 @@
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>',
+    phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>'
   };
 
@@ -651,7 +657,7 @@
     } else if (k === KEY.LEFT) {
       col = 'g';
     } else if (k === KEY.OK && g.kind === 'about') {
-      // information only
+      if (cSel === ABOUT_PAIR) openPair(); // the other rows are information only
     } else if (k === KEY.OK && showingCountries(g)) {
       g.country = g.countries[cSel];
       g.items = g.country.items;
@@ -686,6 +692,105 @@
         osd(err.errorCode === -101 ? t('appMissing', ch.title) : t('appFail', ch.title, err.errorCode));
       }
     });
+  }
+
+  /* ---------- phone remote ---------- */
+
+  var pairOpen = false;
+  var pairTimer = null;
+
+  // MommyTV Manager's address when the list comes from it, else ''.
+  function managerBase() {
+    var m = /^(http:\/\/[^\/:]+):8642\/playlist\.m3u$/.exec(store(STORE_URL) || '');
+    return m ? m[1] + ':' + MANAGER_PORT : '';
+  }
+
+  // Plain-text JSON POST: a simple request, so the manager needs no CORS preflight.
+  function remoteCall(what, body, cb) {
+    var base = managerBase();
+    if (!base) { cb(null, 0); return; }
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', base + '/remote/' + what, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
+    xhr.timeout = 8000;
+    xhr.onload = function () {
+      var r = null;
+      try { r = JSON.parse(xhr.responseText || '{}'); } catch (e) { r = {}; }
+      cb(xhr.status >= 200 && xhr.status < 300 ? r : null, xhr.status);
+    };
+    xhr.onerror = xhr.ontimeout = function () { cb(null, 0); };
+    xhr.send(JSON.stringify(body));
+  }
+
+  // The TV gets its secret the first time it shows a pairing code, and keeps it.
+  function remoteSecret(cb) {
+    var s = store(STORE_REMOTE) || '';
+    remoteCall('tv', { secret: s }, function (r) {
+      if (r && r.secret) { s = r.secret; store(STORE_REMOTE, s); }
+      cb(r ? s : '');
+    });
+  }
+
+  // Tells paired phones what is on screen; only a TV that opened pairing once reports.
+  function reportState() {
+    var s = store(STORE_REMOTE);
+    if (!s) return;
+    var ch = view === 'player' ? current() : null;
+    remoteCall('state', { secret: s, view: view, title: ch ? ch.title : '', logo: ch ? ch.logo : '', url: ch ? ch.url : '' }, function () {});
+  }
+
+  function renderPhones(phones) {
+    var names = [];
+    for (var i = 0; i < phones.length; i++) names.push(phones[i].name);
+    ui.pairPhones.textContent = names.length ? t('pairPhones', names.join(', ')) : t('pairNone');
+  }
+
+  function openPair() {
+    if (!managerBase()) { osd(t('pairNeedsManager')); return; }
+    pairOpen = true;
+    ui.pair.className = '';
+    ui.pairCode.textContent = '';
+    ui.pairMsg.textContent = t('pairHelp');
+    ui.pairPhones.textContent = '';
+    remoteSecret(function (s) {
+      if (!pairOpen) return;
+      if (s) newPairCode(s); else ui.pairMsg.textContent = t('remoteNoTv');
+    });
+  }
+
+  // Shows a fresh code and watches for the phone that uses it; a used or expired code is replaced.
+  function newPairCode(s) {
+    remoteCall('code', { secret: s }, function (r) {
+      if (!pairOpen) return;
+      if (!r) { ui.pairMsg.textContent = t('remoteNoTv'); return; }
+      ui.pairCode.textContent = r.code;
+      renderPhones(r.phones);
+      var known = r.phones.length;
+      var until = Date.now() + r.expiresIn * 1000;
+      (function watch() {
+        pairTimer = setTimeout(function () {
+          if (!pairOpen) return;
+          if (Date.now() >= until) { newPairCode(s); return; }
+          remoteCall('phones', { secret: s }, function (p) {
+            if (!pairOpen) return;
+            if (p && p.phones.length > known) {
+              closePair();
+              osd(t('pairDone', p.phones[p.phones.length - 1].name));
+              reportState();
+              return;
+            }
+            if (p) renderPhones(p.phones);
+            watch();
+          });
+        }, 3000);
+      })();
+    });
+  }
+
+  function closePair() {
+    pairOpen = false;
+    clearTimeout(pairTimer);
+    ui.pair.className = 'hidden';
   }
 
   /* ---------- parental control ---------- */
@@ -994,7 +1099,7 @@
 
   document.addEventListener('keyup', function (e) {
     keyupSeen = true; // any key: this remote reports releases
-    if (pinDone) return;
+    if (pinDone || pairOpen) return;
     if (e.keyCode !== KEY.OK) return;
     if (okHeld) { okHeld = false; return; }
     if (!okTimer) return;
@@ -1005,6 +1110,7 @@
 
   document.addEventListener('keydown', function (e) {
     var k = e.keyCode === KEY.ESC ? KEY.BACK : e.keyCode;
+    if (pairOpen) { e.preventDefault(); if (k === KEY.BACK || k === KEY.OK) closePair(); return; }
     if (pinDone) { e.preventDefault(); pinKey(k); return; }
     if (k === KEY.OK && keyupSeen && (okTimer || okHeld || holdTarget())) {
       e.preventDefault();

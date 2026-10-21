@@ -100,6 +100,7 @@ fun MommyApp(a: MainActivity) {
         }
         Osd(a.osd, Modifier.align(Alignment.BottomCenter))
         if (a.pinOpen) PinDialog(a)
+        if (a.remoteOpen) RemoteDialog(a)
     }
 }
 
@@ -220,7 +221,7 @@ private fun BrowserScreen(a: MainActivity) {
     BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
         val compact = maxWidth < 720.dp
         Column(Modifier.fillMaxSize().padding(horizontal = if (compact) 14.dp else 40.dp, vertical = if (compact) 12.dp else 22.dp)) {
-            TopBar(compact)
+            TopBar(a, compact)
             Spacer(Modifier.height(if (compact) 10.dp else 18.dp))
             if (compact) {
                 RailChips(a, c)
@@ -244,11 +245,21 @@ private fun BrowserScreen(a: MainActivity) {
 }
 
 @Composable
-private fun TopBar(compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)))
     Spacer(Modifier.width(12.dp))
     Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp)
-    Spacer(Modifier.weight(1f))
+    val onTv = a.tvNow?.takeIf { it.isNotEmpty() }
+    if (onTv != null) {
+        // paired phone: what the TV is playing; tap to open the remote
+        Spacer(Modifier.width(12.dp))
+        Text(
+            stringResource(R.string.remoteOn, onTv),
+            color = Sky, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).combinedClickable(onClick = { a.openRemote() }),
+            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+        )
+    } else Spacer(Modifier.weight(1f))
     if (!compact) {
         Text("OK", color = Fg, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.border(1.5.dp, Muted, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 1.dp))
         Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.holdOk), color = Muted, fontSize = 14.sp)
@@ -416,7 +427,7 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 when {
-                    g.kind == Kind.ABOUT -> AboutRow(i, focused)
+                    g.kind == Kind.ABOUT -> AboutRow(a, i, focused)
                     a.showingCountries(g) -> {
                         val country = g.countries[i]
                         Box(Modifier.size(70.dp, 40.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF1E293B)), contentAlignment = Alignment.Center) {
@@ -442,12 +453,14 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
 }
 
 @Composable
-private fun AboutRow(i: Int, focused: Boolean) {
-    val rows = listOf(
+private fun AboutRow(a: MainActivity, i: Int, focused: Boolean) {
+    val rows = mutableListOf(
         R.string.dedication, -1, R.string.license, R.string.source, R.string.noChannels, R.string.lgLib, R.string.font, R.string.data,
     )
+    if (!a.isTv) rows.add(MainActivity.ABOUT_REMOTE, R.string.remoteTitle)
     val text = if (rows[i] == -1) "MommyTV 0.1.0 · " + stringResource(R.string.org) else stringResource(rows[i])
-    Icon(if (i == 0) R.drawable.ic_heart else R.drawable.ic_info, if (i == 0) Rose else if (focused) FocusFg else Muted, 18)
+    val remote = rows[i] == R.string.remoteTitle
+    Icon(if (i == 0) R.drawable.ic_heart else if (remote) R.drawable.ic_phone else R.drawable.ic_info, if (i == 0) Rose else if (focused) FocusFg else if (remote) Sky else Muted, 18)
     Spacer(Modifier.width(14.dp))
     Text(
         text, fontSize = 17.sp, fontWeight = if (i == 0) FontWeight.ExtraBold else FontWeight.Normal,
@@ -494,6 +507,55 @@ private fun PlayerScreen(a: MainActivity) {
         }
     }
 }
+
+// ---------- phone remote ----------
+
+@Composable
+private fun RemoteDialog(a: MainActivity) {
+    Box(Modifier.fillMaxSize().background(Color(0xD1020617)).safeDrawingPadding(), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.widthIn(max = 520.dp).padding(16.dp).clip(RoundedCornerShape(24.dp)).background(Brush.linearGradient(listOf(Color(0xFF1E293B), Color(0xFF0F172A))))
+                .border(1.dp, Line, RoundedCornerShape(24.dp)).padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(R.drawable.ic_phone, Sky, 48)
+            Spacer(Modifier.height(12.dp))
+            Text(stringResource(R.string.remoteTitle), color = Fg, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
+            Spacer(Modifier.height(16.dp))
+            val now = a.tvNow
+            if (now != null) {
+                Text(if (now.isEmpty()) stringResource(R.string.remoteIdle) else stringResource(R.string.remoteOn, now), color = Sky, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Spacer(Modifier.height(22.dp))
+                DialogButton(stringResource(R.string.remoteForget), primary = false) { a.forgetRemote() }
+            } else {
+                val field = remember { FocusRequester() }
+                OutlinedTextField(
+                    value = a.remoteCode, onValueChange = { v -> a.remoteCode = v.filter { it.isDigit() }.take(6) }, singleLine = true,
+                    label = { Text(stringResource(R.string.remoteCode)) },
+                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = { a.pairRemote() }),
+                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 8.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                    colors = fieldColors(), modifier = Modifier.fillMaxWidth().focusRequester(field),
+                )
+                LaunchedEffect(Unit) { field.requestFocus() }
+                if (a.remoteMsg.isNotEmpty()) Text(a.remoteMsg, color = Muted, fontSize = 15.sp, modifier = Modifier.padding(top = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Spacer(Modifier.height(18.dp))
+                if (a.remoteBusy) CircularProgressIndicator(Modifier.size(32.dp), color = Sky, strokeWidth = 3.dp)
+                else DialogButton(stringResource(R.string.remotePair), primary = true) { a.pairRemote() }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DialogButton(text: String, primary: Boolean, onClick: () -> Unit) = Text(
+    text, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 17.sp,
+    modifier = Modifier.clip(RoundedCornerShape(14.dp))
+        .background(if (primary) Brush.linearGradient(listOf(Color(0xFF0EA5E9), Color(0xFF2563EB))) else Brush.linearGradient(listOf(Panel, Panel)))
+        .border(1.dp, Line, RoundedCornerShape(14.dp))
+        .combinedClickable(onClick = onClick).padding(horizontal = 32.dp, vertical = 12.dp),
+)
 
 // ---------- parental PIN ----------
 

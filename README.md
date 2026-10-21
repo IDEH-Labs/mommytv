@@ -39,6 +39,19 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 | Player | OK | Show the channel name |
 | Player | Back | Return to the list |
 
+## Phone remote
+
+The Android app on a phone can follow the TV through MommyTV Manager:
+
+1. On the TV: About → "Controlar con el teléfono" shows a 6-digit code (one use, 5 minutes).
+2. On the phone: About → "Controlar la TV", type the code.
+
+The phone then shows what the TV is playing. The TV plays on its own: the phone can be
+closed, used for calls or other apps, or switched off. Only hashes of the TV secret and the
+phone tokens are stored; after 10 wrong codes in 10 minutes pairing is locked for 10 minutes.
+Paired phones can be removed in the manager's panel. The remote is plain HTTP on the LAN,
+like the rest of the manager.
+
 ## Shortcuts to official apps
 
 A playlist entry whose URL is `webos-app://<app id>` is shown under

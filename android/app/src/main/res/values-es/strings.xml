@@ -51,6 +51,22 @@
     <string name="cantPlay">No se puede reproducir «%1$s». Prueba otro canal.</string>
     <string name="favAdded">«%1$s» añadido a Favoritos</string>
     <string name="favRemoved">«%1$s» ya no está en Favoritos</string>
+    <string name="pairPhone" formatted="false">Controlar con el teléfono</string>
+    <string name="pairTitle" formatted="false">Emparejar teléfono</string>
+    <string name="pairHelp" formatted="false">En la app MommyTV del teléfono abre Acerca de → Controlar la TV y escribe este código. Caduca en 5 minutos.</string>
+    <string name="pairPhones">Emparejados: %1$s</string>
+    <string name="pairNone" formatted="false">Todavía no hay teléfonos emparejados.</string>
+    <string name="pairNeedsManager" formatted="false">Primero carga la lista de MommyTV Manager.</string>
+    <string name="pairDone">«%1$s» quedó emparejado</string>
+    <string name="remoteTitle" formatted="false">Controlar la TV</string>
+    <string name="remoteCode" formatted="false">Código que muestra la TV</string>
+    <string name="remotePair" formatted="false">Emparejar</string>
+    <string name="remoteWrong" formatted="false">Código incorrecto o caducado.</string>
+    <string name="remoteLocked" formatted="false">Demasiados intentos. Espera 10 minutos.</string>
+    <string name="remoteNoTv" formatted="false">No se pudo contactar con MommyTV Manager.</string>
+    <string name="remoteOn">En la TV: %1$s</string>
+    <string name="remoteIdle" formatted="false">Emparejado con la TV</string>
+    <string name="remoteForget" formatted="false">Dejar de controlar la TV</string>
     <string name="dChannel" formatted="false">Canal</string>
     <string name="dRes" formatted="false">Resolución real</string>
     <string name="dBuffer" formatted="false">Reserva</string>

@@ -62,6 +62,10 @@
     </form>
     <div id="shortcuts" class="items"></div>
 
+    <h2>Teléfonos emparejados</h2>
+    <p class="lead">Controlan la TV desde la app MommyTV del teléfono. Se emparejan con el código que muestra la TV en «Acerca de».</p>
+    <div id="phones" class="items"></div>
+
     <h2>Control parental</h2>
     <p class="lead">Las categorías marcadas piden un PIN en la TV. El contenido para adultos nunca se muestra.</p>
     <form id="parental">
@@ -146,6 +150,16 @@
       row.append(text, del);
       return row;
     }) : [el('p', 'empty', 'Todavía no hay accesos directos.')]));
+
+    $('phones').replaceChildren(...((s.phones || []).length ? s.phones.map((p) => {
+      const row = el('div', 'item');
+      const text = el('div', 'text');
+      text.append(el('div', '', p.name), el('div', 'sub', 'Desde ' + new Date(p.at).toLocaleString('es')));
+      const del = el('button', 'link', 'Quitar');
+      del.onclick = () => confirm('¿Quitar «' + p.name + '»? Ya no podrá controlar la TV.') && act(() => call('DELETE', 'phones/' + p.id));
+      row.append(text, del);
+      return row;
+    }) : [el('p', 'empty', 'Ningún teléfono emparejado.')]));
   }
 
   async function act(fn) {

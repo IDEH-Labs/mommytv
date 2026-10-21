@@ -51,6 +51,22 @@
     <string name="cantPlay">„%1$s“ kann nicht abgespielt werden. Versuche einen anderen Sender.</string>
     <string name="favAdded">„%1$s“ zu Favoriten hinzugefügt</string>
     <string name="favRemoved">„%1$s“ aus Favoriten entfernt</string>
+    <string name="pairPhone" formatted="false">Mit dem Handy steuern</string>
+    <string name="pairTitle" formatted="false">Handy koppeln</string>
+    <string name="pairHelp" formatted="false">Öffne in der MommyTV-App auf dem Handy Über → Fernseher steuern und gib diesen Code ein. Er läuft in 5 Minuten ab.</string>
+    <string name="pairPhones">Gekoppelt: %1$s</string>
+    <string name="pairNone" formatted="false">Noch kein Handy gekoppelt.</string>
+    <string name="pairNeedsManager" formatted="false">Lade zuerst die Liste von MommyTV Manager.</string>
+    <string name="pairDone">„%1$s“ ist jetzt gekoppelt</string>
+    <string name="remoteTitle" formatted="false">Fernseher steuern</string>
+    <string name="remoteCode" formatted="false">Code auf dem Fernseher</string>
+    <string name="remotePair" formatted="false">Koppeln</string>
+    <string name="remoteWrong" formatted="false">Falscher oder abgelaufener Code.</string>
+    <string name="remoteLocked" formatted="false">Zu viele Versuche. Warte 10 Minuten.</string>
+    <string name="remoteNoTv" formatted="false">MommyTV Manager ist nicht erreichbar.</string>
+    <string name="remoteOn">Auf dem Fernseher: %1$s</string>
+    <string name="remoteIdle" formatted="false">Mit dem Fernseher gekoppelt</string>
+    <string name="remoteForget" formatted="false">Fernseher nicht mehr steuern</string>
     <string name="dChannel" formatted="false">Sender</string>
     <string name="dRes" formatted="false">Tatsächliche Auflösung</string>
     <string name="dBuffer" formatted="false">Puffer</string>

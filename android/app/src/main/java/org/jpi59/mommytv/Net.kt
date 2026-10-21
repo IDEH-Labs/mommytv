@@ -53,6 +53,25 @@ object Net {
         throw HttpError(310)
     }
 
+    /** POST a small JSON body; returns the status and the response text (MommyTV Manager only). */
+    suspend fun post(url: String, json: String, timeoutMs: Int = 8000): kotlin.Pair<Int, String> = withContext(Dispatchers.IO) {
+        val c = URL(url).openConnection() as HttpURLConnection
+        c.connectTimeout = timeoutMs
+        c.readTimeout = timeoutMs
+        c.requestMethod = "POST"
+        c.doOutput = true
+        c.setRequestProperty("Content-Type", "application/json; charset=utf-8")
+        c.setRequestProperty("User-Agent", "MommyTV")
+        try {
+            c.outputStream.use { it.write(json.toByteArray(Charsets.UTF_8)) }
+            val code = c.responseCode
+            val stream = if (code in 200..299) c.inputStream else c.errorStream
+            code to (stream?.use { it.readBytes().toString(Charsets.UTF_8).take(64 * 1024) } ?: "")
+        } finally {
+            c.disconnect()
+        }
+    }
+
     /** This device's IPv4 address on the active network, without any extra permission than ACCESS_NETWORK_STATE. */
     fun localIpv4(context: Context): String? {
         val cm = context.getSystemService(ConnectivityManager::class.java) ?: return null

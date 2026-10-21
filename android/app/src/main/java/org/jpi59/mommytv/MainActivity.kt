@@ -2,6 +2,8 @@ package org.jpi59.mommytv
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -11,7 +13,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Job
@@ -43,6 +47,11 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     var pinOpen by mutableStateOf(false)
     var pinBuf by mutableStateOf("")
     var pinMsg by mutableStateOf("")
+    var remoteOpen by mutableStateOf(false)
+    var remoteCode by mutableStateOf("")
+    var remoteMsg by mutableStateOf("")
+    var remoteBusy by mutableStateOf(false)
+    var tvNow by mutableStateOf<String?>(null) // null: not paired; "": paired, nothing playing
 
     lateinit var playback: Playback
     var parental = Parental(Header("", emptyList()))
@@ -60,6 +69,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         override fun put(key: String, value: String) { prefs.edit().putString(key, value).apply() }
     }
 
+    /** On a TV this app is the screen, not the remote: no "Control the TV" row. */
+    val isTv by lazy { packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK) }
+    val aboutRows get() = if (isTv) ABOUT_ROWS else ABOUT_ROWS + 1
+
     val lang: String get() = Locale.getDefault().language.let { if (it in LANGS) it else "en" }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +84,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         }
         val saved = prefs.getString(KEY_URL, null)
         if (saved != null) { urlField = saved; load(saved, retryWithDiscovery = true) } else findManager()
+        // while MommyTV is on screen only: show what the paired TV plays
+        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { while (true) { refreshTv(); delay(10_000) } } }
     }
 
     override fun onStop() {
@@ -145,12 +160,55 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         column = Column.LIST; cSel = at
     }
 
+    // ---------- phone remote ----------
+
+    private val managerBase get() = Remote.managerBase(prefs.getString(KEY_URL, null))
+
+    fun openRemote() {
+        remoteCode = ""; remoteBusy = false
+        remoteMsg = if (managerBase == null) getString(R.string.pairNeedsManager) else ""
+        remoteOpen = true
+        lifecycleScope.launch { refreshTv() }
+    }
+
+    fun pairRemote() {
+        val base = managerBase ?: return
+        val code = remoteCode.filter { it.isDigit() }
+        if (code.length != 6 || remoteBusy) return
+        remoteBusy = true; remoteMsg = ""
+        lifecycleScope.launch {
+            when (val r = Remote.pair(base, code, Build.MODEL.take(40))) {
+                is Remote.Paired.Ok -> { prefs.edit().putString(KEY_REMOTE, r.token).apply(); tvNow = ""; remoteCode = ""; refreshTv() }
+                Remote.Paired.Wrong -> remoteMsg = getString(R.string.remoteWrong)
+                Remote.Paired.Locked -> remoteMsg = getString(R.string.remoteLocked)
+                Remote.Paired.Unreachable -> remoteMsg = getString(R.string.remoteNoTv)
+            }
+            remoteBusy = false
+        }
+    }
+
+    fun forgetRemote() {
+        prefs.edit().remove(KEY_REMOTE).apply()
+        tvNow = null
+    }
+
+    private suspend fun refreshTv() {
+        val token = prefs.getString(KEY_REMOTE, null) ?: run { tvNow = null; return }
+        val base = managerBase ?: return
+        when (val now = Remote.now(base, token)) {
+            is Remote.Now.Tv -> tvNow = now.title
+            Remote.Now.Idle -> tvNow = ""
+            Remote.Now.Unpaired -> forgetRemote() // removed from the TV or the manager's panel
+            Remote.Now.Unreachable -> Unit // keep the last known state
+        }
+    }
+
     // ---------- groups and lists ----------
 
     val group: Group? get() = catalog?.groups?.getOrNull(gSel)
     fun showingCountries(g: Group) = g.kind == Kind.COUNTRIES && g.country == null
     fun listLength(g: Group) = when {
-        g.kind == Kind.ABOUT -> ABOUT_ROWS
+        g.kind == Kind.ABOUT -> aboutRows
         showingCountries(g) -> g.countries.size
         else -> g.items.size
     }
@@ -168,7 +226,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val g = group ?: return
         cSel = i
         when {
-            g.kind == Kind.ABOUT -> Unit
+            g.kind == Kind.ABOUT -> if (!isTv && i == ABOUT_REMOTE) openRemote()
             showingCountries(g) -> { g.country = g.countries[i]; g.items = g.country!!.items; cSel = 0; version++ }
             else -> {
                 val ch = c.channels[g.items[i]]
@@ -301,6 +359,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     /** Back button or gesture, through the back-press dispatcher (predictive back). */
     fun onBack() {
         if (pinOpen) { closePin(); return }
+        if (remoteOpen) { remoteOpen = false; return }
         when (screen) {
             Screen.SETUP -> if (catalog != null) screen = Screen.BROWSER else finish()
             Screen.PLAYER -> stopPlayer()
@@ -327,6 +386,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             }
             return true
         }
+        if (remoteOpen) return false // the pairing dialog handles its own keys
         return when (screen) {
             Screen.SETUP -> setupKey(code)
             Screen.BROWSER -> browserKey(code)
@@ -383,5 +443,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         const val KEY_URL = "playlistUrl"
         const val KEY_LAST = "last"
         const val ABOUT_ROWS = 8
+        const val ABOUT_REMOTE = 1 // phones only: the row that pairs with the TV
+        const val KEY_REMOTE = "remoteToken"
     }
 }

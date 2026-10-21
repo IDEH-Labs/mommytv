@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const { build, APP_ID, ANDROID_ID } = require('./playlist.js');
 const { loadMeta, enrich } = require('./meta.js');
 const { Health, streamUrls } = require('./health.js');
+const { Remote } = require('./remote.js');
 
 const PORT = Number(process.env.MOMMYTV_PORT) || 8642;
 const DIR = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'mommytv');
@@ -26,7 +27,10 @@ function loadData() {
 }
 const data = loadData() || { key: crypto.randomBytes(12).toString('base64url'), lists: [], shortcuts: [] };
 function save() { fs.writeFileSync(DATA, JSON.stringify(data, null, 2), { mode: 0o600 }); }
+if (!data.remote) data.remote = { tvs: [] };
 save();
+const remote = new Remote(data.remote, save);
+const MAX_TVS = 16;
 
 const fileOf = (id) => path.join(DIR, 'files', id + '.m3u');
 const DIAG = path.join(DIR, 'diag.log'); // playback stats the TV sends only while its diagnostic mode is on
@@ -184,7 +188,8 @@ function state() {
     shortcuts: data.shortcuts,
     health: Object.assign(health.summary(knownUrls()), { running: health.running }),
     parental: { enabled: !!(data.parental && data.parental.hash), locked: (data.parental && data.parental.locked) || [] },
-    categories: knownCategories
+    categories: knownCategories,
+    phones: data.remote.tvs.flatMap((tv) => remote.phones(tv))
   };
 }
 
@@ -258,12 +263,46 @@ async function api(req, res, parts) {
     return send(res, 200, state());
   }
 
+  if (kind === 'phones' && id && req.method === 'DELETE') {
+    for (const tv of data.remote.tvs) remote.unpair(tv, id);
+    return send(res, 200, state());
+  }
+
   if (kind === 'shortcuts' && id && req.method === 'DELETE') {
     data.shortcuts = data.shortcuts.filter((s) => s.id !== id);
     save();
     return send(res, 200, state());
   }
 
+  return send(res, 404, { error: 'No encontrado' });
+}
+
+// Phone remote. The TV sends plain-text JSON bodies (no custom headers, so no CORS preflight);
+// it proves itself with its secret and each paired phone with its own token.
+async function remoteApi(req, res, what) {
+  if (req.method !== 'POST') return send(res, 405, { error: 'Método no permitido' });
+  const body = await readJson(req);
+  if (what === 'pair') {
+    const r = remote.pair(body.code, body.name);
+    return send(res, r.error ? (r.error === 'locked' ? 429 : 403) : 200, r);
+  }
+  if (what === 'now') {
+    const p = remote.phone(body.token);
+    if (!p) return send(res, 403, { error: 'unpaired' });
+    return send(res, 200, { state: remote.state(p.tv) });
+  }
+  if (what === 'tv') {
+    const known = body.secret && remote.tv(body.secret);
+    if (known) return send(res, 200, { id: known.id });
+    if (data.remote.tvs.length >= MAX_TVS) return send(res, 429, { error: 'full' });
+    return send(res, 200, remote.registerTv());
+  }
+  const tv = remote.tv(body.secret || '');
+  if (!tv) return send(res, 403, { error: 'unknown tv' });
+  if (what === 'code') return send(res, 200, Object.assign(remote.newCode(tv), { phones: remote.phones(tv) }));
+  if (what === 'phones') return send(res, 200, { phones: remote.phones(tv) });
+  if (what === 'unpair') { remote.unpair(tv, String(body.phone || '')); return send(res, 200, { phones: remote.phones(tv) }); }
+  if (what === 'state') { remote.setState(tv, body); return send(res, 204, ''); }
   return send(res, 404, { error: 'No encontrado' });
 }
 
@@ -280,6 +319,7 @@ http.createServer(async (req, res) => {
     }
     if (req.method === 'POST' && parts[0] === 'diag') return saveDiag(req, res);
     if (parts[0] === 'api') return await api(req, res, parts.slice(1));
+    if (parts[0] === 'remote' && parts.length === 2) return await remoteApi(req, res, parts[1]);
     send(res, 404, { error: 'No encontrado' });
   } catch (e) {
     send(res, 500, { error: e.message });

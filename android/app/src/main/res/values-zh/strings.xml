@@ -51,6 +51,22 @@
     <string name="cantPlay">无法播放“%1$s”。请尝试其他频道。</string>
     <string name="favAdded">已将“%1$s”加入收藏</string>
     <string name="favRemoved">已将“%1$s”移出收藏</string>
+    <string name="pairPhone" formatted="false">用手机控制</string>
+    <string name="pairTitle" formatted="false">配对手机</string>
+    <string name="pairHelp" formatted="false">在手机上的 MommyTV 应用中打开“关于”→“控制电视”，输入此代码。代码 5 分钟后失效。</string>
+    <string name="pairPhones">已配对：%1$s</string>
+    <string name="pairNone" formatted="false">还没有配对的手机。</string>
+    <string name="pairNeedsManager" formatted="false">请先加载 MommyTV Manager 的列表。</string>
+    <string name="pairDone">“%1$s”已配对</string>
+    <string name="remoteTitle" formatted="false">控制电视</string>
+    <string name="remoteCode" formatted="false">电视上显示的代码</string>
+    <string name="remotePair" formatted="false">配对</string>
+    <string name="remoteWrong" formatted="false">代码错误或已失效。</string>
+    <string name="remoteLocked" formatted="false">尝试次数过多，请等待 10 分钟。</string>
+    <string name="remoteNoTv" formatted="false">无法连接 MommyTV Manager。</string>
+    <string name="remoteOn">电视正在播放：%1$s</string>
+    <string name="remoteIdle" formatted="false">已与电视配对</string>
+    <string name="remoteForget" formatted="false">停止控制电视</string>
     <string name="dChannel" formatted="false">频道</string>
     <string name="dRes" formatted="false">实际分辨率</string>
     <string name="dBuffer" formatted="false">缓冲</string>
