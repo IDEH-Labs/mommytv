@@ -19,7 +19,7 @@
   }
 
   function parse(text) {
-    var lines = String(text).replace(/^﻿/, '').split(/\r?\n/);
+    var lines = String(text).replace(/^\uFEFF/, '').split(/\r?\n/);
     var channels = [];
     var info = null;
     var group = '';

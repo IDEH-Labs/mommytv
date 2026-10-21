@@ -1,0 +1,69 @@
+package org.jpi59.mommytv
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class CatalogTest {
+    private val labels = Labels("Cambiar lista", "Buscar", "Favoritos", "Accesos directos", "En español", "Países", "Todos", "Acerca de", "Sin grupo")
+
+    private class MapStore : Store {
+        val m = HashMap<String, String>()
+        override fun get(key: String) = m[key]
+        override fun put(key: String, value: String) { m[key] = value }
+    }
+
+    private fun ch(name: String, url: String, country: String = "", cname: String = "", langs: String = "", cats: String = "", nsfw: String = "") =
+        Channel(name = name, logo = "", group = "", url = url, country = country, countryName = cname, langs = langs, cats = cats, nsfw = nsfw)
+
+    private val list = listOf(
+        ch("Uno CO", "u1", "CO", "Colombia", "spa", "Noticias"),
+        ch("Dos CO", "u2", "CO", "Colombia", "spa", "Películas"),
+        ch("Three US", "u3", "US", "Estados Unidos", "eng", "Noticias;General"),
+        ch("Adulto", "u4", "US", "Estados Unidos", "eng", "Adultos", nsfw = "1"),
+        ch("App", "android-app://org.example"),
+    )
+
+    @Test fun buildsTheSameGroupsAsWebOs() {
+        val c = Catalog(list, "CO", "spa", labels, MapStore())
+        val names = c.groups.map { it.name }
+        assertEquals(listOf("Cambiar lista", "Buscar", "Favoritos", "Accesos directos", "Colombia", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Acerca de"), names)
+        assertEquals(4, c.channels.size) // adult channel never present
+        assertEquals(listOf("Colombia", "Estados Unidos"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
+        assertEquals(2, c.groups.first { it.name == "Noticias" }.items.size)
+        assertEquals(c.groups.indexOfFirst { it.name == "Colombia" }, c.startGroup())
+    }
+
+    @Test fun removingAMostWatchedFavouriteIsPermanent() {
+        val store = MapStore()
+        val c = Catalog(list, "CO", "spa", labels, store)
+        c.addWatched("u3", 900)
+        c.refreshFavourites()
+        assertEquals(listOf(2), c.favourites.items)
+        assertFalse(c.toggleFavourite(c.channels[2])) // removed
+        c.addWatched("u3", 900)
+        c.refreshFavourites()
+        assertTrue(c.favourites.items.isEmpty())
+        assertTrue(c.toggleFavourite(c.channels[2])) // pinned again
+        assertEquals(listOf(2), c.favourites.items)
+    }
+
+    @Test fun searchIgnoresCaseAndAccents() {
+        val c = Catalog(list, "CO", "spa", labels, MapStore())
+        c.runSearch("UNO")
+        assertEquals(listOf(0), c.search.items)
+    }
+
+    @Test fun parentalPinMatchesTheManagerFormat() {
+        // the manager stores salt + ":" + sha256(salt + ":" + pin)
+        val salt = "a1b2c3d4"
+        val p = Parental(Header("$salt:" + Parental.sha256("$salt:1234"), listOf("Películas")))
+        val movie = ch("Peli", "x", cats = "Películas")
+        assertTrue(p.isLocked(movie))
+        assertFalse(p.check("0000"))
+        assertTrue(p.check("1234"))
+        assertFalse(p.isLocked(movie))
+        assertEquals("f1e5d9d95928deb5bb58568901760888c1135569494507d5e36938a058e6bf94", Parental.sha256("a1b2c3d4:1234"))
+    }
+}
