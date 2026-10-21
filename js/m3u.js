@@ -18,6 +18,18 @@
     return '';
   }
 
+  // Some generators write the JavaScript value "undefined" rather than omitting group-title.
+  // Keep it as an absent category so the UI can use its localized "No group" label.
+  function cleanGroup(value) {
+    var parts = String(value || '').split(';');
+    var kept = [];
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i].trim();
+      if (part && part.toLowerCase() !== 'undefined') kept.push(part);
+    }
+    return kept.join(';');
+  }
+
   function parse(text) {
     var lines = String(text).replace(/^\uFEFF/, '').split(/\r?\n/);
     var channels = [];
@@ -32,12 +44,12 @@
         info = {
           name: titleOf(line) || attr(line, 'tvg-name'),
           logo: attr(line, 'tvg-logo'),
-          group: attr(line, 'group-title'), // may hold several categories: "Animation;Kids"
+          group: cleanGroup(attr(line, 'group-title')), // may hold several categories: "Animation;Kids"
           country: attr(line, 'tvg-country'),
           langs: attr(line, 'tvg-language')
         };
       } else if (line.indexOf('#EXTGRP:') === 0) {
-        group = line.slice(8).trim();
+        group = cleanGroup(line.slice(8));
       } else if (line.charAt(0) !== '#') {
         var ch = info || { name: '', logo: '', group: '', country: '', langs: '' };
         ch.url = line;

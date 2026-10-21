@@ -30,7 +30,7 @@
     }));
   }
   var t = I18N.t;
-  var VERSION = '0.1.0';
+  var VERSION = '0.1.1';
   // Ajustes: the rows that do something first, then the dedication and the information
   var ROW_CHANGE = 0;
   var ROW_DELETE = 1;

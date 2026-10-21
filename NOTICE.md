@@ -9,8 +9,8 @@
 - **License:** GNU General Public License, version 3 or any later version (GPL-3.0-or-later)
 
 ## What MommyTV Is
-MommyTV is a player for M3U playlists on LG webOS TVs, plus MommyTV Manager, a local web panel
-that runs on the user's own computer. MommyTV ships no channels, streams or playlists.
+MommyTV is a player for M3U playlists on LG webOS TVs and Android devices. Each device keeps the
+playlist its user chooses locally. MommyTV ships no channels, streams or playlists.
 
 ## Third-Party Components
 | Component | Version | License | File |
@@ -18,10 +18,9 @@ that runs on the user's own computer. MommyTV ships no channels, streams or play
 | webOSTV.js (LG Electronics) | 1.2.13 | Apache-2.0 | `js/webOSTV.js`, `licenses/webOSTV.js-LICENSE-2.0.txt` |
 | Plus Jakarta Sans (Tokotype) | Google Fonts v12 | SIL OFL 1.1 | `fonts/`, `licenses/PlusJakartaSans-OFL.txt` |
 
-## Data Sources
-- Channel country, language and category data comes from the public
-  [iptv-org API](https://github.com/iptv-org/api), released into the public domain (Unlicense).
-  MommyTV Manager downloads it at most once a day on the user's computer.
+## Playlist Metadata
+- Country, language and category information is read from standard M3U attributes supplied in the
+  user's own playlist (`tvg-country`, `tvg-language`, and `group-title`).
 
 ## Original Assets
 The app icon (`img/icon.svg` and its PNG exports) and the user interface are original designs

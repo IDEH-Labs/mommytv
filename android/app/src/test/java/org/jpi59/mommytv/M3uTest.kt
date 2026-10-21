@@ -33,6 +33,12 @@ class M3uTest {
         assertEquals("", ch.quality) // below HD: no badge
     }
 
+    @Test fun treatsGeneratorUndefinedCategoryAsNoCategory() {
+        val ch = M3u.parse("#EXTINF:-1 group-title=\"Undefined\",Channel\nhttps://stream.example/channel.m3u8").single()
+        assertEquals("", ch.group)
+        assertEquals(listOf(""), ch.categories)
+    }
+
     @Test fun normalizesForSearch() {
         assertEquals("noticias espana", normalize("Noticias España"))
         assertEquals("cafe", normalize("CAFÉ"))

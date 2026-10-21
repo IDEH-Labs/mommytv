@@ -31,6 +31,12 @@ fun normalize(s: String): String =
 object M3u {
     private val BOM = 0xFEFF.toChar().toString()
 
+    /** Some generators write the JavaScript value `undefined` instead of omitting group-title. */
+    private fun cleanGroup(value: String): String = value.split(';')
+        .map { it.trim() }
+        .filter { it.isNotEmpty() && !it.equals("undefined", ignoreCase = true) }
+        .joinToString(";")
+
     private fun attr(line: String, name: String): String =
         Regex("\\s" + Regex.escape(name) + "=\"([^\"]*)\"", RegexOption.IGNORE_CASE).find(line)?.groupValues?.get(1)?.trim() ?: ""
 
@@ -62,7 +68,7 @@ object M3u {
                     out += Channel(
                         name = name,
                         logo = i?.let { attr(it, "tvg-logo") }.orEmpty(),
-                        group = i?.let { attr(it, "group-title") }.orEmpty().ifEmpty { group },
+                        group = cleanGroup(i?.let { attr(it, "group-title") }.orEmpty()).ifEmpty { cleanGroup(group) },
                         url = line,
                         country = i?.let { attr(it, "tvg-country") }.orEmpty(),
                         langs = i?.let { attr(it, "tvg-language") }.orEmpty(),

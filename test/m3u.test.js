@@ -22,6 +22,8 @@ assert.strictEqual(ch[1].url, 'http://s/b.m3u8');
 assert.strictEqual(ch[2].group, 'Sports');
 assert.deepStrictEqual(ch[3], { name: 'http://s/bare.m3u8', logo: '', group: '', country: '', langs: '', url: 'http://s/bare.m3u8' });
 assert.strictEqual(M3U.parse('#EXTINF:-1 tvg-country="CO" group-title="Animation;Kids",K\nhttps://k/x.m3u8')[0].group, 'Animation;Kids');
+assert.strictEqual(M3U.parse('#EXTINF:-1 group-title="Undefined",K\nhttps://k/x.m3u8')[0].group, '');
+assert.strictEqual(M3U.parse('#EXTINF:-1 group-title="News; undefined ;World",K\nhttps://k/x.m3u8')[0].group, 'News;World');
 assert.strictEqual(M3U.parse('').length, 0);
 assert.strictEqual(M3U.parse('<html>not a playlist</html>').length, 1);
 console.log('m3u: ok');

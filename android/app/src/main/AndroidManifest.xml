@@ -3,7 +3,7 @@
 
     <!-- Playlists, logos and streams -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Only to read this device's own LAN address, to find MommyTV Manager on the same network -->
+    <!-- To discover and pair directly with an LG TV on the local network. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Works on TVs (remote control) and on phones and tablets (touch) -->
@@ -22,8 +22,7 @@
         </intent>
     </queries>
 
-    <!-- usesCleartextTraffic: MommyTV Manager runs on the user's own LAN over plain HTTP, and many
-         playlists and streams the user adds are HTTP only. allowBackup=false: favourites, PIN state and
+    <!-- Some playlists and streams the user chooses are HTTP only. allowBackup=false: favourites, PIN state and
          history stay on the device. -->
     <application
         android:label="@string/app_name"

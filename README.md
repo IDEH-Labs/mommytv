@@ -8,21 +8,22 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 
 ## Features
 
-- Playlists managed from a PC or phone with MommyTV Manager; the TV finds it on the LAN and
-  uses it only after you press Load.
-- Groups by country (the TV's own first), Spanish-language channels, all countries and
-  categories, from the public iptv-org data. Adult channels are never shown.
-- Search, Favoritos (only the channels you mark, stored on the device only); the last channel
-  watched is selected on start, and nothing plays until you choose.
-- Parental control: categories locked behind a 4-digit PIN set in the manager.
-- HLS starts at top quality and allows the panel's own resolution; freeze watchdog,
-  automatic reconnect and live-edge catch-up.
-- Shortcuts that open installed official apps.
-- Nightly check in the manager hides dead channels (index request only, never video).
-- Opt-in diagnostics (blue key), saved only on the user's PC.
-- Interface in the language chosen in the TV settings: Spanish, English, French, German,
+- Add a playlist URL directly on the TV or Android device. Choosing **Remember this playlist**
+  saves its URL and a local copy; the copy can start when the site is temporarily unavailable.
+- Search, favourites (only channels explicitly marked by the user), the last selected channel,
+  and parental settings remain on that device only.
+- Groups by country, device language, all channels, and categories from standard M3U attributes
+  in the selected playlist (`tvg-country`, `tvg-language`, and `group-title`).
+- Per-device parental control: a four-digit PIN is salted and hashed locally; it can lock chosen
+  categories and is required before changing or deleting a saved playlist.
+- Android can pair directly with a compatible LG TV on the local network, play a selected channel
+  there, and send the playlist URL. No PC service sits between the phone and TV.
+- HLS starts at top quality and allows the panel's own resolution; freeze watchdog, automatic
+  reconnect and live-edge catch-up are available on webOS.
+- Playlist shortcuts can open installed official apps.
+- Interface in the language chosen in the device settings: Spanish, English, French, German,
   Italian, Portuguese, Chinese or Japanese (English otherwise).
-- No accounts, no analytics.
+- No accounts and no analytics. MommyTV ships no channels or playlists.
 
 ## Remote control
 
@@ -39,43 +40,12 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 | Player | OK | Show the channel name |
 | Player | Back | Return to the list |
 
-## Phone remote
+## Phone and TV
 
-The Android app on a phone can follow the TV through MommyTV Manager:
-
-1. On the TV: Ajustes (Settings) → "Controlar con el teléfono" shows a 6-digit code (one use, 5 minutes).
-2. On the phone: the gear button → "Controlar la TV", type the code.
-
-The phone then shows what the TV is playing, and a TV button next to search chooses where a
-tapped channel plays: on the TV (default once paired) or on the phone. The TV keeps one
-long-poll request open to the manager. A channel of the TV's own list plays within its list
-(locked categories ask for the PIN on the TV); one from another list on the phone plays on
-its own, leaves no trace on the TV (watch time, Favoritos, last channel) and asks for the PIN
-whenever parental control is on, since its category is unknown there. Orders not picked up
-within 30 seconds are dropped, and a restarted TV never replays old ones. The TV reports what
-became of each order (received, playing, PIN, failed) and the phone tells the user; if the
-TV does not have MommyTV open, the phone says so. A phone remembers the manager it paired
-through, and looks for it on the LAN when it uses a playlist from elsewhere. The TV plays on its own: the phone can be closed, used for calls or
-other apps, or switched off. Only hashes of the TV secret and the
-phone tokens are stored; after 10 wrong codes in 10 minutes pairing is locked for 10 minutes.
-Paired phones can be removed in the manager's panel.
-
-## HTTPS at home
-
-With a certificate for a host name that points to the PC (for example a DNS `A` record
-`tv.example.org → 192.168.1.9` and a Let's Encrypt certificate obtained with a DNS
-challenge, so nothing is opened to the internet), create `~/.config/mommytv/tls.json`:
-
-```json
-{ "name": "tv.example.org", "cert": "/path/fullchain.cer", "key": "/path/tv.example.org.key" }
-```
-
-The manager then serves everything over HTTPS on port 8643 and reloads the certificate
-daily, so renewals need no restart. Port 8642 stays plain HTTP only for discovery: it
-answers `mommytv.json` with the secure address and redirects every other request. The TV
-and Android apps follow that redirect and keep the HTTPS address. webOS 4.5 accepts Let's
-Encrypt certificates (chain to ISRG Root X1). The PC needs a fixed address on the LAN
-(a DHCP reservation in the router) so the name keeps pointing to it.
+On Android, open **Settings → Control the TV**, find the LG TV on the local network and accept
+the pairing request shown by the TV. The phone can then choose whether a tapped channel plays on
+the phone or the TV, and can send its saved playlist URL to the TV. The TV receives that URL only
+through LG's local pairing mechanism; it keeps its own playlist copy and its own parental PIN.
 
 ## Shortcuts to official apps
 
@@ -91,10 +61,8 @@ shows it.
 webos-app://com.example.officialapp
 ```
 
-The Android app uses `android-app://<package>` the same way. In the manager each
-shortcut can have a webOS app id, an Android package or both; the TV asks for
-`playlist.m3u` and the Android app for `playlist.m3u?os=android`, and each gets
-only the shortcuts for its own system.
+The Android app uses `android-app://<package>` the same way. A playlist may contain shortcuts
+for either platform; each device opens only the scheme it supports.
 
 ## Build and install
 
@@ -104,12 +72,17 @@ and the Developer Mode app on the TV.
 ```sh
 npm install -g --prefix ~/.local @webos-tools/cli
 ./build.sh                      # runs the tests, then packages dist/*.ipk
-node manager/server.js          # or ~/.local/bin/mommytv-manager, which restarts it
 ares-setup-device --add tv -i "host=<TV IP>" -i "port=9922" -i "username=prisoner"
 ares-novacom --device tv --getkey
-ares-install --device tv dist/org.jpi59.mommytv_0.1.0_all.ipk
+ares-install --device tv dist/org.jpi59.mommytv_0.1.1_all.ipk
 ares-launch --device tv org.jpi59.mommytv
 ```
+
+For Android, set the four signing variables (`KEYSTORE_PATH`, `KEY_ALIAS`, `STORE_PASSWORD`, and
+`KEY_PASSWORD`) only in the release environment, then run `./gradlew assembleRelease`. The
+repository contains no signing key or password. Before distributing a release, install it on a
+real TV and phone and manually verify playlist recovery, favourites, parental control, deleting a
+playlist, and phone-to-TV playlist transfer.
 
 Code is plain ES5 because webOS TV 4.x runs Chromium 53.
 
