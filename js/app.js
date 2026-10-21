@@ -18,6 +18,7 @@
   var SEARCH_MAX = 300;
   var SHORTCUT = 'webos-app://';   // playlist entry that opens an installed app instead of a stream
   var MANAGER_PORT = 8642;         // MommyTV Manager on a PC of the same network
+  var MANAGER_LIST = /^(https?:\/\/[^\/:]+:(?:8642|8643))\/playlist\.m3u$/; // its playlist, over HTTP or HTTPS
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
   var FREEZE_S = 8;       // reconnect after this long without progress
   var RETRIES = 3;
@@ -165,7 +166,7 @@
     status(t('loading'), true);
     var xhr = new XMLHttpRequest();
     // MommyTV Manager sends category and country names in the TV's language
-    xhr.open('GET', /:8642\/playlist\.m3u$/.test(url) ? url + '?lang=' + I18N.lang : url, true);
+    xhr.open('GET', MANAGER_LIST.test(url) ? url + '?lang=' + I18N.lang : url, true);
     xhr.timeout = 20000;
     xhr.onload = function () {
       if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) {
@@ -178,6 +179,9 @@
       parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
       head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
       if (!list.length) { fail(t('emptyList')); return; }
+      // a manager that moved to HTTPS redirects; keep its secure address
+      var moved = (xhr.responseURL || '').replace(/\?lang=[^&]*$/, '');
+      if (moved !== url && MANAGER_LIST.test(moved) && moved.indexOf('https:') === 0) { url = moved; ui.url.value = url; }
       store(STORE_URL, url);
       checkLetsEncrypt(function (ok) {
         var usable = ok ? list : list.filter(function (ch) { return ch.cert !== 'letsencrypt'; });
@@ -205,11 +209,15 @@
     xhr.open('GET', 'http://' + host + ':' + MANAGER_PORT + '/mommytv.json', true);
     xhr.timeout = 1500;
     xhr.onload = function () {
-      var ok = false;
-      try { ok = JSON.parse(xhr.responseText).app === 'mommytv-manager'; } catch (e) { /* not the manager */ }
-      cb(ok);
+      var ok = false, secure = '';
+      try {
+        var r = JSON.parse(xhr.responseText);
+        ok = r.app === 'mommytv-manager';
+        if (ok && MANAGER_LIST.test(r.secure || '') && r.secure.indexOf('https:') === 0) secure = r.secure;
+      } catch (e) { /* not the manager */ }
+      cb(ok, secure);
     };
-    xhr.onerror = xhr.ontimeout = function () { cb(false); };
+    xhr.onerror = xhr.ontimeout = function () { cb(false, ''); };
     xhr.send();
   }
 
@@ -225,10 +233,10 @@
         while (!found && pending < 32 && next < hosts.length) {
           pending++;
           probe(hosts[next], (function (host) {
-            return function (ok) {
+            return function (ok, secure) {
               pending--;
               if (found) return;
-              if (ok) { found = true; cb('http://' + host + ':' + MANAGER_PORT + '/playlist.m3u'); }
+              if (ok) { found = true; cb(secure || 'http://' + host + ':' + MANAGER_PORT + '/playlist.m3u'); }
               else if (next < hosts.length) pump();
               else if (!pending) cb('');
             };
@@ -699,12 +707,6 @@
   var pairOpen = false;
   var pairTimer = null;
 
-  // MommyTV Manager's address when the list comes from it, else ''.
-  function managerBase() {
-    var m = /^(http:\/\/[^\/:]+):8642\/playlist\.m3u$/.exec(store(STORE_URL) || '');
-    return m ? m[1] + ':' + MANAGER_PORT : '';
-  }
-
   // Plain-text JSON POST: a simple request, so the manager needs no CORS preflight.
   function remoteCall(what, body, cb) {
     var base = managerBase();
@@ -998,8 +1000,9 @@
     };
   }
 
+  // MommyTV Manager's address when the list comes from it, else ''.
   function managerBase() {
-    var m = /^(http:\/\/[^\/]+:8642)\/playlist\.m3u$/.exec(store(STORE_URL) || '');
+    var m = MANAGER_LIST.exec(store(STORE_URL) || '');
     return m ? m[1] : '';
   }
 

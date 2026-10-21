@@ -106,9 +106,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         screen = Screen.SETUP
         status = getString(R.string.loading); busy = true
         lifecycleScope.launch {
-            val requestUrl = if (Regex(":8642/playlist\\.m3u$").containsMatchIn(u)) "$u?lang=$lang&os=android" else u
-            val text = try {
-                Net.fetch(requestUrl)
+            val query = "?lang=$lang&os=android"
+            val requestUrl = if (Remote.isManagerList(u)) u + query else u
+            val (text, finalUrl) = try {
+                Net.fetchWithUrl(requestUrl)
             } catch (e: Exception) {
                 if (retryWithDiscovery) { findManager(); return@launch }
                 fail(if (e is Net.HttpError) getString(R.string.httpError, e.code.toString()) else getString(R.string.noConnect))
@@ -116,7 +117,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             }
             val list = M3u.parse(text)
             if (list.isEmpty()) { fail(getString(R.string.emptyList)); return@launch }
-            prefs.edit().putString(KEY_URL, u).apply()
+            // a manager that moved to HTTPS redirects; keep its secure address
+            val moved = finalUrl.removeSuffix(query)
+            val saved = if (moved != u && moved.startsWith("https:") && Remote.isManagerList(moved)) moved.also { urlField = it } else u
+            prefs.edit().putString(KEY_URL, saved).apply()
             parental = Parental(M3u.header(text))
             useList(list)
         }

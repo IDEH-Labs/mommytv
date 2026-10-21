@@ -308,7 +308,7 @@ async function remoteApi(req, res, what) {
 
 const panel = fs.readFileSync(path.join(__dirname, 'panel.html'));
 
-http.createServer(async (req, res) => {
+async function handle(req, res) {
   try {
     const parts = new URL(req.url, 'http://x').pathname.split('/').filter(Boolean);
     if (req.method === 'GET' && parts.length === 0) return send(res, 200, panel, 'text/html; charset=utf-8');
@@ -324,12 +324,37 @@ http.createServer(async (req, res) => {
   } catch (e) {
     send(res, 500, { error: e.message });
   }
-}).listen(PORT, '0.0.0.0', () => {
+}
+
+// HTTPS when ~/.config/mommytv/tls.json names a certificate for a host name that points to this PC:
+// { "name": "tv.example.org", "cert": "/path/fullchain.cer", "key": "/path/host.key" }.
+// Then the HTTP port only answers discovery (with the secure address) and redirects the rest.
+const TLS_PORT = Number(process.env.MOMMYTV_TLS_PORT) || PORT + 1;
+const tlsConf = (() => { try { return JSON.parse(fs.readFileSync(path.join(DIR, 'tls.json'), 'utf8')); } catch (e) { return null; } })();
+const tlsFiles = () => ({ cert: fs.readFileSync(tlsConf.cert), key: fs.readFileSync(tlsConf.key) });
+const secureBase = tlsConf && 'https://' + tlsConf.name + ':' + TLS_PORT;
+
+function announce(bases) {
   console.log('MommyTV Manager listo. Abre el panel en este PC o en tu móvil:');
-  for (const addrs of Object.values(os.networkInterfaces())) {
-    for (const a of addrs) {
-      if (a.family === 'IPv4' && !a.internal) console.log('  http://' + a.address + ':' + PORT + '/#k=' + data.key);
-    }
-  }
+  for (const base of bases) console.log('  ' + base + '/#k=' + data.key);
   console.log('La TV lo encuentra sola en tu red. Ctrl+C para cerrar.');
-});
+}
+
+if (secureBase) {
+  const server = https.createServer(tlsFiles(), handle).listen(TLS_PORT, '0.0.0.0', () => announce([secureBase]));
+  setInterval(() => { try { server.setSecureContext(tlsFiles()); } catch (e) { console.error('Certificado:', e.message); } }, DAY_MS); // picks up renewals
+  http.createServer((req, res) => {
+    const pathname = new URL(req.url, 'http://x').pathname;
+    if (req.method === 'GET' && pathname === '/mommytv.json') return send(res, 200, { app: 'mommytv-manager', playlist: '/playlist.m3u', secure: secureBase + '/playlist.m3u' });
+    res.writeHead(308, { Location: secureBase + req.url, 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    res.end();
+  }).listen(PORT, '0.0.0.0');
+} else {
+  http.createServer(handle).listen(PORT, '0.0.0.0', () => {
+    const bases = [];
+    for (const addrs of Object.values(os.networkInterfaces())) {
+      for (const a of addrs) if (a.family === 'IPv4' && !a.internal) bases.push('http://' + a.address + ':' + PORT);
+    }
+    announce(bases);
+  });
+}

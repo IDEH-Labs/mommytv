@@ -9,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.Inet4Address
 import java.net.URL
@@ -20,7 +21,10 @@ object Net {
     class HttpError(val code: Int) : Exception("HTTP $code")
 
     /** GET as text, following up to 5 redirects (also http <-> https, which HttpURLConnection does not). */
-    suspend fun fetch(url: String, timeoutMs: Int = 20000): String = withContext(Dispatchers.IO) {
+    suspend fun fetch(url: String, timeoutMs: Int = 20000): String = fetchWithUrl(url, timeoutMs).first
+
+    /** Like [fetch], also returning the address the text finally came from. */
+    suspend fun fetchWithUrl(url: String, timeoutMs: Int = 20000): kotlin.Pair<String, String> = withContext(Dispatchers.IO) {
         var current = url
         repeat(6) {
             val c = URL(current).openConnection() as HttpURLConnection
@@ -44,7 +48,7 @@ object Net {
                         if (n < 0) break
                         out.write(buf, 0, n)
                     }
-                    return@withContext out.toString("UTF-8")
+                    return@withContext out.toString("UTF-8") to current
                 }
             } finally {
                 c.disconnect()
@@ -89,8 +93,13 @@ object Net {
             async(Dispatchers.IO) {
                 gate.withPermit {
                     val host = "$prefix.$n"
-                    val ok = runCatching { fetch("http://$host:$MANAGER_PORT/mommytv.json", 1500).contains("\"mommytv-manager\"") }.getOrDefault(false)
-                    if (ok) "http://$host:$MANAGER_PORT/playlist.m3u" else null
+                    val info = runCatching { JSONObject(fetch("http://$host:$MANAGER_PORT/mommytv.json", 1500)) }.getOrNull()
+                    when {
+                        info?.optString("app") != "mommytv-manager" -> null
+                        // a manager with a certificate answers here with its HTTPS address
+                        info.optString("secure").let { it.startsWith("https:") && Remote.isManagerList(it) } -> info.getString("secure")
+                        else -> "http://$host:$MANAGER_PORT/playlist.m3u"
+                    }
                 }
             }
         }.awaitAll()

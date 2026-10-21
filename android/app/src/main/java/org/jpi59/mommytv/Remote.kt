@@ -10,10 +10,13 @@ object Remote {
     sealed interface Paired { data class Ok(val token: String) : Paired; data object Wrong : Paired; data object Locked : Paired; data object Unreachable : Paired }
     sealed interface Now { data class Tv(val view: String, val title: String) : Now; data object Idle : Now; data object Unpaired : Now; data object Unreachable : Now }
 
-    private val MANAGER_LIST = Regex("^(http://[^/:]+):${Net.MANAGER_PORT}/playlist\\.m3u$")
+    /** MommyTV Manager's playlist, over HTTP or (on the next port) HTTPS. */
+    private val MANAGER_LIST = Regex("^(https?://[^/:]+:(?:${Net.MANAGER_PORT}|${Net.MANAGER_PORT + 1}))/playlist\\.m3u$")
+
+    fun isManagerList(url: String) = MANAGER_LIST.matches(url)
 
     /** MommyTV Manager's address when the playlist comes from it, else null. */
-    fun managerBase(playlistUrl: String?): String? = MANAGER_LIST.find(playlistUrl ?: "")?.let { it.groupValues[1] + ":" + Net.MANAGER_PORT }
+    fun managerBase(playlistUrl: String?): String? = MANAGER_LIST.find(playlistUrl ?: "")?.groupValues?.get(1)
 
     suspend fun pair(base: String, code: String, name: String): Paired {
         val (status, body) = runCatching { Net.post("$base/remote/pair", JSONObject().put("code", code).put("name", name).toString()) }

@@ -7,6 +7,8 @@ import org.junit.Test
 class RemoteTest {
     @Test fun onlyAManagerPlaylistHasARemote() {
         assertEquals("http://192.168.1.9:8642", Remote.managerBase("http://192.168.1.9:8642/playlist.m3u"))
+        assertEquals("https://tv.example.org:8643", Remote.managerBase("https://tv.example.org:8643/playlist.m3u"))
+        assertNull(Remote.managerBase("https://tv.example.org:9000/playlist.m3u"))
         assertNull(Remote.managerBase("https://example.org/list.m3u"))
         assertNull(Remote.managerBase("http://192.168.1.9:8642/playlist.m3u?x=1"))
         assertNull(Remote.managerBase(null))

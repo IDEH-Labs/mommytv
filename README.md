@@ -49,8 +49,24 @@ The Android app on a phone can follow the TV through MommyTV Manager:
 The phone then shows what the TV is playing. The TV plays on its own: the phone can be
 closed, used for calls or other apps, or switched off. Only hashes of the TV secret and the
 phone tokens are stored; after 10 wrong codes in 10 minutes pairing is locked for 10 minutes.
-Paired phones can be removed in the manager's panel. The remote is plain HTTP on the LAN,
-like the rest of the manager.
+Paired phones can be removed in the manager's panel.
+
+## HTTPS at home
+
+With a certificate for a host name that points to the PC (for example a DNS `A` record
+`tv.example.org → 192.168.1.9` and a Let's Encrypt certificate obtained with a DNS
+challenge, so nothing is opened to the internet), create `~/.config/mommytv/tls.json`:
+
+```json
+{ "name": "tv.example.org", "cert": "/path/fullchain.cer", "key": "/path/tv.example.org.key" }
+```
+
+The manager then serves everything over HTTPS on port 8643 and reloads the certificate
+daily, so renewals need no restart. Port 8642 stays plain HTTP only for discovery: it
+answers `mommytv.json` with the secure address and redirects every other request. The TV
+and Android apps follow that redirect and keep the HTTPS address. webOS 4.5 accepts Let's
+Encrypt certificates (chain to ISRG Root X1). The PC needs a fixed address on the LAN
+(a DHCP reservation in the router) so the name keeps pointing to it.
 
 ## Shortcuts to official apps
 
