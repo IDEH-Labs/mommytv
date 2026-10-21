@@ -31,7 +31,7 @@
     <string name="noResults" formatted="false">Sin resultados</string>
     <string name="typeHint" formatted="false">Pulsa OK y escribe el nombre</string>
     <string name="noFavs" formatted="false">Aún no hay favoritos</string>
-    <string name="noFavsHint" formatted="false">Mantén pulsado OK sobre un canal, o mira canales y aparecerán aquí</string>
+    <string name="noFavsHint" formatted="false">Mantén pulsado OK sobre un canal para añadirlo aquí</string>
     <string name="officialApp" formatted="false">App oficial</string>
     <string name="favourite" formatted="false">Favorito</string>
     <string name="noGroup" formatted="false">Sin grupo</string>

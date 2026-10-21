@@ -31,7 +31,7 @@
     <string name="noResults" formatted="false">没有结果</string>
     <string name="typeHint" formatted="false">按 OK 并输入名称</string>
     <string name="noFavs" formatted="false">还没有收藏</string>
-    <string name="noFavsHint" formatted="false">在频道上长按 OK，或观看频道后它们会出现在这里</string>
+    <string name="noFavsHint" formatted="false">在频道上长按 OK 即可添加到这里</string>
     <string name="officialApp" formatted="false">官方应用</string>
     <string name="favourite" formatted="false">收藏</string>
     <string name="noGroup" formatted="false">未分组</string>

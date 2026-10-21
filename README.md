@@ -12,7 +12,7 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
   uses it only after you press Load.
 - Groups by country (the TV's own first), Spanish-language channels, all countries and
   categories, from the public iptv-org data. Adult channels are never shown.
-- Search, Favoritos (pinned plus most watched, all stored on the TV only); the last channel
+- Search, Favoritos (only the channels you mark, stored on the device only); the last channel
   watched is selected on start, and nothing plays until you choose.
 - Parental control: categories locked behind a 4-digit PIN set in the manager.
 - HLS starts at top quality and allows the panel's own resolution; freeze watchdog,

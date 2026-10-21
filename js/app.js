@@ -7,14 +7,11 @@
   var LIST_ROWS = 6;
   var STORE_URL = 'playlistUrl';
   var STORE_PINS = 'mtvPins';      // channel URLs marked as favourite, in order
-  var STORE_WATCH = 'mtvWatch';    // { url: seconds watched }
   var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
-  var STORE_HIDDEN = 'mtvHidden';  // channel URLs removed from Favoritos: never added back for being watched
   var STORE_COPY = 'mtvListCopy';  // a copy of the remembered playlist, used when its site does not answer
   var STORE_TLS = 'mtvLetsEncrypt'; // { ok: bool, at: ms }: can this TV open Let's Encrypt HTTPS?
   var TLS_PROBE = 'https://acme-v02.api.letsencrypt.org/directory'; // official, tiny, allows CORS
   var TLS_MAX_AGE = 7 * 24 * 3600 * 1000;
-  var FAV_MAX = 30;
   var SEARCH_MAX = 300;
   var SHORTCUT = 'webos-app://';   // playlist entry that opens an installed app instead of a stream
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
@@ -81,7 +78,6 @@
   var osdTimer = null;
   var bannerTimer = null;
   var searchTimer = null;
-  var watchTimer = null;
   var diagOn = false;     // blue key: on-screen stats, also saved on the user's own PC by the manager
   var stats = {};
   var retries = 0;
@@ -198,10 +194,10 @@
     });
   }
 
-  // "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, watch time, last channel).
+  // "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, last channel).
   function forgetList(everything) {
     var keys = [STORE_URL, STORE_COPY];
-    if (everything) keys.push(STORE_LAST, STORE_PINS, STORE_WATCH, STORE_HIDDEN);
+    if (everything) keys.push(STORE_LAST, STORE_PINS);
     for (var i = 0; i < keys.length; i++) { try { localStorage.removeItem(keys[i]); } catch (e) { /* storage unavailable */ } }
     if (everything) pinsCache = null;
   }
@@ -310,19 +306,14 @@
     return urlIndex;
   }
 
-  // Favourites: the channels pinned with the yellow key, then the most watched ones.
+  // Favoritos: only the channels the user marked, newest first.
   function refreshFavourites() {
     var map = indexByUrl();
     var pinned = pins();
-    var watch = storeJson(STORE_WATCH) || {};
     var items = [], seen = {};
-    for (var i = 0; i < pinned.length && items.length < FAV_MAX; i++) {
+    for (var i = 0; i < pinned.length; i++) {
       if (pinned[i] in map && !seen[pinned[i]]) { items.push(map[pinned[i]]); seen[pinned[i]] = true; }
     }
-    var hidden = storeJson(STORE_HIDDEN) || [];
-    var watched = Object.keys(watch).filter(function (u) { return watch[u] >= 60 && u in map && !seen[u] && hidden.indexOf(u) < 0; });
-    watched.sort(function (a, b) { return watch[b] - watch[a]; });
-    for (var j = 0; j < watched.length && items.length < FAV_MAX; j++) items.push(map[watched[j]]);
     favGroup.items = items;
   }
 
@@ -330,41 +321,16 @@
   function pins() { if (!pinsCache) pinsCache = storeJson(STORE_PINS) || []; return pinsCache; }
   function isPinned(ch) { return pins().indexOf(ch.url) >= 0; }
 
-  function inFavourites(ch) {
-    refreshFavourites();
-    var fav = favGroup.items;
-    for (var i = 0; i < fav.length; i++) if (channels[fav[i]].url === ch.url) return true;
-    return false;
-  }
-
-  // One action for the user: if the channel is in Favoritos (pinned or most watched) it leaves for good,
-  // otherwise it is pinned.
+  // Holding OK (or the yellow key) marks a channel as favourite, or unmarks it.
   function togglePin(ch) {
     if (ch.url.indexOf(SHORTCUT) === 0) return;
     var pinned = pins().slice();
-    var hidden = storeJson(STORE_HIDDEN) || [];
-    var removing = inFavourites(ch);
     var at = pinned.indexOf(ch.url);
-    if (at >= 0) pinned.splice(at, 1);
-    var h = hidden.indexOf(ch.url);
-    if (h >= 0) hidden.splice(h, 1);
-    if (removing) hidden.unshift(ch.url); else pinned.unshift(ch.url);
+    if (at >= 0) pinned.splice(at, 1); else pinned.unshift(ch.url);
     pinsCache = pinned.slice(0, 200);
     storeJson(STORE_PINS, pinsCache);
-    storeJson(STORE_HIDDEN, hidden.slice(0, 300));
     refreshFavourites();
-    osd(removing ? t('favRemoved', ch.title) : t('favAdded', ch.title));
-  }
-
-  function addWatch(url, seconds) {
-    var watch = storeJson(STORE_WATCH) || {};
-    watch[url] = (watch[url] || 0) + seconds;
-    var urls = Object.keys(watch);
-    if (urls.length > 300) { // keep only the most watched so storage stays small
-      urls.sort(function (a, b) { return watch[b] - watch[a]; });
-      for (var i = 300; i < urls.length; i++) delete watch[urls[i]];
-    }
-    storeJson(STORE_WATCH, watch);
+    osd(at >= 0 ? t('favRemoved', ch.title) : t('favAdded', ch.title));
   }
 
   function runSearch() {
@@ -659,7 +625,7 @@
   /* ---------- phone remote: a paired phone relaunches MommyTV through LG's own second-screen link ---------- */
 
   // Plays what a phone chose. A channel of this TV's list plays within "Todos", so CH+/CH- move on
-  // from it; one from the phone's own list plays alone and leaves no trace (watch time, Favoritos,
+  // from it; one from the phone's own list plays alone and leaves no trace (Favoritos,
   // last channel, search), and asks the PIN when parental control is on.
   function remotePlay(c) {
     if (!/^https?:\/\//.test(c.url || '') || !channels.length) return;
@@ -784,7 +750,6 @@
       var target = channels[items[(i + items.length) % items.length]];
       if (isLocked(target)) { askPin(function () { play(items, i); }); return; }
     }
-    stopWatch();
     if (!retry) { retries = 0; stats = { t0: Date.now(), startup: 0, stalls: 0, stallMs: 0, stallAt: 0 }; }
     lastTime = -1;
     frozenS = 0;
@@ -841,17 +806,7 @@
     } catch (e) { /* not seekable: keep playing where it is */ }
   }
 
-  function startWatch() {
-    stopWatch();
-    if (current().foreign) return;
-    var url = current().url;
-    watchTimer = setInterval(function () { addWatch(url, 15); }, 15000);
-  }
-
-  function stopWatch() { clearInterval(watchTimer); watchTimer = null; }
-
   function stop() {
-    stopWatch();
     hideOsd();
     clearTimeout(bannerTimer);
     ui.banner.className = 'hidden';
@@ -868,7 +823,6 @@
 
   function playError() {
     if (view !== 'player') return;
-    stopWatch();
     if (reconnect()) return;
     ui.playSpin.className = 'spinner hidden';
     osd(t('cantPlay', current().title), true);
@@ -886,7 +840,6 @@
     if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); }
     if (stats.stallAt) { stats.stallMs += Date.now() - stats.stallAt; stats.stallAt = 0; placeInLive(false); }
     if (retries) hideOsd();
-    if (!watchTimer) startWatch();
   });
 
   /* ---------- diagnostics ---------- */
@@ -1033,7 +986,7 @@
     });
   }
 
-  try { localStorage.removeItem('mtvRemote'); } catch (e) { /* the old remote through a PC manager */ }
+  try { ['mtvRemote', 'mtvWatch', 'mtvHidden'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { /* the old PC remote and watch counts */ }
   var launch = (window.webOSSystem || window.PalmSystem || {}).launchParams;
   var saved = store(STORE_URL);
   if (saved) {

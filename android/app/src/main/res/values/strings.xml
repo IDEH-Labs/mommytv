@@ -32,7 +32,7 @@
     <string name="noResults" formatted="false">No results</string>
     <string name="typeHint" formatted="false">Press OK and type the name</string>
     <string name="noFavs" formatted="false">No favourites yet</string>
-    <string name="noFavsHint" formatted="false">Hold OK on a channel, or watch channels and they will show up here</string>
+    <string name="noFavsHint" formatted="false">Hold OK on a channel to add it here</string>
     <string name="officialApp" formatted="false">Official app</string>
     <string name="favourite" formatted="false">Favourite</string>
     <string name="noGroup" formatted="false">No group</string>

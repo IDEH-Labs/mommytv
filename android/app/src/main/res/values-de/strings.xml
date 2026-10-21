@@ -31,7 +31,7 @@
     <string name="noResults" formatted="false">Keine Ergebnisse</string>
     <string name="typeHint" formatted="false">OK drücken und den Namen eingeben</string>
     <string name="noFavs" formatted="false">Noch keine Favoriten</string>
-    <string name="noFavsHint" formatted="false">OK auf einem Sender gedrückt halten, oder Sender ansehen, dann erscheinen sie hier</string>
+    <string name="noFavsHint" formatted="false">Halte OK auf einem Sender gedrückt, um ihn hier hinzuzufügen</string>
     <string name="officialApp" formatted="false">Offizielle App</string>
     <string name="favourite" formatted="false">Favorit</string>
     <string name="noGroup" formatted="false">Ohne Gruppe</string>

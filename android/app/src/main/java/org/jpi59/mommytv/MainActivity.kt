@@ -65,7 +65,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     private var pinWaitUntil = 0L
     private var osdJob: Job? = null
     private var bannerJob: Job? = null
-    private var watchJob: Job? = null
     private var okLong = false
 
     private val prefs by lazy { getSharedPreferences("mommytv", Context.MODE_PRIVATE) }
@@ -84,7 +83,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         super.onCreate(savedInstanceState)
         playback = Playback(this, this)
         onTv = prefs.getBoolean(KEY_ON_TV, true)
-        prefs.edit().remove("remoteToken").remove("remoteBase").apply() // the old remote through a PC manager
+        prefs.edit().remove("remoteToken").remove("remoteBase").remove("watch").remove("hidden").apply() // the old PC remote and watch counts
         tvName = prefs.getString(KEY_TV_NAME, null)?.takeIf { prefs.getString(KEY_TV_KEY, null) != null }
         setContent {
             BackHandler { onBack() }
@@ -140,7 +139,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     /** "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, watch time, last channel). */
     private fun forgetList(everything: Boolean) {
         prefs.edit().remove(KEY_URL).apply {
-            if (everything) listOf(KEY_LAST, Catalog.PINS, Catalog.HIDDEN, Catalog.WATCH).forEach { remove(it) }
+            if (everything) listOf(KEY_LAST, Catalog.PINS).forEach { remove(it) }
         }.apply()
         copyFile.delete()
     }
@@ -331,7 +330,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     }
 
     private fun stopPlayer() {
-        watchJob?.cancel()
         playback.stop()
         banner = false
         buffering = false
@@ -348,12 +346,9 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     override fun onBuffering(buffering: Boolean) { this.buffering = buffering }
     override fun onPlaying() {
         if (osd == getString(R.string.reconnecting, current?.title ?: "")) osd = null
-        val url = current?.url ?: return
-        if (watchJob?.isActive == true) return
-        watchJob = lifecycleScope.launch { while (true) { delay(15_000); if (playback.isPlaying) catalog?.addWatched(url, 15) } }
     }
     override fun onReconnecting() { showOsd(getString(R.string.reconnecting, current?.title ?: "")) }
-    override fun onFailed() { watchJob?.cancel(); showOsd(getString(R.string.cantPlay, current?.title ?: ""), sticky = true) }
+    override fun onFailed() { showOsd(getString(R.string.cantPlay, current?.title ?: ""), sticky = true) }
 
     fun showOsd(text: String, sticky: Boolean = false) {
         osd = text

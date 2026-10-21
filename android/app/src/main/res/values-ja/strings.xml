@@ -31,7 +31,7 @@
     <string name="noResults" formatted="false">結果なし</string>
     <string name="typeHint" formatted="false">OK を押して名前を入力</string>
     <string name="noFavs" formatted="false">お気に入りはまだありません</string>
-    <string name="noFavsHint" formatted="false">チャンネルで OK を長押しするか、視聴するとここに表示されます</string>
+    <string name="noFavsHint" formatted="false">チャンネルで OK を長押しするとここに追加されます</string>
     <string name="officialApp" formatted="false">公式アプリ</string>
     <string name="favourite" formatted="false">お気に入り</string>
     <string name="noGroup" formatted="false">グループなし</string>

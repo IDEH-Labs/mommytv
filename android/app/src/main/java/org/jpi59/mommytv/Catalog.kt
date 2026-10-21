@@ -81,45 +81,26 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
         return groups.indexOfFirst { it.name == labels.all }.coerceAtLeast(0)
     }
 
-    // ---------- favourites: pinned first, then the most watched; removing one is permanent ----------
+    // ---------- favourites: only the channels the user marked, newest first ----------
 
     private fun list(key: String): MutableList<String> = store.get(key)?.split('\n')?.filter { it.isNotEmpty() }?.toMutableList() ?: ArrayList()
     private fun save(key: String, v: List<String>) = store.put(key, v.joinToString("\n"))
-    private fun watch(): MutableMap<String, Long> = list(WATCH).mapNotNull { l ->
-        val sp = l.lastIndexOf(' ')
-        if (sp < 0) null else l.substring(0, sp) to (l.substring(sp + 1).toLongOrNull() ?: 0L)
-    }.toMap().toMutableMap()
 
     fun isPinned(ch: Channel) = list(PINS).contains(ch.url)
 
     fun refreshFavourites() {
-        val pins = list(PINS)
-        val hidden = list(HIDDEN).toSet()
-        val items = ArrayList<Int>()
         val seen = HashSet<String>()
-        for (u in pins) { val i = byUrl[u] ?: continue; if (seen.add(u) && items.size < FAV_MAX) items += i }
-        watch().entries.filter { it.value >= 60 && it.key !in seen && it.key !in hidden && byUrl.containsKey(it.key) }
-            .sortedByDescending { it.value }.forEach { if (items.size < FAV_MAX) items += byUrl.getValue(it.key) }
-        favourites.items = items
+        favourites.items = list(PINS).mapNotNull { u -> byUrl[u]?.takeIf { seen.add(u) } }.toMutableList()
     }
 
-    /** One action for the user: in Favourites (pinned or most watched) -> out for good; otherwise pinned. Returns true if added. */
+    /** Marks a channel as favourite, or unmarks it. Returns true if added. */
     fun toggleFavourite(ch: Channel): Boolean {
-        refreshFavourites()
-        val removing = favourites.items.any { channels[it].url == ch.url }
-        val pins = list(PINS).apply { remove(ch.url) }
-        val hidden = list(HIDDEN).apply { remove(ch.url) }
-        if (removing) hidden.add(0, ch.url) else pins.add(0, ch.url)
+        val pins = list(PINS)
+        val adding = !pins.remove(ch.url)
+        if (adding) pins.add(0, ch.url)
         save(PINS, pins.take(200))
-        save(HIDDEN, hidden.take(300))
         refreshFavourites()
-        return !removing
-    }
-
-    fun addWatched(url: String, seconds: Long) {
-        val w = watch()
-        w[url] = (w[url] ?: 0L) + seconds
-        save(WATCH, w.entries.sortedByDescending { it.value }.take(300).map { it.key + " " + it.value })
+        return adding
     }
 
     fun runSearch(query: String) {
@@ -132,9 +113,6 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
 
     companion object {
         const val PINS = "pins"
-        const val HIDDEN = "hidden"
-        const val WATCH = "watch"
-        const val FAV_MAX = 30
         const val SEARCH_MAX = 300
     }
 }

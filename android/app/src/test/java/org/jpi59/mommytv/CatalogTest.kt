@@ -43,18 +43,15 @@ class CatalogTest {
         assertEquals("Todos", abroad.groups[abroad.startGroup()].name)
     }
 
-    @Test fun removingAMostWatchedFavouriteIsPermanent() {
-        val store = MapStore()
-        val c = Catalog(list, "CO", "spa", labels, store)
-        c.addWatched("u3", 900)
+    @Test fun favouritesAreOnlyWhatTheUserMarked() {
+        val c = Catalog(list, "CO", "spa", labels, MapStore())
         c.refreshFavourites()
-        assertEquals(listOf(2), c.favourites.items)
-        assertFalse(c.toggleFavourite(c.channels[2])) // removed
-        c.addWatched("u3", 900)
-        c.refreshFavourites()
-        assertTrue(c.favourites.items.isEmpty())
-        assertTrue(c.toggleFavourite(c.channels[2])) // pinned again
-        assertEquals(listOf(2), c.favourites.items)
+        assertTrue(c.favourites.items.isEmpty()) // watching alone never adds one
+        assertTrue(c.toggleFavourite(c.channels[2]))
+        assertTrue(c.toggleFavourite(c.channels[0]))
+        assertEquals(listOf(0, 2), c.favourites.items) // newest first
+        assertFalse(c.toggleFavourite(c.channels[2])) // unmarked
+        assertEquals(listOf(0), c.favourites.items)
     }
 
     @Test fun searchIgnoresCaseAndAccents() {
