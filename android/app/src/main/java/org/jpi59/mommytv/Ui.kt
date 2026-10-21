@@ -195,8 +195,10 @@ private fun Clock() {
 @Composable
 private fun SetupScreen(a: MainActivity) {
     val field = remember { FocusRequester() }
-    val focus = LocalFocusManager.current
-    LaunchedEffect(a.setupFocus) { if (a.setupFocus == 0) field.requestFocus() else focus.clearFocus() }
+    val button = remember { FocusRequester() }
+    // The button takes the focus explicitly: with nothing focused, Compose would give it to the field
+    // (keyboard, remote or D-pad mode) and open the on-screen keyboard over the button.
+    LaunchedEffect(a.setupFocus) { if (a.setupFocus == 0) field.requestFocus() else button.requestFocus() }
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Image(painterResource(R.drawable.logo), null, Modifier.size(104.dp).clip(RoundedCornerShape(26.dp)))
         Spacer(Modifier.height(18.dp))
@@ -221,7 +223,7 @@ private fun SetupScreen(a: MainActivity) {
             modifier = Modifier.scale(if (focused) 1.05f else 1f).clip(RoundedCornerShape(14.dp))
                 .background(Brush.linearGradient(listOf(Color(0xFF0EA5E9), Color(0xFF2563EB))))
                 .border(if (focused) 3.dp else 0.dp, FocusBg, RoundedCornerShape(14.dp))
-                .combinedClickable(onClick = { a.load(a.urlField, fromCopy = true) }).padding(horizontal = 44.dp, vertical = 12.dp),
+                .focusRequester(button).combinedClickable(onClick = { a.load(a.urlField, fromCopy = true) }).padding(horizontal = 44.dp, vertical = 12.dp),
         )
     }
 }
@@ -252,12 +254,7 @@ private fun BrowserScreen(a: MainActivity) {
                 val country = g?.country
                 when {
                     // search: the field takes the full width (the top-bar magnifier already shows where you are)
-                    g?.kind == Kind.SEARCH -> {
-                        SearchField(a)
-                        val count = heroText(a, c, g, null).second
-                        if (count.isNotEmpty()) Text(count, color = Muted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 4.dp, top = 6.dp))
-                        Spacer(Modifier.height(8.dp))
-                    }
+                    g?.kind == Kind.SEARCH -> TouchSearch(a, c)
                     g == null || g.kind == Kind.SETTINGS || a.listLength(g) == 0 -> { Hero(a, c, compact = true); Spacer(Modifier.height(10.dp)) }
                     g.kind == Kind.COUNTRIES && country != null -> {
                         Row(Modifier.padding(horizontal = 4.dp, vertical = 2.dp), verticalAlignment = Alignment.Bottom) {
@@ -273,7 +270,8 @@ private fun BrowserScreen(a: MainActivity) {
                     Rail(a, c, Modifier.width(300.dp).fillMaxHeight())
                     Spacer(Modifier.width(28.dp))
                     Column(Modifier.weight(1f)) {
-                        Hero(a, c, compact = false)
+                        // touch tablets search like phones; TVs keep the large card, readable from the sofa
+                        if (a.group?.kind == Kind.SEARCH && !a.isTv) TouchSearch(a, c) else Hero(a, c, compact = false)
                         Spacer(Modifier.height(16.dp))
                         ChannelList(a, c, Modifier.fillMaxWidth().weight(1f))
                     }
@@ -455,6 +453,17 @@ private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<
 
 @Composable
 private fun channelsText(n: Int) = if (n == 1) stringResource(R.string.oneChannel) else stringResource(R.string.nChannels, n.toString())
+
+/** Touch screens: the search field spans the width, with the result count below it. */
+@Composable
+private fun TouchSearch(a: MainActivity, c: Catalog) {
+    val g = a.group ?: return
+    @Suppress("UNUSED_EXPRESSION") a.version // recompose when results change in place
+    SearchField(a)
+    val count = heroText(a, c, g, null).second
+    if (count.isNotEmpty()) Text(count, color = Muted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 4.dp, top = 6.dp))
+    Spacer(Modifier.height(8.dp))
+}
 
 @Composable
 private fun SearchField(a: MainActivity) {
