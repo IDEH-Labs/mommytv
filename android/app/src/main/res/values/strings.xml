@@ -71,6 +71,9 @@
     <string name="watchOnTv" formatted="false">Watch on the TV</string>
     <string name="watchHere" formatted="false">Watch on this phone</string>
     <string name="remoteGone" formatted="false">This phone is no longer paired with the TV.</string>
+    <string name="tvAsksPin" formatted="false">The TV is asking for the parental control PIN.</string>
+    <string name="tvCantPlay">The TV could not play “%1$s”.</string>
+    <string name="tvNoAnswer" formatted="false">The TV did not answer.</string>
     <string name="dChannel" formatted="false">Channel</string>
     <string name="dRes" formatted="false">Actual resolution</string>
     <string name="dBuffer" formatted="false">Buffer</string>

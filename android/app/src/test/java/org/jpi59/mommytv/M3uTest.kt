@@ -28,6 +28,12 @@ class M3uTest {
         assertEquals(listOf(""), ch[3].categories)
     }
 
+    @Test fun interlacedResolutionLeavesTheName() {
+        val ch = Channel(name = "TV Fronteira (480i)", logo = "", group = "", url = "u")
+        assertEquals("TV Fronteira", ch.title)
+        assertEquals("", ch.quality) // below HD: no badge
+    }
+
     @Test fun readsParentalHeader() {
         val h = M3u.header(sample)
         assertEquals("ab:cd", h.pin)

@@ -70,6 +70,9 @@
     <string name="watchOnTv" formatted="false">Auf dem Fernseher ansehen</string>
     <string name="watchHere" formatted="false">Auf diesem Handy ansehen</string>
     <string name="remoteGone" formatted="false">Dieses Handy ist nicht mehr mit dem Fernseher gekoppelt.</string>
+    <string name="tvAsksPin" formatted="false">Der Fernseher fragt nach der Jugendschutz-PIN.</string>
+    <string name="tvCantPlay">Der Fernseher konnte „%1$s“ nicht abspielen.</string>
+    <string name="tvNoAnswer" formatted="false">Der Fernseher hat nicht geantwortet.</string>
     <string name="dChannel" formatted="false">Sender</string>
     <string name="dRes" formatted="false">Tatsächliche Auflösung</string>
     <string name="dBuffer" formatted="false">Puffer</string>

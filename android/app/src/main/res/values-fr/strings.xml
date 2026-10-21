@@ -70,6 +70,9 @@
     <string name="watchOnTv" formatted="false">Regarder sur la TV</string>
     <string name="watchHere" formatted="false">Regarder sur ce téléphone</string>
     <string name="remoteGone" formatted="false">Ce téléphone n’est plus associé à la TV.</string>
+    <string name="tvAsksPin" formatted="false">La TV demande le code du contrôle parental.</string>
+    <string name="tvCantPlay">La TV n’a pas pu lire « %1$s ».</string>
+    <string name="tvNoAnswer" formatted="false">La TV n’a pas répondu.</string>
     <string name="dChannel" formatted="false">Chaîne</string>
     <string name="dRes" formatted="false">Résolution réelle</string>
     <string name="dBuffer" formatted="false">Réserve</string>

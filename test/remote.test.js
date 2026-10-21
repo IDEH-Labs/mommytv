@@ -45,7 +45,11 @@ assert.deepStrictEqual(r.phones(tv).map((p) => p.name), ['Moto']);
 
 // the state keeps only known fields and safe values
 r.setState(tv, { view: 'player', title: 'Canal\n1', logo: 'javascript:alert(1)', url: 'https://a/b.m3u8', extra: 'x' });
-assert.deepStrictEqual(r.state(tv), { view: 'player', title: 'Canal1', logo: '', url: 'https://a/b.m3u8', at: t });
+assert.deepStrictEqual(r.state(tv), { order: 0, result: '', view: 'player', title: 'Canal1', logo: '', url: 'https://a/b.m3u8', at: t });
+r.setState(tv, { view: 'player', order: 7, result: 'pin' });
+assert.strictEqual(r.state(tv).result, 'pin');
+r.setState(tv, { order: 'x', result: 'hacked' });
+assert.deepStrictEqual([r.state(tv).order, r.state(tv).result], [0, '']);
 assert.ok(saves >= 4);
 console.log('remote: ok');
 
@@ -54,10 +58,11 @@ console.log('remote: ok');
   const { COMMAND_MS } = require('../manager/remote.js');
   const got = [];
   const cancel = r.wait(tv, 0, 1000, (res) => got.push(res));
-  assert.strictEqual(r.send(tv, 'play', 'https://a/1.m3u8'), true); // the TV is listening
-  assert.deepStrictEqual(got, [{ seq: 1, cmds: [{ seq: 1, type: 'play', url: 'https://a/1.m3u8' }] }]);
+  assert.deepStrictEqual(r.send(tv, 'play', 'https://a/1.m3u8', 'Uno', 'javascript:x'), { seq: 1, listening: true });
+  assert.deepStrictEqual(got, [{ seq: 1, cmds: [{ seq: 1, type: 'play', url: 'https://a/1.m3u8', title: 'Uno', logo: '' }] }]);
   cancel();
-  assert.strictEqual(r.send(tv, 'shell', 'x'), false); // only known orders
+  assert.strictEqual(r.send(tv, 'shell', 'x'), null); // only known orders
+  assert.strictEqual(r.send(tv, 'play', 'file:///etc/passwd'), null); // only web streams
   // an order waits for the next request, but not forever
   r.send(tv, 'play', 'https://a/2.m3u8');
   const early = await new Promise((ok) => r.wait(tv, 1, 1000, ok));
@@ -69,7 +74,7 @@ console.log('remote: ok');
   assert.strictEqual(late.seq, 3);
   // a TV that stopped asking is not listening
   t += 60 * 1000;
-  assert.strictEqual(r.send(tv, 'play', 'https://a/4.m3u8'), false);
+  assert.strictEqual(r.send(tv, 'play', 'https://a/4.m3u8').listening, false);
   // a TV that (re)starts asks with -1 and gets only the current position, never old orders
   r.send(tv, 'play', 'https://a/5.m3u8');
   const start = await new Promise((ok) => r.wait(tv, -1, 1000, ok));

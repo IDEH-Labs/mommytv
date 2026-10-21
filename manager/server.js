@@ -289,7 +289,8 @@ async function remoteApi(req, res, what) {
   if (what === 'play') {
     const p = remote.phone(body.token);
     if (!p) return send(res, 403, { error: 'unpaired' });
-    return send(res, 200, { listening: remote.send(p.tv, 'play', body.url) });
+    const sent = remote.send(p.tv, 'play', body.url, body.title, body.logo);
+    return sent ? send(res, 200, sent) : send(res, 400, { error: 'bad order' });
   }
   if (what === 'now') {
     const p = remote.phone(body.token);

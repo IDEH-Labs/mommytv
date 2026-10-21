@@ -8,7 +8,7 @@ import org.json.JSONObject
  */
 object Remote {
     sealed interface Paired { data class Ok(val token: String) : Paired; data object Wrong : Paired; data object Locked : Paired; data object Unreachable : Paired }
-    sealed interface Sent { data class Ok(val tvListening: Boolean) : Sent; data object Unpaired : Sent; data object Unreachable : Sent }
+    sealed interface Sent { data class Ok(val order: Int, val tvListening: Boolean) : Sent; data object Unpaired : Sent; data object Unreachable : Sent }
     sealed interface Now { data class Tv(val view: String, val title: String) : Now; data object Idle : Now; data object Unpaired : Now; data object Unreachable : Now }
 
     /** MommyTV Manager's playlist, over HTTP or (on the next port) HTTPS. */
@@ -30,15 +30,23 @@ object Remote {
         }
     }
 
-    /** Asks the TV to play a channel of its list; the TV itself checks that it is one. */
-    suspend fun play(base: String, token: String, url: String): Sent {
-        val (status, body) = runCatching { Net.post("$base/remote/play", JSONObject().put("token", token).put("url", url).toString(), 6000) }
-            .getOrElse { return Sent.Unreachable }
+    /** Asks the TV to play a channel, with its name and logo: it may come from a list the TV does not have. */
+    suspend fun play(base: String, token: String, ch: Channel): Sent {
+        val order = JSONObject().put("token", token).put("url", ch.url).put("title", ch.title).put("logo", ch.logo).toString()
+        val (status, body) = runCatching { Net.post("$base/remote/play", order, 6000) }.getOrElse { return Sent.Unreachable }
         return when (status) {
-            200 -> Sent.Ok(runCatching { JSONObject(body).getBoolean("listening") }.getOrDefault(false))
+            200 -> runCatching { JSONObject(body).let { Sent.Ok(it.getInt("seq"), it.getBoolean("listening")) } }.getOrDefault(Sent.Unreachable)
             403 -> Sent.Unpaired
             else -> Sent.Unreachable
         }
+    }
+
+    /** What the TV did with an order: "received", "playing", "pin" or "failed"; null while it has not said. */
+    suspend fun outcome(base: String, token: String, order: Int): String? {
+        val (status, body) = runCatching { Net.post("$base/remote/now", JSONObject().put("token", token).toString(), 6000) }.getOrElse { return null }
+        if (status != 200) return null
+        val s = runCatching { JSONObject(body).optJSONObject("state") }.getOrNull() ?: return null
+        return s.optString("result").takeIf { s.optInt("order") >= order && it.isNotEmpty() }
     }
 
     suspend fun now(base: String, token: String): Now {

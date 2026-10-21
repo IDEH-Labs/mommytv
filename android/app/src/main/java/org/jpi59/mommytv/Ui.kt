@@ -441,6 +441,7 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
     val state = rememberLazyListState()
     LaunchedEffect(a.gSel, a.cSel, a.version) { if (a.listLength(g) > 0) state.animateScrollToItem((a.cSel - 2).coerceAtLeast(0)) }
     val n = a.listLength(g)
+    val numberWidth = maxOf(36, n.toString().length * 10 + 4).dp // long lists: five digits stay on one line
     LazyColumn(modifier, state = state, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(n) { i ->
             val focused = i == a.cSel && a.column == Column.LIST
@@ -470,7 +471,7 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
                         val ch = c.channels[g.items[i]]
                         Tile(ch, 70, 40)
                         Spacer(Modifier.width(14.dp))
-                        Text((i + 1).toString(), color = if (focused) Color(0xFF475569) else Muted, fontSize = 15.sp, modifier = Modifier.width(36.dp))
+                        Text((i + 1).toString(), color = if (focused) Color(0xFF475569) else Muted, fontSize = 15.sp, maxLines = 1, softWrap = false, modifier = Modifier.width(numberWidth))
                         Text(ch.title, color = if (focused) FocusFg else Fg, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                         if (c.isPinned(ch)) { Icon(R.drawable.ic_fav, Gold, 17); Spacer(Modifier.width(10.dp)) }
                         Chip(ch.quality, focused)

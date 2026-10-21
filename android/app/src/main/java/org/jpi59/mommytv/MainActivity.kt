@@ -126,6 +126,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             val moved = finalUrl.removeSuffix(query)
             val saved = if (moved != u && moved.startsWith("https:") && Remote.isManagerList(moved)) moved.also { urlField = it } else u
             prefs.edit().putString(KEY_URL, saved).apply()
+            Remote.managerBase(saved)?.let { prefs.edit().putString(KEY_REMOTE_BASE, it).apply() } // follows a move to HTTPS too
             parental = Parental(M3u.header(text))
             useList(list)
         }
@@ -171,7 +172,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
 
     // ---------- phone remote ----------
 
-    private val managerBase get() = Remote.managerBase(prefs.getString(KEY_URL, null))
+    // the manager the phone is paired through, kept apart so the remote works with any playlist
+    private val managerBase get() = Remote.managerBase(prefs.getString(KEY_URL, null)) ?: prefs.getString(KEY_REMOTE_BASE, null)
 
     fun openRemote() {
         remoteCode = ""; remoteBusy = false
@@ -187,7 +189,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         remoteBusy = true; remoteMsg = ""
         lifecycleScope.launch {
             when (val r = Remote.pair(base, code, Build.MODEL.take(40))) {
-                is Remote.Paired.Ok -> { prefs.edit().putString(KEY_REMOTE, r.token).apply(); tvNow = ""; remoteCode = ""; refreshTv() }
+                is Remote.Paired.Ok -> { prefs.edit().putString(KEY_REMOTE, r.token).putString(KEY_REMOTE_BASE, base).apply(); tvNow = ""; remoteCode = ""; refreshTv() }
                 Remote.Paired.Wrong -> remoteMsg = getString(R.string.remoteWrong)
                 Remote.Paired.Locked -> remoteMsg = getString(R.string.remoteLocked)
                 Remote.Paired.Unreachable -> remoteMsg = getString(R.string.remoteNoTv)
@@ -202,22 +204,48 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val token = prefs.getString(KEY_REMOTE, null) ?: return
         val base = managerBase ?: return
         lifecycleScope.launch {
-            when (val r = Remote.play(base, token, ch.url)) {
-                is Remote.Sent.Ok -> if (r.tvListening) { showOsd(getString(R.string.sentToTv, ch.title)); delay(2500); refreshTv() } else showOsd(getString(R.string.tvNotListening))
+            when (val r = Remote.play(base, token, ch)) {
+                is Remote.Sent.Ok -> if (!r.tvListening) showOsd(getString(R.string.tvNotListening)) else {
+                    showOsd(getString(R.string.sentToTv, ch.title))
+                    // say what really happened on the TV, never just assume it worked
+                    var result: String? = null
+                    for (i in 0 until 40) {
+                        delay(500)
+                        result = Remote.outcome(base, token, r.order) ?: result
+                        if (result != null && result != "received") break
+                        if (result == null && i == 9) break // not even received in 5 s
+                    }
+                    when (result) {
+                        "playing" -> refreshTv()
+                        "pin" -> showOsd(getString(R.string.tvAsksPin))
+                        "failed" -> showOsd(getString(R.string.tvCantPlay, ch.title))
+                        "received" -> refreshTv() // still loading on the TV: nothing more to say
+                        else -> showOsd(getString(R.string.tvNoAnswer))
+                    }
+                }
                 Remote.Sent.Unpaired -> { forgetRemote(); showOsd(getString(R.string.remoteGone)) }
                 Remote.Sent.Unreachable -> showOsd(getString(R.string.remoteNoTv))
             }
         }
     }
 
+    /** Paired, with a playlist from elsewhere and no manager known yet: look for it on the LAN, once. */
+    private suspend fun findRemoteBase(): String? {
+        if (lookedForManager) return null
+        lookedForManager = true
+        return Net.findManager(this)?.let { Remote.managerBase(it) }?.also { prefs.edit().putString(KEY_REMOTE_BASE, it).apply() }
+    }
+
     fun forgetRemote() {
-        prefs.edit().remove(KEY_REMOTE).apply()
+        prefs.edit().remove(KEY_REMOTE).remove(KEY_REMOTE_BASE).apply()
         tvNow = null
     }
 
+    private var lookedForManager = false
+
     private suspend fun refreshTv() {
         val token = prefs.getString(KEY_REMOTE, null) ?: run { tvNow = null; return }
-        val base = managerBase ?: return
+        val base = managerBase ?: findRemoteBase() ?: return
         when (val now = Remote.now(base, token)) {
             is Remote.Now.Tv -> tvNow = now.title
             Remote.Now.Idle -> tvNow = ""
@@ -485,6 +513,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         const val KEY_URL = "playlistUrl"
         const val KEY_LAST = "last"
         const val KEY_REMOTE = "remoteToken"
+        const val KEY_REMOTE_BASE = "remoteBase"
         const val KEY_ON_TV = "onTv"
     }
 }

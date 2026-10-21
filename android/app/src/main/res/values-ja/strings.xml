@@ -70,6 +70,9 @@
     <string name="watchOnTv" formatted="false">テレビで見る</string>
     <string name="watchHere" formatted="false">このスマホで見る</string>
     <string name="remoteGone" formatted="false">このスマホはテレビとのペアリングが解除されています。</string>
+    <string name="tvAsksPin" formatted="false">テレビがペアレンタルコントロールの PIN を求めています。</string>
+    <string name="tvCantPlay">テレビで「%1$s」を再生できませんでした。</string>
+    <string name="tvNoAnswer" formatted="false">テレビから応答がありません。</string>
     <string name="dChannel" formatted="false">チャンネル</string>
     <string name="dRes" formatted="false">実際の解像度</string>
     <string name="dBuffer" formatted="false">バッファ</string>

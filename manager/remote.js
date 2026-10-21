@@ -89,9 +89,12 @@ class Remote {
     return before !== tv.phones.length;
   }
 
-  // What the TV reports: the screen and the channel it plays, nothing else.
+  // What the TV reports: the screen, the channel it plays and what became of the last order.
   setState(tv, s) {
+    const order = Number(s.order);
     this.states.set(tv.id, {
+      order: Number.isFinite(order) && order > 0 ? order : 0,
+      result: ['received', 'playing', 'pin', 'failed'].includes(s.result) ? s.result : '',
       view: ['setup', 'browser', 'player'].includes(s.view) ? s.view : 'browser',
       title: clean(s.title, 120),
       logo: /^https?:\/\/\S+$/i.test(String(s.logo || '')) ? String(s.logo).slice(0, 500) : '',
@@ -111,14 +114,17 @@ class Remote {
 
   listening(tv) { const q = this.queue(tv); return q.waiters.size > 0 || q.seen > this.now() - LISTENING_MS; }
 
-  // A paired phone asks the TV to play a channel; the TV checks it against its own list.
-  // Returns whether a TV is listening right now.
-  send(tv, type, url) {
-    if (type !== 'play') return false;
+  // A paired phone asks the TV to play a channel (from any list: the phone sends its name and logo).
+  // Returns the order's number and whether a TV is listening right now, or null for an unknown order.
+  send(tv, type, url, title, logo) {
+    if (type !== 'play' || !/^https?:\/\/\S+$/i.test(String(url || ''))) return null;
     const q = this.queue(tv);
-    q.cmds.push({ seq: ++q.seq, type, url: clean(url, 2000), at: this.now() });
+    q.cmds.push({
+      seq: ++q.seq, type, url: clean(url, 2000), title: clean(title, 120),
+      logo: /^https?:\/\/\S+$/i.test(String(logo || '')) ? String(logo).slice(0, 500) : '', at: this.now(),
+    });
     for (const w of q.waiters) w();
-    return this.listening(tv);
+    return { seq: q.seq, listening: this.listening(tv) };
   }
 
   // The TV waits for orders newer than `after` (-1 when it starts: only new ones from now on);
@@ -129,7 +135,7 @@ class Remote {
     q.seen = this.now();
     if (after < 0) { cb({ seq: q.seq, cmds: [] }); return () => {}; }
     const ready = () => q.cmds.filter((c) => c.seq > after);
-    const reply = () => { cleanup(); cb({ seq: q.seq, cmds: ready().map((c) => ({ seq: c.seq, type: c.type, url: c.url })) }); };
+    const reply = () => { cleanup(); cb({ seq: q.seq, cmds: ready().map((c) => ({ seq: c.seq, type: c.type, url: c.url, title: c.title, logo: c.logo })) }); };
     const cleanup = () => { clearTimeout(timer); q.waiters.delete(check); q.seen = this.now(); };
     const check = () => { if (ready().length) reply(); };
     const timer = setTimeout(reply, timeoutMs);

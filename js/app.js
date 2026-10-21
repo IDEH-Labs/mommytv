@@ -275,9 +275,9 @@
 
   // "Canal (1080p) [Not 24/7]" -> title "Canal", quality "FULL HD"
   function describe(ch) {
-    var m = /\((\d{3,4})p\)/.exec(ch.name);
+    var m = /\((\d{3,4})[pi]\)/.exec(ch.name); // 1080p, also 480i
     ch.q = m ? (QUALITY[m[1]] || '') : '';
-    ch.title = ch.name.replace(/\s*\(\d{3,4}p\)/g, '').replace(/\s*\[[^\]]*\]/g, '').trim() || ch.name;
+    ch.title = ch.name.replace(/\s*\(\d{3,4}[pi]\)/g, '').replace(/\s*\[[^\]]*\]/g, '').trim() || ch.name;
     ch.key = normalize(ch.title);
   }
 
@@ -364,7 +364,7 @@
   function indexByUrl() {
     if (urlIndex) return urlIndex;
     urlIndex = {};
-    for (var i = 0; i < channels.length; i++) if (!(channels[i].url in urlIndex)) urlIndex[channels[i].url] = i;
+    for (var i = 0; i < channels.length; i++) if (!channels[i].foreign && !(channels[i].url in urlIndex)) urlIndex[channels[i].url] = i;
     return urlIndex;
   }
 
@@ -432,7 +432,7 @@
     g.items = [];
     if (q) {
       for (var i = 0; i < channels.length && g.items.length < SEARCH_MAX; i++) {
-        if (channels[i].key.indexOf(q) >= 0) g.items.push(i);
+        if (!channels[i].foreign && channels[i].key.indexOf(q) >= 0) g.items.push(i);
       }
     }
     cSel = 0;
@@ -739,7 +739,10 @@
     var s = store(STORE_REMOTE);
     if (!s) return;
     var ch = view === 'player' ? current() : null;
-    remoteCall('state', { secret: s, view: view, title: ch ? ch.title : '', logo: ch ? ch.logo : '', url: ch ? ch.url : '' }, function () {});
+    remoteCall('state', {
+      secret: s, view: view, title: ch ? ch.title : '', logo: ch ? ch.logo : '', url: ch ? ch.url : '',
+      order: order ? order.seq : 0, result: order ? order.result : ''
+    }, function () {});
   }
 
   var listening = false;
@@ -759,20 +762,38 @@
     }, 35000);
   }
 
-  // Plays what a phone chose, only if it is a channel of this TV's own list (locked ones still ask the PIN).
+  var order = null; // the last order from a phone and what became of it: 'received', 'pin', 'playing' or 'failed'
+
+  // Plays what a paired phone chose. A channel of this TV's list plays within "Todos", so CH+/CH-
+  // move on from it; one from the phone's own list plays alone and leaves no trace (watch time,
+  // Favoritos, last channel), and asks the PIN when parental control is on.
   function remoteOrder(c) {
-    if (c.type !== 'play' || !channels.length) return;
-    var idx = indexByUrl()[c.url];
-    if (idx === undefined || channels[idx].url.indexOf(SHORTCUT) === 0) return;
-    for (var i = 0; i < groups.length; i++) {
-      var g = groups[i];
-      if (g.kind !== 'list' || g.name !== t('all')) continue;
-      var at = g.items.indexOf(idx);
-      if (at < 0) return;
-      if (pairOpen) closePair();
-      play(g.items, at);
-      return;
+    if (c.type !== 'play' || !/^https?:\/\//.test(c.url || '') || !channels.length) return;
+    order = { seq: c.seq, url: c.url, result: 'received' };
+    var idx = indexByUrl()[c.url], items = null;
+    for (var i = 0; idx !== undefined && i < groups.length; i++) {
+      if (groups[i].kind === 'list' && groups[i].name === t('all') && groups[i].items.indexOf(idx) >= 0) items = groups[i].items;
     }
+    if (!items) { idx = foreignChannel(c); items = [idx]; }
+    if (pairOpen) closePair();
+    if (isLocked(channels[idx])) order.result = 'pin';
+    play(items, items.indexOf(idx));
+    reportState(); // received (or asking the PIN): the phone learns the TV got it
+  }
+
+  function foreignChannel(c) {
+    for (var i = channels.length - 1; i >= 0 && channels[i].foreign; i--) if (channels[i].url === c.url) return i;
+    var ch = { name: c.title || c.url, logo: c.logo || '', group: '', cert: '', country: '', countryName: '', langs: '', cats: '', nsfw: '', url: c.url, foreign: true };
+    describe(ch);
+    channels.push(ch);
+    return channels.length - 1;
+  }
+
+  // Tells the phone what became of its order, once.
+  function orderResult(result) {
+    if (!order || order.result === result || current().url !== order.url) return;
+    order.result = result;
+    reportState();
   }
 
   function renderPhones(phones) {
@@ -834,6 +855,7 @@
 
   function isLocked(ch) {
     if (!parental.hash || unlocked) return false;
+    if (ch.foreign) return true; // from a phone's list: its category is unknown here
     var cats = ch.cats ? ch.cats.split(';') : [ch.group || ''];
     for (var i = 0; i < cats.length; i++) if (parental.locked[cats[i]]) return true;
     return false;
@@ -937,7 +959,7 @@
     }
     var p = ui.video.play();
     if (p && p.catch) p.catch(function () { /* reported by the error event */ });
-    if (!retry) { showBanner(); store(STORE_LAST, ch.url); }
+    if (!retry) { showBanner(); if (!ch.foreign) store(STORE_LAST, ch.url); }
   }
 
   // Many IPTV hiccups are momentary: reconnect quietly a few times before giving up.
@@ -972,6 +994,7 @@
 
   function startWatch() {
     stopWatch();
+    if (current().foreign) return;
     var url = current().url;
     watchTimer = setInterval(function () { addWatch(url, 15); }, 15000);
   }
@@ -1000,6 +1023,7 @@
     if (reconnect()) return;
     ui.playSpin.className = 'spinner hidden';
     osd(t('cantPlay', current().title), true);
+    orderResult('failed');
   }
 
   ui.video.addEventListener('error', playError);
@@ -1011,7 +1035,7 @@
   ui.video.addEventListener('playing', function () {
     if (view !== 'player') return;
     ui.playSpin.className = 'spinner hidden';
-    if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); }
+    if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); orderResult('playing'); }
     if (stats.stallAt) { stats.stallMs += Date.now() - stats.stallAt; stats.stallAt = 0; placeInLive(false); }
     if (retries) hideOsd();
     if (!watchTimer) startWatch();
@@ -1076,10 +1100,10 @@
 
   function playerKey(k) {
     if (k === KEY.BLUE) { toggleDiag(); return; }
-    if (k === KEY.UP || k === KEY.CH_UP) play(playItems, playIdx + 1);
-    else if (k === KEY.DOWN || k === KEY.CH_DOWN) play(playItems, playIdx - 1);
+    if ((k === KEY.UP || k === KEY.CH_UP) && playItems.length > 1) play(playItems, playIdx + 1);
+    else if ((k === KEY.DOWN || k === KEY.CH_DOWN) && playItems.length > 1) play(playItems, playIdx - 1);
     else if (k === KEY.OK) showBanner();
-    else if (k === KEY.YELLOW) { togglePin(current()); showBanner(); }
+    else if (k === KEY.YELLOW && !current().foreign) { togglePin(current()); showBanner(); }
     else if (k === KEY.BACK) {
       stop();
       if (groups[gSel].kind === 'fav') refreshFavourites();
@@ -1111,7 +1135,7 @@
   var keyupSeen = false;
 
   function holdTarget() {
-    if (view === 'player') return current();
+    if (view === 'player') return current().foreign ? null : current();
     if (view !== 'browser' || col !== 'c') return null;
     var g = groups[gSel];
     if (showingCountries(g) || !g.items.length) return null;

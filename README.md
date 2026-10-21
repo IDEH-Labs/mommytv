@@ -48,10 +48,14 @@ The Android app on a phone can follow the TV through MommyTV Manager:
 
 The phone then shows what the TV is playing, and a TV button next to search chooses where a
 tapped channel plays: on the TV (default once paired) or on the phone. The TV keeps one
-long-poll request open to the manager and plays only channels of its own list (locked
-categories still ask for the PIN on the TV); orders not picked up within 30 seconds are
-dropped, and a restarted TV never replays old ones. If the TV does not have MommyTV open,
-the phone says so. The TV plays on its own: the phone can be closed, used for calls or
+long-poll request open to the manager. A channel of the TV's own list plays within its list
+(locked categories ask for the PIN on the TV); one from another list on the phone plays on
+its own, leaves no trace on the TV (watch time, Favoritos, last channel) and asks for the PIN
+whenever parental control is on, since its category is unknown there. Orders not picked up
+within 30 seconds are dropped, and a restarted TV never replays old ones. The TV reports what
+became of each order (received, playing, PIN, failed) and the phone tells the user; if the
+TV does not have MommyTV open, the phone says so. A phone remembers the manager it paired
+through, and looks for it on the LAN when it uses a playlist from elsewhere. The TV plays on its own: the phone can be closed, used for calls or
 other apps, or switched off. Only hashes of the TV secret and the
 phone tokens are stored; after 10 wrong codes in 10 minutes pairing is locked for 10 minutes.
 Paired phones can be removed in the manager's panel.

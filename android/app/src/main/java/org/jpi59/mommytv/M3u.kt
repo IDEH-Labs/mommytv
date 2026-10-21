@@ -15,9 +15,9 @@ data class Channel(
     val cats: String = "",
     val nsfw: String = "",
 ) {
-    /** "Canal (1080p) [Not 24/7]" -> "Canal" */
-    val title: String = name.replace(Regex("\\s*\\(\\d{3,4}p\\)"), "").replace(Regex("\\s*\\[[^\\]]*]"), "").trim().ifEmpty { name }
-    val quality: String = Regex("\\((\\d{3,4})p\\)").find(name)?.groupValues?.get(1)?.let { QUALITY[it] } ?: ""
+    /** "Canal (1080p) [Not 24/7]" -> "Canal"; also "(480i)" */
+    val title: String = name.replace(Regex("\\s*\\(\\d{3,4}[pi]\\)"), "").replace(Regex("\\s*\\[[^\\]]*]"), "").trim().ifEmpty { name }
+    val quality: String = Regex("\\((\\d{3,4})[pi]\\)").find(name)?.groupValues?.get(1)?.let { QUALITY[it] } ?: ""
     val key: String = normalize(title)
     val categories: List<String> get() = if (cats.isNotEmpty()) cats.split(';').filter { it.isNotEmpty() } else listOf(group)
     val isShortcut: Boolean get() = url.startsWith(SHORTCUT)

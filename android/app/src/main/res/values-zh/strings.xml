@@ -70,6 +70,9 @@
     <string name="watchOnTv" formatted="false">在电视上观看</string>
     <string name="watchHere" formatted="false">在这部手机上观看</string>
     <string name="remoteGone" formatted="false">这部手机已不再与电视配对。</string>
+    <string name="tvAsksPin" formatted="false">电视正在要求输入家长控制 PIN。</string>
+    <string name="tvCantPlay">电视无法播放“%1$s”。</string>
+    <string name="tvNoAnswer" formatted="false">电视没有回应。</string>
     <string name="dChannel" formatted="false">频道</string>
     <string name="dRes" formatted="false">实际分辨率</string>
     <string name="dBuffer" formatted="false">缓冲</string>
