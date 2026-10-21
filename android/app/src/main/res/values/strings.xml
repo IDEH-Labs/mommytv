@@ -86,6 +86,8 @@
     <string name="dLoading" formatted="false">loading…</string>
     <string name="dScreen" formatted="false">On screen only</string>
     <string name="dClose" formatted="false">blue key to close</string>
+    <string name="adultNeedsPin" formatted="false">Adult content is locked. Create a PIN to watch it.</string>
+    <string name="adultAlways" formatted="false">Adult channels always ask for the PIN.</string>
     <string name="diagOn" formatted="false">Diagnostics on</string>
     <string name="diagOff" formatted="false">Diagnostics off</string>
     <string name="urlLabel" formatted="false">Address of your M3U playlist</string>

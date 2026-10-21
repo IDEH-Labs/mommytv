@@ -142,12 +142,23 @@ class Parental(private val store: Store) {
 
     val enabled get() = hash.isNotEmpty()
 
-    fun isLocked(ch: Channel) = enabled && !unlocked && ch.categories.any { it in locked }
-    fun isLockedGroup(name: String) = enabled && !unlocked && name in locked
-    fun locks(category: String) = category in locked
+    /** The interface's own name for iptv-org's "xxx" category ("Adultos"), set when a list loads. */
+    var adultName = ""
+
+    /**
+     * Adult categories ask for the PIN even when nobody turned parental control on: a family app keeps
+     * them closed until an adult opens them on purpose. Same rule as webOS.
+     */
+    fun isAdult(category: String) = category.lowercase().let { it in ADULT || (adultName.isNotEmpty() && it == adultName.lowercase()) }
+
+    /** Locked by the user (with a PIN set) or adult. */
+    fun locks(category: String) = isAdult(category) || (enabled && category in locked)
+    fun isLocked(ch: Channel) = !unlocked && ch.categories.any { locks(it) }
+    fun isLockedGroup(name: String) = !unlocked && locks(name)
     fun check(pin: String): Boolean = (enabled && sha256("$salt:$pin") == hash).also { if (it) unlocked = true }
 
     fun create(pin: String) {
+        unlocked = true // whoever just chose the PIN is the adult in front of the screen
         salt = ByteArray(8).also { java.security.SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
         hash = sha256("$salt:$pin")
         save()
@@ -161,6 +172,7 @@ class Parental(private val store: Store) {
 
     companion object {
         const val KEY = "parental"
+        private val ADULT = setOf("xxx", "adult", "adults", "adulto", "adultos")
         fun sha256(s: String): String = MessageDigest.getInstance("SHA-256").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 }

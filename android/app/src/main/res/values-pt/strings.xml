@@ -85,6 +85,8 @@
     <string name="dLoading" formatted="false">a carregar…</string>
     <string name="dScreen" formatted="false">Apenas no ecrã</string>
     <string name="dClose" formatted="false">tecla azul para fechar</string>
+    <string name="adultNeedsPin" formatted="false">O conteúdo para adultos está bloqueado. Crie um PIN para o ver.</string>
+    <string name="adultAlways" formatted="false">Os canais para adultos pedem sempre o PIN.</string>
     <string name="diagOn" formatted="false">Diagnóstico ativo</string>
     <string name="diagOff" formatted="false">Diagnóstico desativado</string>
     <string name="urlLabel" formatted="false">Endereço da sua lista M3U</string>

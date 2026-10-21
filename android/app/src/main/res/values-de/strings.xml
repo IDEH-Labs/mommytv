@@ -85,6 +85,8 @@
     <string name="dLoading" formatted="false">lädt…</string>
     <string name="dScreen" formatted="false">Nur auf dem Bildschirm</string>
     <string name="dClose" formatted="false">blaue Taste zum Schließen</string>
+    <string name="adultNeedsPin" formatted="false">Inhalte für Erwachsene sind gesperrt. Lege eine PIN fest, um sie anzusehen.</string>
+    <string name="adultAlways" formatted="false">Sender für Erwachsene fragen immer nach der PIN.</string>
     <string name="diagOn" formatted="false">Diagnose an</string>
     <string name="diagOff" formatted="false">Diagnose aus</string>
     <string name="urlLabel" formatted="false">Adresse deiner M3U-Liste</string>

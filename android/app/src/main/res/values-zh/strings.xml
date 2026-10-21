@@ -85,6 +85,8 @@
     <string name="dLoading" formatted="false">加载中…</string>
     <string name="dScreen" formatted="false">仅显示在屏幕上</string>
     <string name="dClose" formatted="false">按蓝色键关闭</string>
+    <string name="adultNeedsPin" formatted="false">成人内容已锁定。请先设置 PIN 再观看。</string>
+    <string name="adultAlways" formatted="false">成人频道始终需要输入 PIN。</string>
     <string name="diagOn" formatted="false">诊断已开启</string>
     <string name="diagOff" formatted="false">诊断已关闭</string>
     <string name="urlLabel" formatted="false">你的 M3U 列表地址</string>

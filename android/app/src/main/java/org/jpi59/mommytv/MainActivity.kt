@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     }
 
     /** iptv-org category id → its name in the device language ("news" → "Noticias"). */
-    private val categoryNames by lazy { resources.getStringArray(R.array.categoryKeys).zip(resources.getStringArray(R.array.categoryNames)).toMap() }
+    private val categoryNames by lazy { resources.getStringArray(R.array.categoryKeys).zip(resources.getStringArray(R.array.categoryNames)).toMap().also { parental.adultName = it["xxx"].orEmpty() } }
 
     // Categories are translated here, so lists, search and parental control share one name (as on webOS).
     private fun useText(text: String) {
@@ -341,7 +341,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         if (items.isEmpty()) return
         val idx = (i + items.size) % items.size
         val target = c.channels[items[idx]]
-        if (parental.isLocked(target)) { askPin { play(items, i) }; return }
+        if (parental.isLocked(target)) { unlockThen { play(items, i) }; return }
         playItems = items.toList()
         playIdx = idx
         if (group?.items === items) cSel = idx
@@ -399,9 +399,17 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         version++
     }
 
+    /** Opens a locked channel: the PIN, or first creating one when there is none yet (adult channels). */
+    private fun unlockThen(fn: () -> Unit) {
+        if (parental.enabled) { askPin(fn); return }
+        showOsd(getString(R.string.adultNeedsPin))
+        newPin(fn)
+    }
+
     private fun parentalTap(i: Int) {
         val cats = catalog?.categories.orEmpty()
         when {
+            i < cats.size && parental.isAdult(cats[i]) -> showOsd(getString(R.string.adultAlways))
             i < cats.size -> parental.toggle(cats[i])
             System.currentTimeMillis() - parentalArmed > 5000 -> { parentalArmed = System.currentTimeMillis(); showOsd(getString(R.string.parentalDisableConfirm)) }
             else -> { parental.disable(); editingParental = false; cSel = settingsRows.indexOf(Setting.PARENTAL); showOsd(getString(R.string.parentalDisabled)) }

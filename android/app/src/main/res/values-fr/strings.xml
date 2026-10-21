@@ -85,6 +85,8 @@
     <string name="dLoading" formatted="false">chargement…</string>
     <string name="dScreen" formatted="false">À l’écran uniquement</string>
     <string name="dClose" formatted="false">touche bleue pour fermer</string>
+    <string name="adultNeedsPin" formatted="false">Le contenu pour adultes est verrouillé. Créez un code pour le regarder.</string>
+    <string name="adultAlways" formatted="false">Les chaînes pour adultes demandent toujours le code.</string>
     <string name="diagOn" formatted="false">Diagnostic activé</string>
     <string name="diagOff" formatted="false">Diagnostic désactivé</string>
     <string name="urlLabel" formatted="false">Adresse de votre liste M3U</string>

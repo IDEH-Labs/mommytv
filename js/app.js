@@ -442,7 +442,7 @@
     row: function (li, i) {
       var g = groups[i];
       var name = { search: 'search', fav: 'fav', apps: 'apps', countries: 'globe', settings: 'settings' }[g.kind];
-      if (!name && parental.locked[g.name] && parental.hash && !unlocked) name = 'lock';
+      if (!name && g.kind === 'list' && categoryLocked(g.name) && !unlocked) name = 'lock';
       if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : ''));
       li.appendChild(span('label', g.name));
       if (g.kind === 'countries') li.appendChild(span('count', g.countries.length));
@@ -465,13 +465,13 @@
 
   var settingsFill = {
     stamp: function (i) {
-      if (editingParental) return 'parental' + i + (parental.locked[catNames[i]] ? '1' : '0');
+      if (editingParental) return 'parental' + i + (categoryLocked(catNames[i]) ? '1' : '0');
       return 'settings' + i + (i === ROW_PARENTAL && parental.hash ? 'on' : '');
     },
     row: function (li, i) {
       if (editingParental) {
         if (i < catNames.length) {
-          var on = !!parental.locked[catNames[i]];
+          var on = categoryLocked(catNames[i]);
           li.appendChild(icon(on ? 'lock' : 'unlock', on ? 'gold' : ''));
           li.appendChild(span('name', catNames[i]));
         } else {
@@ -717,12 +717,32 @@
 
   /* ---------- parental control ---------- */
 
+  // Adult categories ask for the PIN even when nobody turned parental control on: a family app keeps
+  // them closed until an adult opens them on purpose.
+  var ADULT = { xxx: 1, adult: 1, adults: 1, adulto: 1, adultos: 1 };
+  function isAdult(category) {
+    var c = String(category).toLowerCase();
+    return !!ADULT[c] || c === String((I18N.categoryNames[I18N.lang] || {}).xxx).toLowerCase();
+  }
+
+  // Locked by the user (with a PIN set) or adult.
+  function categoryLocked(category) {
+    return isAdult(category) || !!(parental.hash && parental.locked[category]);
+  }
+
   function isLocked(ch) {
-    if (!parental.hash || unlocked) return false;
-    if (ch.foreign) return true; // from a phone's list: its category is unknown here
+    if (unlocked) return false;
+    if (ch.foreign) return !!parental.hash; // from a phone's list: its category is unknown here
     var cats = ch.group ? ch.group.split(';') : [''];
-    for (var i = 0; i < cats.length; i++) if (parental.locked[cats[i]]) return true;
+    for (var i = 0; i < cats.length; i++) if (categoryLocked(cats[i])) return true;
     return false;
+  }
+
+  // Opens a locked channel: the PIN, or first creating one when there is none yet (adult channels).
+  function unlockThen(fn) {
+    if (parental.hash) { askPin(fn); return; }
+    osd(t('adultNeedsPin'));
+    newPin(function () { unlocked = true; fn(); });
   }
 
   // The parental editor: Ajustes lists the categories; OK locks or unlocks one, the last row turns it off.
@@ -738,6 +758,7 @@
   function parentalKey() {
     if (cSel < catNames.length) {
       var c = catNames[cSel];
+      if (isAdult(c)) { osd(t('adultAlways')); return; }
       if (parental.locked[c]) delete parental.locked[c]; else parental.locked[c] = true;
       saveParental();
     } else if (Date.now() - parentalArmed > 5000) {
@@ -860,7 +881,7 @@
   function play(items, i, retry) {
     if (!retry && items.length) {
       var target = channels[items[(i + items.length) % items.length]];
-      if (isLocked(target)) { askPin(function () { play(items, i); }); return; }
+      if (isLocked(target)) { unlockThen(function () { play(items, i); }); return; }
     }
     if (!retry) { retries = 0; stats = { t0: Date.now(), startup: 0, stalls: 0, stallMs: 0, stallAt: 0 }; }
     lastTime = -1;

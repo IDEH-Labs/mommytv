@@ -91,4 +91,15 @@ class CatalogTest {
         assertEquals("Reino Unido", countryName("UK"))
         assertEquals("INT", countryName("INT"))
     }
+
+    @Test fun adultCategoriesAreLockedEvenWithoutParentalControl() {
+        val p = Parental(MapStore())
+        p.adultName = "Adultos"
+        assertTrue(p.isLocked(ch("A", "a", "", "", "XXX")))
+        assertTrue(p.isLocked(ch("B", "b", "", "", "Noticias;Adultos")))
+        assertFalse(p.isLocked(ch("C", "c", "", "", "Noticias")))
+        assertTrue(p.isLockedGroup("Adultos"))
+        p.create("1234") // choosing the PIN opens them for this session
+        assertFalse(p.isLocked(ch("A", "a", "", "", "XXX")))
+    }
 }
