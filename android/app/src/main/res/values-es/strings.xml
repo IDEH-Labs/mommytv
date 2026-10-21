@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">La lista tardó demasiado en responder.</string>
     <string name="searching" formatted="false">Buscando MommyTV Manager en tu red…</string>
     <string name="notFound" formatted="false">No encontré MommyTV Manager. Ábrelo en tu PC o escribe la dirección de tu lista.</string>
+    <string name="found" formatted="false">Encontré MommyTV Manager. Pulsa Cargar para usar su lista.</string>
     <string name="shortcuts" formatted="false">Accesos directos</string>
     <string name="all" formatted="false">Todos</string>
     <string name="inLang" formatted="false">En español</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">Favorito</string>
     <string name="noGroup" formatted="false">Sin grupo</string>
     <string name="appsOnlyTv" formatted="false">Los accesos directos solo funcionan en la TV.</string>
-    <string name="appMissing">La app «%1$s» no está instalada en esta TV.</string>
+    <string name="appMissing">La app «%1$s» no está instalada.</string>
     <string name="appFail">No se pudo abrir «%1$s» (error %2$s).</string>
     <string name="pinPrompt" formatted="false">Escribe el PIN con los números del mando</string>
     <string name="pinWait" formatted="false">Demasiados intentos. Espera un minuto.</string>

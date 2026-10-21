@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">列表响应时间过长。</string>
     <string name="searching" formatted="false">正在你的网络中查找 MommyTV Manager…</string>
     <string name="notFound" formatted="false">未找到 MommyTV Manager。请在电脑上打开它，或输入你的列表地址。</string>
+    <string name="found" formatted="false">已找到 MommyTV Manager。按“加载”使用它的列表。</string>
     <string name="shortcuts" formatted="false">快捷方式</string>
     <string name="all" formatted="false">全部</string>
     <string name="inLang" formatted="false">中文频道</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">收藏</string>
     <string name="noGroup" formatted="false">未分组</string>
     <string name="appsOnlyTv" formatted="false">快捷方式只能在电视上使用。</string>
-    <string name="appMissing">此电视未安装应用“%1$s”。</string>
+    <string name="appMissing">未安装应用“%1$s”。</string>
     <string name="appFail">无法打开“%1$s”（错误 %2$s）。</string>
     <string name="pinPrompt" formatted="false">请用遥控器的数字键输入 PIN</string>
     <string name="pinWait" formatted="false">尝试次数过多，请等待一分钟。</string>

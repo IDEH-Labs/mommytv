@@ -31,6 +31,7 @@ interface Store {
 class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: Labels, private val store: Store) {
     val channels: List<Channel> = all.filter { it.nsfw != "1" }
     val groups: List<Group>
+    private var homeGroup: Group? = null // channels of the system's country
     private val byUrl: Map<String, Int>
 
     init {
@@ -60,7 +61,7 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
         list += Group(Kind.SEARCH, labels.search)
         list += Group(Kind.FAV, labels.favs)
         if (shortcuts.items.isNotEmpty()) list += shortcuts
-        if (home.isNotEmpty()) list += Group(Kind.LIST, homeName, home)
+        if (home.isNotEmpty()) list += Group(Kind.LIST, homeName, home).also { homeGroup = it }
         if (inLang.items.isNotEmpty()) list += inLang
         if (countries.size > 1) list += Group(Kind.COUNTRIES, labels.countries).also { g ->
             g.countries = countries.values.sortedWith(compareBy(java.text.Collator.getInstance()) { it.name })
@@ -77,9 +78,8 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
 
     fun startGroup(): Int {
         if (favourites.items.isNotEmpty()) return groups.indexOf(favourites)
-        val home = groups.indexOfFirst { it.kind == Kind.LIST && it.name != labels.inLang && it.name != labels.all }
-        return if (home in 4..6 && groups[home].items.isNotEmpty() && groups.getOrNull(home)?.name != labels.all) home
-        else groups.indexOfFirst { it.name == labels.all }.coerceAtLeast(0)
+        homeGroup?.let { return groups.indexOf(it) }
+        return groups.indexOfFirst { it.name == labels.all }.coerceAtLeast(0)
     }
 
     // ---------- favourites: pinned first, then the most watched; removing one is permanent ----------

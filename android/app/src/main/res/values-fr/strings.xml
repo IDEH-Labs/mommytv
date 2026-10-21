@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">La liste a mis trop de temps à répondre.</string>
     <string name="searching" formatted="false">Recherche de MommyTV Manager sur votre réseau…</string>
     <string name="notFound" formatted="false">MommyTV Manager est introuvable. Ouvrez-le sur votre PC ou saisissez l’adresse de votre liste.</string>
+    <string name="found" formatted="false">MommyTV Manager trouvé. Appuyez sur Charger pour utiliser sa liste.</string>
     <string name="shortcuts" formatted="false">Raccourcis</string>
     <string name="all" formatted="false">Toutes</string>
     <string name="inLang" formatted="false">En français</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">Favori</string>
     <string name="noGroup" formatted="false">Sans groupe</string>
     <string name="appsOnlyTv" formatted="false">Les raccourcis ne fonctionnent que sur le téléviseur.</string>
-    <string name="appMissing">L’app « %1$s » n’est pas installée sur ce téléviseur.</string>
+    <string name="appMissing">L’app « %1$s » n’est pas installée.</string>
     <string name="appFail">Impossible d’ouvrir « %1$s » (erreur %2$s).</string>
     <string name="pinPrompt" formatted="false">Saisissez le code avec les touches numériques de la télécommande</string>
     <string name="pinWait" formatted="false">Trop de tentatives. Attendez une minute.</string>

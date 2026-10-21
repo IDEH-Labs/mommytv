@@ -10,6 +10,7 @@
     <string name="slow" formatted="false">The playlist took too long to answer.</string>
     <string name="searching" formatted="false">Looking for MommyTV Manager on your network…</string>
     <string name="notFound" formatted="false">MommyTV Manager was not found. Open it on your PC or type the address of your playlist.</string>
+    <string name="found" formatted="false">MommyTV Manager found. Press Load to use its playlist.</string>
     <string name="shortcuts" formatted="false">Shortcuts</string>
     <string name="all" formatted="false">All</string>
     <string name="inLang" formatted="false">In English</string>
@@ -42,7 +43,7 @@
     <string name="favourite" formatted="false">Favourite</string>
     <string name="noGroup" formatted="false">No group</string>
     <string name="appsOnlyTv" formatted="false">Shortcuts only work on the TV.</string>
-    <string name="appMissing">The app “%1$s” is not installed on this TV.</string>
+    <string name="appMissing">The app “%1$s” is not installed.</string>
     <string name="appFail">Could not open “%1$s” (error %2$s).</string>
     <string name="pinPrompt" formatted="false">Type the PIN with the number keys on the remote</string>
     <string name="pinWait" formatted="false">Too many attempts. Wait one minute.</string>

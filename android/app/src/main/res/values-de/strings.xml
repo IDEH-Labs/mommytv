@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">Die Liste hat zu lange gebraucht.</string>
     <string name="searching" formatted="false">MommyTV Manager wird in deinem Netzwerk gesucht…</string>
     <string name="notFound" formatted="false">MommyTV Manager wurde nicht gefunden. Öffne ihn auf deinem PC oder gib die Adresse deiner Liste ein.</string>
+    <string name="found" formatted="false">MommyTV Manager gefunden. Drücke Laden, um seine Liste zu verwenden.</string>
     <string name="shortcuts" formatted="false">Verknüpfungen</string>
     <string name="all" formatted="false">Alle</string>
     <string name="inLang" formatted="false">Auf Deutsch</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">Favorit</string>
     <string name="noGroup" formatted="false">Ohne Gruppe</string>
     <string name="appsOnlyTv" formatted="false">Verknüpfungen funktionieren nur auf dem Fernseher.</string>
-    <string name="appMissing">Die App „%1$s“ ist auf diesem Fernseher nicht installiert.</string>
+    <string name="appMissing">Die App „%1$s“ ist nicht installiert.</string>
     <string name="appFail">„%1$s“ konnte nicht geöffnet werden (Fehler %2$s).</string>
     <string name="pinPrompt" formatted="false">Gib die PIN mit den Zifferntasten der Fernbedienung ein</string>
     <string name="pinWait" formatted="false">Zu viele Versuche. Warte eine Minute.</string>

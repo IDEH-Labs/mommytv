@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">La lista ha impiegato troppo tempo a rispondere.</string>
     <string name="searching" formatted="false">Ricerca di MommyTV Manager nella tua rete…</string>
     <string name="notFound" formatted="false">MommyTV Manager non trovato. Aprilo sul tuo PC o scrivi l’indirizzo della tua lista.</string>
+    <string name="found" formatted="false">MommyTV Manager trovato. Premi Carica per usare la sua lista.</string>
     <string name="shortcuts" formatted="false">Scorciatoie</string>
     <string name="all" formatted="false">Tutti</string>
     <string name="inLang" formatted="false">In italiano</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">Preferito</string>
     <string name="noGroup" formatted="false">Senza gruppo</string>
     <string name="appsOnlyTv" formatted="false">Le scorciatoie funzionano solo sul televisore.</string>
-    <string name="appMissing">L’app «%1$s» non è installata su questo televisore.</string>
+    <string name="appMissing">L’app «%1$s» non è installata.</string>
     <string name="appFail">Impossibile aprire «%1$s» (errore %2$s).</string>
     <string name="pinPrompt" formatted="false">Scrivi il PIN con i tasti numerici del telecomando</string>
     <string name="pinWait" formatted="false">Troppi tentativi. Attendi un minuto.</string>

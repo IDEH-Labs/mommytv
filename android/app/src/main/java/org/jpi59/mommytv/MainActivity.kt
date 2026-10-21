@@ -91,7 +91,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         screen = Screen.SETUP
         status = getString(R.string.loading); busy = true
         lifecycleScope.launch {
-            val requestUrl = if (Regex(":8642/playlist\\.m3u$").containsMatchIn(u)) "$u?lang=$lang" else u
+            val requestUrl = if (Regex(":8642/playlist\\.m3u$").containsMatchIn(u)) "$u?lang=$lang&os=android" else u
             val text = try {
                 Net.fetch(requestUrl)
             } catch (e: Exception) {
@@ -113,7 +113,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         status = getString(R.string.searching); busy = true
         lifecycleScope.launch {
             val found = Net.findManager(this@MainActivity)
-            if (found != null) { urlField = found; load(found) } else { busy = false; status = getString(R.string.notFound); setupFocus = 0 }
+            busy = false
+            if (found != null) { urlField = found; status = getString(R.string.found) } else { status = getString(R.string.notFound); setupFocus = 0 }
         }
     }
 
@@ -130,10 +131,11 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         gSel = c.startGroup(); cSel = 0; column = Column.RAIL
         busy = false; status = ""
         screen = Screen.BROWSER
-        resumeLast(c)
+        selectLast(c)
     }
 
-    private fun resumeLast(c: Catalog) {
+    // Marks the last channel watched; playback waits for the user.
+    private fun selectLast(c: Catalog) {
         val last = prefs.getString(KEY_LAST, null) ?: return
         val idx = c.indexOfUrl(last) ?: return
         var g = c.groups[gSel]
@@ -141,7 +143,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         if (at < 0) { gSel = c.groups.indexOfFirst { it.name == c.labels.all }.coerceAtLeast(0); g = c.groups[gSel]; at = g.items.indexOf(idx) }
         if (at < 0) return
         column = Column.LIST; cSel = at
-        play(g.items, at)
     }
 
     // ---------- groups and lists ----------

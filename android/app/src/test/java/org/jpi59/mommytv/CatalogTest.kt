@@ -35,6 +35,14 @@ class CatalogTest {
         assertEquals(c.groups.indexOfFirst { it.name == "Colombia" }, c.startGroup())
     }
 
+    @Test fun startsOnTheSystemCountryOrEverything() {
+        val noApps = list.filter { !it.url.startsWith("android-app://") }
+        val home = Catalog(noApps, "CO", "spa", labels, MapStore())
+        assertEquals("Colombia", home.groups[home.startGroup()].name)
+        val abroad = Catalog(noApps, "JP", "jpn", labels, MapStore())
+        assertEquals("Todos", abroad.groups[abroad.startGroup()].name)
+    }
+
     @Test fun removingAMostWatchedFavouriteIsPermanent() {
         val store = MapStore()
         val c = Catalog(list, "CO", "spa", labels, store)

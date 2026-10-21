@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">A lista demorou demasiado a responder.</string>
     <string name="searching" formatted="false">A procurar o MommyTV Manager na sua rede…</string>
     <string name="notFound" formatted="false">MommyTV Manager não encontrado. Abra-o no seu PC ou escreva o endereço da sua lista.</string>
+    <string name="found" formatted="false">MommyTV Manager encontrado. Prima Carregar para usar a sua lista.</string>
     <string name="shortcuts" formatted="false">Atalhos</string>
     <string name="all" formatted="false">Todos</string>
     <string name="inLang" formatted="false">Em português</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">Favorito</string>
     <string name="noGroup" formatted="false">Sem grupo</string>
     <string name="appsOnlyTv" formatted="false">Os atalhos só funcionam no televisor.</string>
-    <string name="appMissing">A app «%1$s» não está instalada neste televisor.</string>
+    <string name="appMissing">A app «%1$s» não está instalada.</string>
     <string name="appFail">Não foi possível abrir «%1$s» (erro %2$s).</string>
     <string name="pinPrompt" formatted="false">Escreva o PIN com as teclas numéricas do comando</string>
     <string name="pinWait" formatted="false">Demasiadas tentativas. Aguarde um minuto.</string>

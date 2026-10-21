@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -154,7 +156,7 @@ private fun Osd(text: String?, modifier: Modifier) {
 }
 
 @Composable
-private fun Clock(compact: Boolean) {
+private fun Clock() {
     var now by remember { mutableStateOf(Date()) }
     LaunchedEffect(Unit) { while (true) { delay(15_000); now = Date() } }
     val locale = LocalConfiguration.current.locales[0]
@@ -162,7 +164,7 @@ private fun Clock(compact: Boolean) {
     val date = java.text.SimpleDateFormat(DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM"), locale).format(now).replaceFirstChar { it.titlecase(locale) }
     Row(verticalAlignment = Alignment.Bottom) {
         Text(time, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 24.sp)
-        if (!compact) { Spacer(Modifier.width(10.dp)); Text(date, color = Muted, fontWeight = FontWeight.SemiBold, fontSize = 15.sp) }
+        Spacer(Modifier.width(10.dp)); Text(date, color = Muted, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
     }
 }
 
@@ -173,13 +175,13 @@ private fun SetupScreen(a: MainActivity) {
     val field = remember { FocusRequester() }
     val focus = LocalFocusManager.current
     LaunchedEffect(a.setupFocus) { if (a.setupFocus == 0) field.requestFocus() else focus.clearFocus() }
-    Column(Modifier.fillMaxSize().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+    Column(Modifier.fillMaxSize().safeDrawingPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(104.dp).clip(RoundedCornerShape(26.dp)))
         Spacer(Modifier.height(18.dp))
         Text("MommyTV", color = Fg, fontSize = 46.sp, fontWeight = FontWeight.ExtraBold)
         Text(stringResource(R.string.dedication), color = Color(0xFFFDA4AF), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(20.dp))
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.height(32.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.heightIn(min = 32.dp)) {
             if (a.busy) { CircularProgressIndicator(Modifier.size(22.dp), color = Sky, strokeWidth = 3.dp); Spacer(Modifier.width(12.dp)) }
             Text(a.status, color = Muted, fontSize = 17.sp)
         }
@@ -215,7 +217,7 @@ private fun fieldColors() = OutlinedTextFieldDefaults.colors(
 private fun BrowserScreen(a: MainActivity) {
     val c = a.catalog ?: return
     @Suppress("UNUSED_EXPRESSION") a.version // recompose when lists change in place
-    BoxWithConstraints(Modifier.fillMaxSize()) {
+    BoxWithConstraints(Modifier.fillMaxSize().safeDrawingPadding()) {
         val compact = maxWidth < 720.dp
         Column(Modifier.fillMaxSize().padding(horizontal = if (compact) 14.dp else 40.dp, vertical = if (compact) 12.dp else 22.dp)) {
             TopBar(compact)
@@ -253,8 +255,8 @@ private fun TopBar(compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlig
         Spacer(Modifier.width(8.dp)); Icon(R.drawable.ic_fav, Gold, 15)
         Spacer(Modifier.width(5.dp)); Text(stringResource(R.string.favourite), color = Muted, fontSize = 14.sp)
         Spacer(Modifier.weight(1f))
+        Clock()
     }
-    Clock(compact)
 }
 
 private fun groupIcon(a: MainActivity, g: Group): Pair<Int, Color>? = when (g.kind) {
@@ -466,22 +468,28 @@ private fun PlayerScreen(a: MainActivity) {
         if (a.buffering) CircularProgressIndicator(Modifier.size(64.dp).align(Alignment.Center), color = Sky, strokeWidth = 5.dp)
         AnimatedVisibility(a.banner, Modifier.align(Alignment.BottomCenter), enter = fadeIn() + slideInVertically { it / 2 }, exit = fadeOut()) {
             val ch = a.current ?: return@AnimatedVisibility
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val compact = maxWidth < 720.dp
             Row(
                 Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xD1020617), Color(0xF2020617))))
-                    .padding(start = 40.dp, end = 40.dp, top = 70.dp, bottom = 30.dp),
+                    .safeDrawingPadding()
+                    .padding(start = if (compact) 16.dp else 40.dp, end = if (compact) 16.dp else 40.dp, top = if (compact) 40.dp else 70.dp, bottom = if (compact) 16.dp else 30.dp),
                 verticalAlignment = Alignment.Bottom,
             ) {
-                Tile(ch, 140, 80)
-                Text((a.playIdx + 1).toString(), color = Sky, fontWeight = FontWeight.ExtraBold, fontSize = 46.sp, modifier = Modifier.padding(horizontal = 24.dp))
+                if (compact) Tile(ch, 70, 40) else Tile(ch, 140, 80)
+                Text((a.playIdx + 1).toString(), color = Sky, fontWeight = FontWeight.ExtraBold, fontSize = if (compact) 26.sp else 46.sp, modifier = Modifier.padding(horizontal = if (compact) 12.dp else 24.dp))
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         LiveBadge(); Spacer(Modifier.width(12.dp))
-                        Text(ch.categories.first(), color = Muted, fontSize = 15.sp); Spacer(Modifier.width(10.dp)); Chip(ch.quality)
-                        Spacer(Modifier.weight(1f))
-                        Text(stringResource(R.string.holdOkFav), color = Muted, fontSize = 14.sp)
+                        Text(ch.categories.first(), color = Muted, fontSize = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false)); Spacer(Modifier.width(10.dp)); Chip(ch.quality)
+                        if (!compact) {
+                            Spacer(Modifier.weight(1f))
+                            Text(stringResource(R.string.holdOkFav), color = Muted, fontSize = 14.sp)
+                        }
                     }
-                    Text(ch.title, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 34.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(ch.title, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = if (compact) 22.sp else 34.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
+            }
             }
         }
     }

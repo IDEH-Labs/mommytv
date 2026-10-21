@@ -9,6 +9,7 @@
     <string name="slow" formatted="false">リストの応答に時間がかかりすぎました。</string>
     <string name="searching" formatted="false">ネットワーク内で MommyTV Manager を探しています…</string>
     <string name="notFound" formatted="false">MommyTV Manager が見つかりません。PC で起動するか、リストのアドレスを入力してください。</string>
+    <string name="found" formatted="false">MommyTV Manager が見つかりました。「読み込む」を押してリストを使います。</string>
     <string name="shortcuts" formatted="false">ショートカット</string>
     <string name="all" formatted="false">すべて</string>
     <string name="inLang" formatted="false">日本語のチャンネル</string>
@@ -41,7 +42,7 @@
     <string name="favourite" formatted="false">お気に入り</string>
     <string name="noGroup" formatted="false">グループなし</string>
     <string name="appsOnlyTv" formatted="false">ショートカットはテレビでのみ使えます。</string>
-    <string name="appMissing">アプリ「%1$s」はこのテレビにインストールされていません。</string>
+    <string name="appMissing">アプリ「%1$s」はインストールされていません。</string>
     <string name="appFail">「%1$s」を開けませんでした（エラー %2$s）。</string>
     <string name="pinPrompt" formatted="false">リモコンの数字ボタンで PIN を入力してください</string>
     <string name="pinWait" formatted="false">試行回数が多すぎます。1 分お待ちください。</string>
