@@ -1,8 +1,8 @@
-/* MommyTV for webOS TV. ES5 only: webOS TV 4.x runs Chromium 53. */
+/* MommyTV for LG webOS and Samsung Tizen TVs (see platform.js). ES5 only: webOS TV 4.x runs Chromium 53. */
 (function () {
   'use strict';
 
-  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: 461, ESC: 27, CH_UP: 33, CH_DOWN: 34, YELLOW: 405, BLUE: 406 };
+  var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, OK: 13, BACK: PLATFORM.keys.BACK, ESC: 27, CH_UP: PLATFORM.keys.CH_UP, CH_DOWN: PLATFORM.keys.CH_DOWN, YELLOW: 405, BLUE: 406 };
   var RAIL_ROWS = 11;
   var LIST_ROWS = 6;
   var STORE_URL = 'playlistUrl';
@@ -11,7 +11,7 @@
   var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
   var STORE_COPY = 'mtvListCopy';  // a copy of the remembered playlist, used when its site does not answer
   var SEARCH_MAX = 300;
-  var SHORTCUT = 'webos-app://';   // playlist entry that opens an installed app instead of a stream
+  var SHORTCUT = PLATFORM.shortcut; // playlist entry that opens an installed app instead of a stream
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
   var FREEZE_S = 8;       // reconnect after this long without progress
   var RETRIES = 3;
@@ -21,14 +21,7 @@
   var LIVE_TARGET_S = 8;
   var LIVE_LAG_S = 30;    // if a stall leaves us this far behind, come back to the sweet spot
 
-  // webOS mediaOption: start HLS at the top quality instead of ramping up (the player still steps down if
-  // the network can't keep up) and allow up to the panel's own resolution.
-  function hlsType() {
-    return 'application/vnd.apple.mpegurl;mediaOption=' + encodeURI(JSON.stringify({
-      mediaTransportType: 'HLS',
-      option: { adaptiveStreaming: { bps: { start: 50000000 }, maxWidth: screenSize.w, maxHeight: screenSize.h } }
-    }));
-  }
+  function hlsType() { return PLATFORM.hlsType(screenSize); }
   var t = I18N.t;
   var VERSION = '0.1.3';
   // Ajustes: the rows that do something first, then the dedication and the information
@@ -216,7 +209,8 @@
   }
 
   function useList(list) {
-    channels = list;
+    channels = list.filter(function (ch) { return !PLATFORM.isShortcut(ch.url) || ch.url.indexOf(SHORTCUT) === 0; }); // other systems' shortcuts
+    list = channels;
     urlIndex = null;
     var region = (/-([A-Za-z]{2})$/.exec(navigator.language || '') || [])[1];
     region = region ? region.toUpperCase() : '';
@@ -659,13 +653,8 @@
   /* ---------- shortcuts ---------- */
 
   function launchApp(ch) {
-    if (!window.webOS || !webOS.service) { osd(t('appsOnlyTv')); return; }
-    webOS.service.request('luna://com.webos.applicationManager', {
-      method: 'launch',
-      parameters: { id: ch.url.slice(SHORTCUT.length) },
-      onFailure: function (err) {
-        osd(err.errorCode === -101 ? t('appMissing', ch.title) : t('appFail', ch.title, err.errorCode));
-      }
+    PLATFORM.launchApp(ch.url.slice(SHORTCUT.length), function (code) {
+      osd(code === null ? t('appsOnlyTv') : code === 'missing' ? t('appMissing', ch.title) : t('appFail', ch.title, code));
     });
   }
 
@@ -713,7 +702,7 @@
     if (store(STORE_URL)) load(store(STORE_URL), true); // the phone is the user's OK: open the saved list for it
   }
 
-  document.addEventListener('webOSRelaunch', function (e) { phoneOrder(e.detail); });
+  PLATFORM.onRelaunch(phoneOrder);
 
   /* ---------- parental control ---------- */
 
@@ -1110,14 +1099,11 @@
   I18N.apply(document);
   tick();
   setInterval(tick, 15000);
-  if (window.webOS && webOS.deviceInfo) {
-    webOS.deviceInfo(function (info) {
-      if (info && info.screenWidth && info.screenHeight) screenSize = { w: info.screenWidth, h: info.screenHeight };
-    });
-  }
+  PLATFORM.init();
+  PLATFORM.screenSize(function (s) { screenSize = s; });
 
   try { ['mtvRemote', 'mtvWatch', 'mtvHidden', 'mtvLetsEncrypt'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { /* the old PC remote and watch counts */ }
-  var launch = (window.webOSSystem || window.PalmSystem || {}).launchParams;
+  var launch = PLATFORM.launchParams();
   var saved = store(STORE_URL);
   if (saved) {
     ui.url.value = saved;
