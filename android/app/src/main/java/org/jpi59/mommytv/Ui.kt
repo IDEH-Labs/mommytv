@@ -251,7 +251,14 @@ private fun BrowserScreen(a: MainActivity) {
                 val g = a.group
                 val country = g?.country
                 when {
-                    g == null || g.kind == Kind.SEARCH || g.kind == Kind.SETTINGS || a.listLength(g) == 0 -> { Hero(a, c, compact = true); Spacer(Modifier.height(10.dp)) }
+                    // search: the field takes the full width (the top-bar magnifier already shows where you are)
+                    g?.kind == Kind.SEARCH -> {
+                        SearchField(a)
+                        val count = heroText(a, c, g, null).second
+                        if (count.isNotEmpty()) Text(count, color = Muted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 4.dp, top = 6.dp))
+                        Spacer(Modifier.height(8.dp))
+                    }
+                    g == null || g.kind == Kind.SETTINGS || a.listLength(g) == 0 -> { Hero(a, c, compact = true); Spacer(Modifier.height(10.dp)) }
                     g.kind == Kind.COUNTRIES && country != null -> {
                         Row(Modifier.padding(horizontal = 4.dp, vertical = 2.dp), verticalAlignment = Alignment.Bottom) {
                             Text(country.name, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
