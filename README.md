@@ -6,13 +6,18 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 
 ## Features
 
-- Load an M3U playlist from a URL typed once on the TV; it is remembered.
-- Channels grouped by `group-title` (or `#EXTGRP`), with logos from `tvg-logo`.
-- Remote control only: arrows, OK, Back, CH+/CH−.
-- Native webOS playback (HLS and the formats the TV supports).
-- Shortcuts that open installed official apps (see below).
-- No accounts, no analytics, no network traffic other than your playlist,
-  its logos and its streams.
+- Playlists managed from a PC or phone with MommyTV Manager; the TV finds it on the LAN.
+- Groups by country (the TV's own first), Spanish-language channels, all countries and
+  categories, from the public iptv-org data. Adult channels are never shown.
+- Search, Favoritos (pinned plus most watched, all stored on the TV only) and resume on the
+  last channel.
+- Parental control: categories locked behind a 4-digit PIN set in the manager.
+- HLS starts at top quality and allows the panel's own resolution; freeze watchdog,
+  automatic reconnect and live-edge catch-up.
+- Shortcuts that open installed official apps.
+- Nightly check in the manager hides dead channels (index request only, never video).
+- Opt-in diagnostics (blue key), saved only on the user's PC.
+- No accounts, no analytics.
 
 ## Remote control
 
@@ -21,6 +26,8 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 | List | Up / Down | Move |
 | List | Right / OK on a group | Open the group |
 | List | OK on a channel | Play |
+| List / Player | Hold OK (or yellow key) | Add to / remove from Favoritos |
+| Player | Blue key | Diagnostics panel |
 | List | OK on "Cambiar lista" | Change the playlist URL |
 | List | Back | Groups column, then exit |
 | Player | Up / Down, CH+ / CH− | Next / previous channel |
@@ -48,7 +55,8 @@ and the Developer Mode app on the TV.
 
 ```sh
 npm install -g --prefix ~/.local @webos-tools/cli
-./build.sh
+./build.sh                      # runs the tests, then packages dist/*.ipk
+node manager/server.js          # or ~/.local/bin/mommytv-manager, which restarts it
 ares-setup-device --add tv -i "host=<TV IP>" -i "port=9922" -i "username=prisoner"
 ares-novacom --device tv --getkey
 ares-install --device tv dist/org.jpi59.mommytv_0.1.0_all.ipk

@@ -11,6 +11,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { build, APP_ID } = require('./playlist.js');
 const { loadMeta, enrich } = require('./meta.js');
+const { Health, streamUrls } = require('./health.js');
 
 const PORT = Number(process.env.MOMMYTV_PORT) || 8642;
 const DIR = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'mommytv');
@@ -91,11 +92,55 @@ async function listText(l) {
   }
 }
 
+const health = new Health(path.join(DIR, 'health.json'));
+const DAY_MS = 24 * 3600 * 1000;
+
+// Stream URLs of the enabled lists from what is already on disk or in memory (no download).
+function knownUrls() {
+  const urls = [];
+  for (const l of data.lists.filter((x) => x.enabled)) {
+    let text = '';
+    try { text = l.file ? fs.readFileSync(fileOf(l.id), 'utf8') : ((cache[l.id] && cache[l.id].text) || ''); } catch (e) { /* missing file */ }
+    urls.push(...streamUrls(text));
+  }
+  return urls;
+}
+
+async function runHealth() {
+  for (const l of data.lists.filter((x) => x.enabled && x.url)) await listText(l); // refresh remote lists first
+  await health.check(knownUrls());
+}
+setTimeout(runHealth, 60 * 1000);
+setInterval(runHealth, DAY_MS);
+
+let knownCategories = [];
+
+// Parental control travels in the playlist header: a salted SHA-256 of the 4-digit PIN and the locked categories.
+function header() {
+  const p = data.parental;
+  if (!p || !p.hash) return '#EXTM3U';
+  const locked = (p.locked || []).map((c) => c.replace(/[";]/g, '')).join(';');
+  return '#EXTM3U mommytv-pin="' + p.salt + ':' + p.hash + '" mommytv-locked="' + locked + '"';
+}
+
+function categoriesOf(lines) {
+  const set = new Set();
+  for (const l of lines) {
+    if (!l.startsWith('#EXTINF')) continue;
+    const cats = /\smommytv-cats="([^"]*)"/.exec(l) || /\sgroup-title="([^"]*)"/.exec(l);
+    if (cats) cats[1].split(';').filter(Boolean).forEach((c) => set.add(c));
+  }
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+}
+
 async function playlist() {
   const lists = [];
   for (const l of data.lists.filter((x) => x.enabled)) lists.push({ name: l.name, text: await listText(l) });
   const meta = await loadMeta(path.join(DIR, 'meta.json'), fetchText);
-  return enrich(build(data.shortcuts, lists).split('\n'), meta).join('\n');
+  const lines = health.filter(enrich(build(data.shortcuts, lists).split('\n'), meta));
+  knownCategories = categoriesOf(lines);
+  lines[0] = header();
+  return lines.join('\n');
 }
 
 /* ---------- http ---------- */
@@ -136,7 +181,10 @@ function state() {
       id: l.id, name: l.name, url: l.url || '', file: !!l.file, enabled: l.enabled,
       error: (cache[l.id] && cache[l.id].error) || ''
     })),
-    shortcuts: data.shortcuts
+    shortcuts: data.shortcuts,
+    health: Object.assign(health.summary(knownUrls()), { running: health.running }),
+    parental: { enabled: !!(data.parental && data.parental.hash), locked: (data.parental && data.parental.locked) || [] },
+    categories: knownCategories
   };
 }
 
@@ -146,7 +194,28 @@ async function api(req, res, parts) {
   const body = req.method === 'POST' ? await readJson(req) : {};
   const name = String(body.name || '').trim().slice(0, 80);
 
-  if (kind === 'state' && req.method === 'GET') return send(res, 200, state());
+  if (kind === 'state' && req.method === 'GET') {
+    if (!knownCategories.length) await playlist();
+    return send(res, 200, state());
+  }
+
+  if (kind === 'parental' && req.method === 'POST') {
+    if (body.disable) {
+      delete data.parental;
+    } else {
+      const p = data.parental || {};
+      if (body.pin !== undefined && body.pin !== '') {
+        if (!/^\d{4}$/.test(String(body.pin))) return send(res, 400, { error: 'El PIN debe tener 4 números' });
+        p.salt = crypto.randomBytes(8).toString('hex');
+        p.hash = crypto.createHash('sha256').update(p.salt + ':' + body.pin).digest('hex');
+      }
+      if (!p.hash) return send(res, 400, { error: 'Elige un PIN de 4 números' });
+      p.locked = Array.isArray(body.locked) ? body.locked.map(String).slice(0, 100) : (p.locked || []);
+      data.parental = p;
+    }
+    save();
+    return send(res, 200, state());
+  }
 
   if (kind === 'lists' && req.method === 'POST' && !id) {
     if (!name) return send(res, 400, { error: 'Falta el nombre' });

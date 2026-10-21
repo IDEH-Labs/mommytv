@@ -29,6 +29,8 @@
   .msg { color: var(--bad); min-height: 1.5em; margin: 8px 0 0; }
   .or { color: var(--muted); font-size: 14px; }
   .empty { color: var(--muted); }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .cats label { flex-direction: row; display: flex; align-items: center; gap: 6px; color: var(--fg); font-size: 15px; }
 </style>
 </head>
 <body>
@@ -47,6 +49,7 @@
       <button type="submit">Añadir lista</button>
     </form>
     <div id="lists" class="items"></div>
+    <p id="health" class="lead"></p>
 
     <h2>Accesos directos</h2>
     <p class="lead">Abren desde MommyTV una app oficial instalada en la TV.</p>
@@ -57,6 +60,16 @@
       <button type="submit">Añadir acceso directo</button>
     </form>
     <div id="shortcuts" class="items"></div>
+
+    <h2>Control parental</h2>
+    <p class="lead">Las categorías marcadas piden un PIN en la TV. El contenido para adultos nunca se muestra.</p>
+    <form id="parental">
+      <p id="parental-state" class="lead"></p>
+      <label>PIN de 4 números <input type="password" name="pin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" placeholder="••••"></label>
+      <div id="cats" class="cats"></div>
+      <button type="submit">Guardar control parental</button>
+      <button type="button" id="parental-off" class="link">Quitar el control parental</button>
+    </form>
   </section>
 </main>
 <script>
@@ -108,6 +121,21 @@
       return row;
     }) : [el('p', 'empty', 'Todavía no hay listas.')]));
 
+    const p = s.parental || { locked: [] };
+    $('parental-state').textContent = p.enabled ? 'Activado. Deja el PIN vacío para conservar el actual.' : 'Desactivado.';
+    $('parental-off').hidden = !p.enabled;
+    $('cats').replaceChildren(...(s.categories || []).map((c) => {
+      const l = el('label'); const box = el('input');
+      box.type = 'checkbox'; box.value = c; box.checked = p.locked.indexOf(c) >= 0;
+      l.append(box, document.createTextNode(c));
+      return l;
+    }));
+
+    const h = s.health || {};
+    $('health').textContent = h.running ? 'Revisando los canales…' :
+      h.checked ? 'Revisión nocturna: ' + h.hidden + ' canales caídos ocultos en la TV (revisados ' + h.checked + ' de ' + h.total + ').' :
+      'La primera revisión de canales empieza un minuto después de arrancar el gestor.';
+
     $('shortcuts').replaceChildren(...(s.shortcuts.length ? s.shortcuts.map((x) => {
       const row = el('div', 'item');
       const text = el('div', 'text');
@@ -137,6 +165,13 @@
     const f = ev.target;
     if (await act(() => call('POST', 'shortcuts', { name: f.name.value, appId: f.appId.value, logo: f.logo.value }))) f.reset();
   };
+
+  $('parental').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const locked = Array.from(document.querySelectorAll('#cats input:checked')).map((b) => b.value);
+    if (await act(() => call('POST', 'parental', { pin: ev.target.pin.value, locked }))) ev.target.pin.value = '';
+  };
+  $('parental-off').onclick = () => confirm('¿Quitar el control parental?') && act(() => call('POST', 'parental', { disable: true }));
 
   if (!key) $('msg').textContent = 'Abre el enlace con la clave que muestra el gestor al arrancar.';
   else act(() => call('GET', 'state'));

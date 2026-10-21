@@ -8,6 +8,7 @@
   var STORE_URL = 'playlistUrl';
   var STORE_PINS = 'mtvPins';      // channel URLs marked as favourite, in order
   var STORE_WATCH = 'mtvWatch';    // { url: seconds watched }
+  var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
   var STORE_HIDDEN = 'mtvHidden';  // channel URLs removed from Favoritos: never added back for being watched
   var STORE_TLS = 'mtvLetsEncrypt'; // { ok: bool, at: ms }: can this TV open Let's Encrypt HTTPS?
   var TLS_PROBE = 'https://acme-v02.api.letsencrypt.org/directory'; // official, tiny, allows CORS
@@ -42,7 +43,8 @@
     video: $('video'), playSpin: $('play-spin'), banner: $('banner'),
     bannerTile: $('banner-tile'), bannerNum: $('banner-num'), bannerName: $('banner-name'),
     bannerGroup: $('banner-group'), bannerQ: $('banner-q'), bannerTime: $('banner-time'),
-    osd: $('osd'), diag: $('diag')
+    osd: $('osd'), diag: $('diag'),
+    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots')
   };
 
   var view = 'setup';
@@ -62,6 +64,12 @@
   var diagTick = 0;
   var stats = {};
   var retries = 0;
+  var parental = { salt: '', hash: '', locked: {} }; // from the playlist header written by MommyTV Manager
+  var unlocked = false;   // the PIN was typed in this session
+  var pinBuf = '';
+  var pinDone = null;
+  var pinFails = 0;
+  var pinWaitUntil = 0;
   var lastTime = -1;
   var frozenS = 0;
 
@@ -146,6 +154,10 @@
         return;
       }
       var list = M3U.parse(xhr.responseText);
+      var head = M3U.header(xhr.responseText);
+      var pin = head.pin.split(':');
+      parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
+      head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
       if (!list.length) { fail('La lista no contiene canales.'); return; }
       store(STORE_URL, url);
       checkLetsEncrypt(function (ok) {
@@ -245,6 +257,7 @@
   function useList(list) {
     list = list.filter(function (ch) { return ch.nsfw !== '1'; }); // adult channels are never shown
     channels = list;
+    urlIndex = null;
     var region = (/-([A-Za-z]{2})$/.exec(navigator.language || '') || [])[1];
     region = region ? region.toUpperCase() : '';
     var shortcuts = { name: 'Accesos directos', kind: 'apps', items: [] };
@@ -294,22 +307,41 @@
     }
     status('', false);
     show('browser');
+    resumeLast(all);
   }
 
+  function resumeLast(all) {
+    var last = store(STORE_LAST);
+    if (!last) return;
+    var g = groups[gSel], at = -1;
+    for (var i = 0; i < g.items.length; i++) if (channels[g.items[i]].url === last) { at = i; break; }
+    if (at < 0) {
+      gSel = groups.indexOf(all);
+      g = all;
+      for (var j = 0; j < all.items.length; j++) if (channels[all.items[j]].url === last) { at = j; break; }
+    }
+    if (at < 0 || gSel < 0) return;
+    col = 'c';
+    cSel = at;
+    play(g.items, at);
+  }
+
+  var urlIndex = null; // url -> channel index, rebuilt only when a new list arrives
   function indexByUrl() {
-    var map = {};
-    for (var i = 0; i < channels.length; i++) if (!(channels[i].url in map)) map[channels[i].url] = i;
-    return map;
+    if (urlIndex) return urlIndex;
+    urlIndex = {};
+    for (var i = 0; i < channels.length; i++) if (!(channels[i].url in urlIndex)) urlIndex[channels[i].url] = i;
+    return urlIndex;
   }
 
   // Favourites: the channels pinned with the yellow key, then the most watched ones.
   function refreshFavourites() {
     var map = indexByUrl();
-    var pins = storeJson(STORE_PINS) || [];
+    var pinned = pins();
     var watch = storeJson(STORE_WATCH) || {};
     var items = [], seen = {};
-    for (var i = 0; i < pins.length && items.length < FAV_MAX; i++) {
-      if (pins[i] in map && !seen[pins[i]]) { items.push(map[pins[i]]); seen[pins[i]] = true; }
+    for (var i = 0; i < pinned.length && items.length < FAV_MAX; i++) {
+      if (pinned[i] in map && !seen[pinned[i]]) { items.push(map[pinned[i]]); seen[pinned[i]] = true; }
     }
     var hidden = storeJson(STORE_HIDDEN) || [];
     var watched = Object.keys(watch).filter(function (u) { return watch[u] >= 60 && u in map && !seen[u] && hidden.indexOf(u) < 0; });
@@ -318,7 +350,9 @@
     groups[2].items = items;
   }
 
-  function isPinned(ch) { return (storeJson(STORE_PINS) || []).indexOf(ch.url) >= 0; }
+  var pinsCache = null; // the pinned list, read from storage once and kept in sync by togglePin
+  function pins() { if (!pinsCache) pinsCache = storeJson(STORE_PINS) || []; return pinsCache; }
+  function isPinned(ch) { return pins().indexOf(ch.url) >= 0; }
 
   function inFavourites(ch) {
     refreshFavourites();
@@ -331,15 +365,16 @@
   // otherwise it is pinned.
   function togglePin(ch) {
     if (ch.url.indexOf(SHORTCUT) === 0) return;
-    var pins = storeJson(STORE_PINS) || [];
+    var pinned = pins().slice();
     var hidden = storeJson(STORE_HIDDEN) || [];
     var removing = inFavourites(ch);
-    var at = pins.indexOf(ch.url);
-    if (at >= 0) pins.splice(at, 1);
+    var at = pinned.indexOf(ch.url);
+    if (at >= 0) pinned.splice(at, 1);
     var h = hidden.indexOf(ch.url);
     if (h >= 0) hidden.splice(h, 1);
-    if (removing) hidden.unshift(ch.url); else pins.unshift(ch.url);
-    storeJson(STORE_PINS, pins.slice(0, 200));
+    if (removing) hidden.unshift(ch.url); else pinned.unshift(ch.url);
+    pinsCache = pinned.slice(0, 200);
+    storeJson(STORE_PINS, pinsCache);
     storeJson(STORE_HIDDEN, hidden.slice(0, 300));
     refreshFavourites();
     osd(removing ? '«' + ch.title + '» ya no está en Favoritos' : '«' + ch.title + '» añadido a Favoritos');
@@ -426,6 +461,7 @@
     fav: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>',
     change: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 3.5v5.2h-5.2"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20.5v-5.2h5.2"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>'
   };
 
@@ -442,10 +478,11 @@
   }
 
   var railFill = {
-    stamp: function (i) { return groups[i].name + listLength(groups[i]); },
+    stamp: function (i) { return groups[i].name + listLength(groups[i]) + (unlocked ? 'u' : ''); },
     row: function (li, i) {
       var g = groups[i];
       var name = { search: 'search', fav: 'fav', change: 'change', apps: 'apps', countries: 'globe' }[g.kind];
+      if (!name && parental.locked[g.name] && parental.hash && !unlocked) name = 'lock';
       if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : ''));
       li.appendChild(span('label', g.name));
       if (g.kind === 'countries') li.appendChild(span('count', g.countries.length));
@@ -614,6 +651,55 @@
     });
   }
 
+  /* ---------- parental control ---------- */
+
+  function isLocked(ch) {
+    if (!parental.hash || unlocked) return false;
+    var cats = ch.cats ? ch.cats.split(';') : [ch.group || ''];
+    for (var i = 0; i < cats.length; i++) if (parental.locked[cats[i]]) return true;
+    return false;
+  }
+
+  function renderPin(msg) {
+    ui.pinMsg.textContent = msg || 'Escribe el PIN con los números del mando';
+    for (var i = 0; i < 4; i++) ui.pinDots.children[i].className = i < pinBuf.length ? 'on' : '';
+  }
+
+  function askPin(done) {
+    pinDone = done;
+    pinBuf = '';
+    ui.pin.className = '';
+    renderPin();
+  }
+
+  function closePin() {
+    pinDone = null;
+    ui.pin.className = 'hidden';
+  }
+
+  function pinKey(k) {
+    if (k === KEY.BACK) { closePin(); return; }
+    var digit = k >= 48 && k <= 57 ? k - 48 : k >= 96 && k <= 105 ? k - 96 : -1;
+    if (digit < 0) return;
+    if (Date.now() < pinWaitUntil) { renderPin('Demasiados intentos. Espera un minuto.'); return; }
+    pinBuf += digit;
+    renderPin();
+    if (pinBuf.length < 4) return;
+    if (sha256(parental.salt + ':' + pinBuf) === parental.hash) {
+      unlocked = true;
+      pinFails = 0;
+      var done = pinDone;
+      closePin();
+      if (view === 'browser') renderBrowser();
+      if (done) done();
+      return;
+    }
+    pinFails++;
+    pinBuf = '';
+    if (pinFails >= 5) { pinFails = 0; pinWaitUntil = Date.now() + 60000; renderPin('Demasiados intentos. Espera un minuto.'); }
+    else renderPin('PIN incorrecto. Inténtalo de nuevo.');
+  }
+
   /* ---------- player ---------- */
 
   function osd(text, sticky) {
@@ -644,6 +730,10 @@
   }
 
   function play(items, i, retry) {
+    if (!retry && items.length) {
+      var target = channels[items[(i + items.length) % items.length]];
+      if (isLocked(target)) { askPin(function () { play(items, i); }); return; }
+    }
     stopWatch();
     if (!retry) { retries = 0; stats = { t0: Date.now(), startup: 0, stalls: 0, stallMs: 0, stallAt: 0 }; }
     lastTime = -1;
@@ -668,7 +758,7 @@
     }
     var p = ui.video.play();
     if (p && p.catch) p.catch(function () { /* reported by the error event */ });
-    if (!retry) showBanner();
+    if (!retry) { showBanner(); store(STORE_LAST, ch.url); }
   }
 
   // Many IPTV hiccups are momentary: reconnect quietly a few times before giving up.
@@ -863,6 +953,7 @@
 
   document.addEventListener('keyup', function (e) {
     keyupSeen = true; // any key: this remote reports releases
+    if (pinDone) return;
     if (e.keyCode !== KEY.OK) return;
     if (okHeld) { okHeld = false; return; }
     if (!okTimer) return;
@@ -873,6 +964,7 @@
 
   document.addEventListener('keydown', function (e) {
     var k = e.keyCode === KEY.ESC ? KEY.BACK : e.keyCode;
+    if (pinDone) { e.preventDefault(); pinKey(k); return; }
     if (k === KEY.OK && keyupSeen && (okTimer || okHeld || holdTarget())) {
       e.preventDefault();
       if (!okTimer && !okHeld && !e.repeat) okTimer = setTimeout(holdFavourite, HOLD_MS);

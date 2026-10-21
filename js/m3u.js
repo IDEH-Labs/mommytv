@@ -56,7 +56,14 @@
     return channels;
   }
 
-  var api = { parse: parse };
+  // Attributes of the "#EXTM3U ..." line, e.g. the parental control sent by MommyTV Manager.
+  function header(text) {
+    var first = String(text).replace(/^\uFEFF/, '').split(/\r?\n/)[0] || '';
+    if (first.indexOf('#EXTM3U') !== 0) return { pin: '', locked: '' };
+    return { pin: attr(first, 'mommytv-pin'), locked: attr(first, 'mommytv-locked') };
+  }
+
+  var api = { parse: parse, header: header };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.M3U = api;
 })(this);
