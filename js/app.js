@@ -34,19 +34,18 @@
       option: { adaptiveStreaming: { bps: { start: 50000000 }, maxWidth: screenSize.w, maxHeight: screenSize.h } }
     }));
   }
+  var t = I18N.t;
   var VERSION = '0.1.0';
   var ABOUT = [
-    ['heart', 'Dedicado a Mami Analida'],
-    ['info', 'MommyTV ' + VERSION + ' · IDEH Labs · Fundación IDEH'],
-    ['info', 'Licencia: GNU GPL v3 o posterior (GPL-3.0-or-later)'],
-    ['info', 'Código fuente: codeberg.org/IDEH-Labs/mommytv'],
-    ['info', 'MommyTV no incluye canales ni listas'],
-    ['info', 'webOSTV.js de LG Electronics · Apache 2.0'],
-    ['info', 'Tipografía Plus Jakarta Sans · SIL OFL 1.1'],
-    ['info', 'Datos de canales: iptv-org · dominio público']
+    ['heart', t('dedication')],
+    ['info', 'MommyTV ' + VERSION + ' · ' + t('org')],
+    ['info', t('license')],
+    ['info', t('source')],
+    ['info', t('noChannels')],
+    ['info', t('lgLib')],
+    ['info', t('font')],
+    ['info', t('data')]
   ];
-  var DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-  var MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
   var $ = function (id) { return document.getElementById(id); };
   var ui = {
@@ -117,8 +116,7 @@
   function tick() {
     var d = new Date();
     ui.time.textContent = clockText();
-    var day = DAYS[d.getDay()];
-    ui.date.textContent = day.charAt(0).toUpperCase() + day.slice(1) + ' ' + d.getDate() + ' de ' + MONTHS[d.getMonth()];
+    ui.date.textContent = I18N.date(d);
     ui.bannerTime.textContent = clockText();
   }
 
@@ -159,13 +157,14 @@
   function load(url, onError) {
     url = url.trim();
     if (!url) { findManager(); return; }
-    status('Cargando tu lista…', true);
+    status(t('loading'), true);
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
+    // MommyTV Manager sends category and country names in the TV's language
+    xhr.open('GET', /:8642\/playlist\.m3u$/.test(url) ? url + '?lang=' + I18N.lang : url, true);
     xhr.timeout = 20000;
     xhr.onload = function () {
       if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) {
-        (onError || fail)('El servidor respondió con el error ' + xhr.status + '.');
+        (onError || fail)(t('httpError', xhr.status));
         return;
       }
       var list = M3U.parse(xhr.responseText);
@@ -173,15 +172,15 @@
       var pin = head.pin.split(':');
       parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
       head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
-      if (!list.length) { fail('La lista no contiene canales.'); return; }
+      if (!list.length) { fail(t('emptyList')); return; }
       store(STORE_URL, url);
       checkLetsEncrypt(function (ok) {
         var usable = ok ? list : list.filter(function (ch) { return ch.cert !== 'letsencrypt'; });
-        if (usable.length) useList(usable); else fail('Los canales de esta lista no son compatibles con este televisor.');
+        if (usable.length) useList(usable); else fail(t('incompatible'));
       });
     };
-    xhr.onerror = function () { (onError || fail)('No se pudo conectar con esa dirección.'); };
-    xhr.ontimeout = function () { (onError || fail)('La lista tardó demasiado en responder.'); };
+    xhr.onerror = function () { (onError || fail)(t('noConnect')); };
+    xhr.ontimeout = function () { (onError || fail)(t('slow')); };
     xhr.send();
   }
 
@@ -238,10 +237,10 @@
   function findManager() {
     setupSel = 1; // keep the on-screen keyboard closed while searching
     show('setup');
-    status('Buscando MommyTV Manager en tu red…', true);
+    status(t('searching'), true);
     discover(function (url) {
       if (url) { ui.url.value = url; load(url); return; }
-      status('No encontré MommyTV Manager. Ábrelo en tu PC o escribe la dirección de tu lista.', false);
+      status(t('notFound'), false);
       setupSel = 0;
       renderSetup();
     });
@@ -275,10 +274,10 @@
     urlIndex = null;
     var region = (/-([A-Za-z]{2})$/.exec(navigator.language || '') || [])[1];
     region = region ? region.toUpperCase() : '';
-    var shortcuts = { name: 'Accesos directos', kind: 'apps', items: [] };
-    var all = { name: 'Todos', kind: 'list', items: [] };
+    var shortcuts = { name: t('shortcuts'), kind: 'apps', items: [] };
+    var all = { name: t('all'), kind: 'list', items: [] };
     var home = { name: '', kind: 'list', items: [] };
-    var spanish = { name: 'En español', kind: 'list', items: [] };
+    var spanish = { name: t('inLang'), kind: 'list', items: [] };
     var cats = [], byCat = {}, countries = [], byCountry = {};
     var add = function (map, arr, key, make) {
       if (!map[key]) { map[key] = make(); arr.push(map[key]); }
@@ -289,7 +288,7 @@
       describe(ch);
       if (ch.url.indexOf(SHORTCUT) === 0) { shortcuts.items.push(i); continue; }
       all.items.push(i);
-      var names = ch.cats ? ch.cats.split(';') : [ch.group || 'Sin grupo'];
+      var names = ch.cats ? ch.cats.split(';') : [ch.group || t('noGroup')];
       for (var n = 0; n < names.length; n++) {
         if (names[n]) add(byCat, cats, names[n], function () { return { name: names[n], kind: 'list', items: [] }; }).items.push(i);
       }
@@ -297,23 +296,23 @@
         add(byCountry, countries, ch.country, function () { return { code: ch.country, name: ch.countryName || ch.country, items: [] }; }).items.push(i);
         if (ch.country === region) { home.items.push(i); home.name = ch.countryName || region; }
       }
-      if ((';' + ch.langs + ';').indexOf(';spa;') >= 0) spanish.items.push(i);
+      if ((';' + ch.langs + ';').indexOf(';' + I18N.iso3 + ';') >= 0) spanish.items.push(i);
     }
     var bySize = function (a, b) { return b.items.length - a.items.length; };
     cats.sort(bySize);
     countries.sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
     groups = [
-      { name: 'Cambiar lista', kind: 'change', items: [] },
-      { name: 'Buscar', kind: 'search', items: [], query: '' },
-      { name: 'Favoritos', kind: 'fav', items: [] }
+      { name: t('change'), kind: 'change', items: [] },
+      { name: t('search'), kind: 'search', items: [], query: '' },
+      { name: t('favs'), kind: 'fav', items: [] }
     ];
     if (shortcuts.items.length) groups.push(shortcuts);
     if (home.items.length) groups.push(home);
     if (spanish.items.length) groups.push(spanish);
-    if (countries.length > 1) groups.push({ name: 'Países', kind: 'countries', countries: countries, country: null, items: [] });
+    if (countries.length > 1) groups.push({ name: t('countries'), kind: 'countries', countries: countries, country: null, items: [] });
     if (all.items.length) groups.push(all);
     if (cats.length > 1) groups = groups.concat(cats); // a single group would only repeat "Todos"
-    groups.push({ name: 'Acerca de', kind: 'about', items: [] });
+    groups.push({ name: t('about'), kind: 'about', items: [] });
     refreshFavourites();
     col = 'g'; cSel = 0;
     gSel = 2;
@@ -393,7 +392,7 @@
     storeJson(STORE_PINS, pinsCache);
     storeJson(STORE_HIDDEN, hidden.slice(0, 300));
     refreshFavourites();
-    osd(removing ? '«' + ch.title + '» ya no está en Favoritos' : '«' + ch.title + '» añadido a Favoritos');
+    osd(removing ? t('favRemoved', ch.title) : t('favAdded', ch.title));
   }
 
   function addWatch(url, seconds) {
@@ -422,7 +421,7 @@
   }
 
   // "Países" first lists countries; OK opens one and then it lists that country's channels.
-  function channelsText(n) { return n === 1 ? '1 canal' : n + ' canales'; }
+  function channelsText(n) { return n === 1 ? t('oneChannel') : t('nChannels', n); }
 
   function showingCountries(g) { return g.kind === 'countries' && !g.country; }
   function listLength(g) { return g.kind === 'about' ? ABOUT.length : showingCountries(g) ? g.countries.length : g.items.length; }
@@ -557,43 +556,43 @@
       var logo = document.createElement('img');
       logo.src = 'img/icon_130x130.png';
       ui.heroTile.appendChild(logo);
-      ui.heroName.textContent = 'Dedicado a Mami Analida';
-      ui.heroGroup.textContent = 'MommyTV ' + VERSION + '  ·  GNU GPL v3 o posterior';
+      ui.heroName.textContent = t('dedication');
+      ui.heroGroup.textContent = 'MommyTV ' + VERSION + '  ·  ' + t('licenseShort');
       ui.heroQ.textContent = '';
       return;
     }
     if (showingCountries(g)) {
       var c = g.countries[Math.min(cSel, g.countries.length - 1)];
       heroIcon('globe');
-      ui.heroName.textContent = col === 'c' && c ? c.name : 'Países';
-      ui.heroGroup.textContent = col === 'c' && c ? channelsText(c.items.length) + '  ·  OK para abrir' : g.countries.length + ' países';
+      ui.heroName.textContent = col === 'c' && c ? c.name : t('countries');
+      ui.heroGroup.textContent = col === 'c' && c ? channelsText(c.items.length) + '  ·  ' + t('openHint') : t('nCountries', g.countries.length);
       ui.heroQ.textContent = '';
       return;
     }
     if (searching) {
       heroIcon('search');
-      ui.heroGroup.textContent = g.items.length ? g.items.length + ' resultados' : (g.query ? 'Sin resultados' : 'Pulsa OK y escribe el nombre');
+      ui.heroGroup.textContent = g.items.length ? t('nResults', g.items.length) : (g.query ? t('noResults') : t('typeHint'));
       ui.heroQ.textContent = '';
       return;
     }
     if (g.kind === 'change') {
       heroIcon('change');
-      ui.heroName.textContent = 'Cambiar de lista';
-      ui.heroGroup.textContent = 'Pulsa OK para elegir otra lista o buscar MommyTV Manager';
+      ui.heroName.textContent = t('changeTitle');
+      ui.heroGroup.textContent = t('changeHint');
       ui.heroQ.textContent = '';
       return;
     }
     if (!ch) {
       if (g.kind === 'fav') heroIcon('fav'); else setTile(ui.heroTile, null);
-      ui.heroName.textContent = g.kind === 'fav' ? 'Aún no hay favoritos' : g.name;
-      ui.heroGroup.textContent = g.kind === 'fav' ? 'Mantén pulsado OK sobre un canal, o mira canales y aparecerán aquí' : '';
+      ui.heroName.textContent = g.kind === 'fav' ? t('noFavs') : g.name;
+      ui.heroGroup.textContent = g.kind === 'fav' ? t('noFavsHint') : '';
       ui.heroQ.textContent = '';
       return;
     }
     setTile(ui.heroTile, ch);
     ui.heroName.textContent = ch.title;
-    var where = g.kind === 'countries' ? g.country.name : (ch.cats ? ch.cats.split(';')[0] : ch.group || 'Sin grupo');
-    ui.heroGroup.textContent = (ch.url.indexOf(SHORTCUT) === 0 ? 'App oficial' : where) + (isPinned(ch) ? '  ·  Favorito' : '');
+    var where = g.kind === 'countries' ? g.country.name : (ch.cats ? ch.cats.split(';')[0] : ch.group || t('noGroup'));
+    ui.heroGroup.textContent = (ch.url.indexOf(SHORTCUT) === 0 ? t('officialApp') : where) + (isPinned(ch) ? '  ·  ' + t('favourite') : '');
     ui.heroQ.textContent = ch.q;
   }
 
@@ -678,14 +677,12 @@
   /* ---------- shortcuts ---------- */
 
   function launchApp(ch) {
-    if (!window.webOS || !webOS.service) { osd('Los accesos directos solo funcionan en la TV.'); return; }
+    if (!window.webOS || !webOS.service) { osd(t('appsOnlyTv')); return; }
     webOS.service.request('luna://com.webos.applicationManager', {
       method: 'launch',
       parameters: { id: ch.url.slice(SHORTCUT.length) },
       onFailure: function (err) {
-        osd(err.errorCode === -101 ?
-          'La app «' + ch.title + '» no está instalada en esta TV.' :
-          'No se pudo abrir «' + ch.title + '» (error ' + err.errorCode + ').');
+        osd(err.errorCode === -101 ? t('appMissing', ch.title) : t('appFail', ch.title, err.errorCode));
       }
     });
   }
@@ -700,7 +697,7 @@
   }
 
   function renderPin(msg) {
-    ui.pinMsg.textContent = msg || 'Escribe el PIN con los números del mando';
+    ui.pinMsg.textContent = msg || t('pinPrompt');
     for (var i = 0; i < 4; i++) ui.pinDots.children[i].className = i < pinBuf.length ? 'on' : '';
   }
 
@@ -720,7 +717,7 @@
     if (k === KEY.BACK) { closePin(); return; }
     var digit = k >= 48 && k <= 57 ? k - 48 : k >= 96 && k <= 105 ? k - 96 : -1;
     if (digit < 0) return;
-    if (Date.now() < pinWaitUntil) { renderPin('Demasiados intentos. Espera un minuto.'); return; }
+    if (Date.now() < pinWaitUntil) { renderPin(t('pinWait')); return; }
     pinBuf += digit;
     renderPin();
     if (pinBuf.length < 4) return;
@@ -735,8 +732,8 @@
     }
     pinFails++;
     pinBuf = '';
-    if (pinFails >= 5) { pinFails = 0; pinWaitUntil = Date.now() + 60000; renderPin('Demasiados intentos. Espera un minuto.'); }
-    else renderPin('PIN incorrecto. Inténtalo de nuevo.');
+    if (pinFails >= 5) { pinFails = 0; pinWaitUntil = Date.now() + 60000; renderPin(t('pinWait')); }
+    else renderPin(t('pinWrong'));
   }
 
   /* ---------- player ---------- */
@@ -760,7 +757,7 @@
     setTile(ui.bannerTile, ch);
     ui.bannerNum.textContent = playIdx + 1;
     ui.bannerName.textContent = ch.title;
-    ui.bannerGroup.textContent = (ch.group || 'Sin grupo') + (isPinned(ch) ? '  ·  Favorito' : '');
+    ui.bannerGroup.textContent = (ch.group || t('noGroup')) + (isPinned(ch) ? '  ·  Favorito' : '');
     ui.bannerQ.textContent = ch.q;
     ui.bannerTime.textContent = clockText();
     ui.banner.className = '';
@@ -804,7 +801,7 @@
   function reconnect() {
     if (retries >= RETRIES) return false;
     retries++;
-    osd('Reconectando «' + current().title + '»…');
+    osd(t('reconnecting', current().title));
     play(playItems, playIdx, true);
     return true;
   }
@@ -859,7 +856,7 @@
     stopWatch();
     if (reconnect()) return;
     ui.playSpin.className = 'spinner hidden';
-    osd('No se puede reproducir «' + current().title + '». Prueba otro canal.', true);
+    osd(t('cantPlay', current().title), true);
   }
 
   ui.video.addEventListener('error', playError);
@@ -904,13 +901,13 @@
     var line = function (label, value, bad) { return '<div' + (bad ? ' class="bad"' : '') + '>' + label + ' <b>' + value + '</b></div>'; };
     var esc = function (t) { var e = document.createElement('i'); e.textContent = t; return e.innerHTML; };
     ui.diag.innerHTML =
-      line('Canal', esc(d.channel || '')) +
-      line('Resolución real', d.width ? d.width + '×' + d.height : '—', d.width && d.height < 720) +
-      line('Reserva', d.ahead.toFixed(1) + ' s', d.ahead < 3) +
-      line('Arranque', d.startupMs ? (d.startupMs / 1000).toFixed(1) + ' s' : 'cargando…', d.startupMs > 5000) +
-      line('Cortes', d.stalls + (d.stallMs ? ' (' + (d.stallMs / 1000).toFixed(1) + ' s)' : ''), d.stalls > 0) +
-      line('Cuadros perdidos', d.dropped + ' de ' + d.decoded, d.decoded && d.dropped / d.decoded > 0.01) +
-      '<div style="margin-top:10px;color:#94a3b8;font-size:20px">' + (managerBase() ? 'Se guarda solo en tu PC' : 'Solo en pantalla') + ' · botón azul para cerrar</div>';
+      line(esc(t('dChannel')), esc(d.channel || '')) +
+      line(esc(t('dRes')), d.width ? d.width + '×' + d.height : '—', d.width && d.height < 720) +
+      line(esc(t('dBuffer')), d.ahead.toFixed(1) + ' s', d.ahead < 3) +
+      line(esc(t('dStart')), d.startupMs ? (d.startupMs / 1000).toFixed(1) + ' s' : esc(t('dLoading')), d.startupMs > 5000) +
+      line(esc(t('dStalls')), d.stalls + (d.stallMs ? ' (' + (d.stallMs / 1000).toFixed(1) + ' s)' : ''), d.stalls > 0) +
+      line(esc(t('dDropped')), esc(t('dOf', d.dropped, d.decoded)), d.decoded && d.dropped / d.decoded > 0.01) +
+      '<div style="margin-top:10px;color:#94a3b8;font-size:20px">' + esc((managerBase() ? t('dPc') : t('dScreen')) + ' · ' + t('dClose')) + '</div>';
   }
 
   setInterval(function () {
@@ -929,8 +926,8 @@
   function toggleDiag() {
     diagOn = !diagOn;
     ui.diag.className = diagOn ? '' : 'hidden';
-    if (diagOn) { renderDiag(sample()); osd(managerBase() ? 'Diagnóstico activado: los datos se guardan solo en tu PC' : 'Diagnóstico activado'); }
-    else osd('Diagnóstico desactivado');
+    if (diagOn) { renderDiag(sample()); osd(managerBase() ? t('diagOnPc') : t('diagOn')); }
+    else osd(t('diagOff'));
   }
 
   function playerKey(k) {
@@ -1021,6 +1018,7 @@
 
   /* ---------- start ---------- */
 
+  I18N.apply(document);
   tick();
   setInterval(tick, 15000);
   if (window.webOS && webOS.deviceInfo) {

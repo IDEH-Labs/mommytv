@@ -1,0 +1,280 @@
+/* Interface texts in the language chosen in the TV settings (navigator.language). ES5 only.
+   Unsupported languages fall back to English. */
+(function (root) {
+  'use strict';
+
+  var T = {
+    es: {
+      loading: 'Cargando tu lista…', httpError: 'El servidor respondió con el error {0}.', emptyList: 'La lista no contiene canales.',
+      incompatible: 'Los canales de esta lista no son compatibles con este televisor.', noConnect: 'No se pudo conectar con esa dirección.',
+      slow: 'La lista tardó demasiado en responder.', searching: 'Buscando MommyTV Manager en tu red…',
+      notFound: 'No encontré MommyTV Manager. Ábrelo en tu PC o escribe la dirección de tu lista.',
+      shortcuts: 'Accesos directos', all: 'Todos', inLang: 'En español', change: 'Cambiar lista', search: 'Buscar', favs: 'Favoritos',
+      countries: 'Países', about: 'Acerca de', dedication: 'Dedicado a Mami Analida',
+      license: 'Licencia: GNU GPL v3 o posterior (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 o posterior',
+      source: 'Código fuente: codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV no incluye canales ni listas',
+      lgLib: 'webOSTV.js de LG Electronics · Apache 2.0', font: 'Tipografía Plus Jakarta Sans · SIL OFL 1.1',
+      data: 'Datos de canales: iptv-org · dominio público', org: 'IDEH Labs · Fundación IDEH',
+      openHint: 'OK para abrir', nCountries: '{0} países', oneChannel: '1 canal', nChannels: '{0} canales', nResults: '{0} resultados',
+      noResults: 'Sin resultados', typeHint: 'Pulsa OK y escribe el nombre', changeTitle: 'Cambiar de lista',
+      changeHint: 'Pulsa OK para elegir otra lista o buscar MommyTV Manager', noFavs: 'Aún no hay favoritos',
+      noFavsHint: 'Mantén pulsado OK sobre un canal, o mira canales y aparecerán aquí', officialApp: 'App oficial',
+      favourite: 'Favorito', noGroup: 'Sin grupo', appsOnlyTv: 'Los accesos directos solo funcionan en la TV.',
+      appMissing: 'La app «{0}» no está instalada en esta TV.', appFail: 'No se pudo abrir «{0}» (error {1}).',
+      pinPrompt: 'Escribe el PIN con los números del mando', pinWait: 'Demasiados intentos. Espera un minuto.',
+      pinWrong: 'PIN incorrecto. Inténtalo de nuevo.', reconnecting: 'Reconectando «{0}»…',
+      cantPlay: 'No se puede reproducir «{0}». Prueba otro canal.', favAdded: '«{0}» añadido a Favoritos',
+      favRemoved: '«{0}» ya no está en Favoritos',
+      dChannel: 'Canal', dRes: 'Resolución real', dBuffer: 'Reserva', dStart: 'Arranque', dStalls: 'Cortes', dDropped: 'Cuadros perdidos',
+      dOf: '{0} de {1}', dLoading: 'cargando…', dPc: 'Se guarda solo en tu PC', dScreen: 'Solo en pantalla', dClose: 'botón azul para cerrar',
+      diagOnPc: 'Diagnóstico activado: los datos se guardan solo en tu PC', diagOn: 'Diagnóstico activado', diagOff: 'Diagnóstico desactivado',
+      urlLabel: 'Dirección de tu lista M3U', urlPlaceholder: 'Vacío: buscar MommyTV Manager en tu red', load: 'Cargar', live: 'EN VIVO',
+      holdOk: 'Mantén pulsado', holdOkFav: 'Mantén OK: Favorito', parental: 'Control parental', searchPlaceholder: 'Nombre del canal',
+      days: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
+      months: ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'],
+      date: '{D} {d} de {m}'
+    },
+    en: {
+      loading: 'Loading your playlist…', httpError: 'The server answered with error {0}.', emptyList: 'The playlist has no channels.',
+      incompatible: 'The channels in this playlist are not compatible with this TV.', noConnect: 'Could not connect to that address.',
+      slow: 'The playlist took too long to answer.', searching: 'Looking for MommyTV Manager on your network…',
+      notFound: 'MommyTV Manager was not found. Open it on your PC or type the address of your playlist.',
+      shortcuts: 'Shortcuts', all: 'All', inLang: 'In English', change: 'Change playlist', search: 'Search', favs: 'Favourites',
+      countries: 'Countries', about: 'About', dedication: 'Dedicated to Mami Analida',
+      license: 'License: GNU GPL v3 or later (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 or later',
+      source: 'Source code: codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV ships no channels or playlists',
+      lgLib: 'webOSTV.js by LG Electronics · Apache 2.0', font: 'Plus Jakarta Sans typeface · SIL OFL 1.1',
+      data: 'Channel data: iptv-org · public domain', org: 'IDEH Labs · IDEH Foundation',
+      openHint: 'OK to open', nCountries: '{0} countries', oneChannel: '1 channel', nChannels: '{0} channels', nResults: '{0} results',
+      noResults: 'No results', typeHint: 'Press OK and type the name', changeTitle: 'Change playlist',
+      changeHint: 'Press OK to choose another playlist or look for MommyTV Manager', noFavs: 'No favourites yet',
+      noFavsHint: 'Hold OK on a channel, or watch channels and they will show up here', officialApp: 'Official app',
+      favourite: 'Favourite', noGroup: 'No group', appsOnlyTv: 'Shortcuts only work on the TV.',
+      appMissing: 'The app “{0}” is not installed on this TV.', appFail: 'Could not open “{0}” (error {1}).',
+      pinPrompt: 'Type the PIN with the number keys on the remote', pinWait: 'Too many attempts. Wait one minute.',
+      pinWrong: 'Wrong PIN. Try again.', reconnecting: 'Reconnecting “{0}”…',
+      cantPlay: '“{0}” cannot be played. Try another channel.', favAdded: '“{0}” added to Favourites',
+      favRemoved: '“{0}” removed from Favourites',
+      dChannel: 'Channel', dRes: 'Actual resolution', dBuffer: 'Buffer', dStart: 'Start-up', dStalls: 'Stalls', dDropped: 'Dropped frames',
+      dOf: '{0} of {1}', dLoading: 'loading…', dPc: 'Saved only on your PC', dScreen: 'On screen only', dClose: 'blue key to close',
+      diagOnPc: 'Diagnostics on: data is saved only on your PC', diagOn: 'Diagnostics on', diagOff: 'Diagnostics off',
+      urlLabel: 'Address of your M3U playlist', urlPlaceholder: 'Empty: look for MommyTV Manager on your network', load: 'Load', live: 'LIVE',
+      holdOk: 'Hold', holdOkFav: 'Hold OK: Favourite', parental: 'Parental control', searchPlaceholder: 'Channel name',
+      days: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+      months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      date: '{D}, {m} {d}'
+    },
+    fr: {
+      loading: 'Chargement de votre liste…', httpError: 'Le serveur a répondu avec l’erreur {0}.', emptyList: 'La liste ne contient aucune chaîne.',
+      incompatible: 'Les chaînes de cette liste ne sont pas compatibles avec ce téléviseur.', noConnect: 'Impossible de se connecter à cette adresse.',
+      slow: 'La liste a mis trop de temps à répondre.', searching: 'Recherche de MommyTV Manager sur votre réseau…',
+      notFound: 'MommyTV Manager est introuvable. Ouvrez-le sur votre PC ou saisissez l’adresse de votre liste.',
+      shortcuts: 'Raccourcis', all: 'Toutes', inLang: 'En français', change: 'Changer de liste', search: 'Rechercher', favs: 'Favoris',
+      countries: 'Pays', about: 'À propos', dedication: 'Dédié à Mami Analida',
+      license: 'Licence : GNU GPL v3 ou ultérieure (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 ou ultérieure',
+      source: 'Code source : codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV ne fournit ni chaînes ni listes',
+      lgLib: 'webOSTV.js de LG Electronics · Apache 2.0', font: 'Police Plus Jakarta Sans · SIL OFL 1.1',
+      data: 'Données des chaînes : iptv-org · domaine public', org: 'IDEH Labs · Fondation IDEH',
+      openHint: 'OK pour ouvrir', nCountries: '{0} pays', oneChannel: '1 chaîne', nChannels: '{0} chaînes', nResults: '{0} résultats',
+      noResults: 'Aucun résultat', typeHint: 'Appuyez sur OK et tapez le nom', changeTitle: 'Changer de liste',
+      changeHint: 'Appuyez sur OK pour choisir une autre liste ou chercher MommyTV Manager', noFavs: 'Pas encore de favoris',
+      noFavsHint: 'Maintenez OK sur une chaîne, ou regardez des chaînes et elles apparaîtront ici', officialApp: 'App officielle',
+      favourite: 'Favori', noGroup: 'Sans groupe', appsOnlyTv: 'Les raccourcis ne fonctionnent que sur le téléviseur.',
+      appMissing: 'L’app « {0} » n’est pas installée sur ce téléviseur.', appFail: 'Impossible d’ouvrir « {0} » (erreur {1}).',
+      pinPrompt: 'Saisissez le code avec les touches numériques de la télécommande', pinWait: 'Trop de tentatives. Attendez une minute.',
+      pinWrong: 'Code incorrect. Réessayez.', reconnecting: 'Reconnexion de « {0} »…',
+      cantPlay: 'Impossible de lire « {0} ». Essayez une autre chaîne.', favAdded: '« {0} » ajoutée aux favoris',
+      favRemoved: '« {0} » retirée des favoris',
+      dChannel: 'Chaîne', dRes: 'Résolution réelle', dBuffer: 'Réserve', dStart: 'Démarrage', dStalls: 'Coupures', dDropped: 'Images perdues',
+      dOf: '{0} sur {1}', dLoading: 'chargement…', dPc: 'Enregistré uniquement sur votre PC', dScreen: 'À l’écran uniquement', dClose: 'touche bleue pour fermer',
+      diagOnPc: 'Diagnostic activé : les données restent sur votre PC', diagOn: 'Diagnostic activé', diagOff: 'Diagnostic désactivé',
+      urlLabel: 'Adresse de votre liste M3U', urlPlaceholder: 'Vide : chercher MommyTV Manager sur votre réseau', load: 'Charger', live: 'EN DIRECT',
+      holdOk: 'Maintenez', holdOkFav: 'Maintenez OK : Favori', parental: 'Contrôle parental', searchPlaceholder: 'Nom de la chaîne',
+      days: ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'],
+      months: ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
+      date: '{D} {d} {m}'
+    },
+    de: {
+      loading: 'Deine Liste wird geladen…', httpError: 'Der Server antwortete mit Fehler {0}.', emptyList: 'Die Liste enthält keine Sender.',
+      incompatible: 'Die Sender dieser Liste sind mit diesem Fernseher nicht kompatibel.', noConnect: 'Keine Verbindung zu dieser Adresse.',
+      slow: 'Die Liste hat zu lange gebraucht.', searching: 'MommyTV Manager wird in deinem Netzwerk gesucht…',
+      notFound: 'MommyTV Manager wurde nicht gefunden. Öffne ihn auf deinem PC oder gib die Adresse deiner Liste ein.',
+      shortcuts: 'Verknüpfungen', all: 'Alle', inLang: 'Auf Deutsch', change: 'Liste wechseln', search: 'Suchen', favs: 'Favoriten',
+      countries: 'Länder', about: 'Über', dedication: 'Gewidmet Mami Analida',
+      license: 'Lizenz: GNU GPL v3 oder später (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 oder später',
+      source: 'Quellcode: codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV enthält keine Sender oder Listen',
+      lgLib: 'webOSTV.js von LG Electronics · Apache 2.0', font: 'Schrift Plus Jakarta Sans · SIL OFL 1.1',
+      data: 'Senderdaten: iptv-org · gemeinfrei', org: 'IDEH Labs · Stiftung IDEH',
+      openHint: 'OK zum Öffnen', nCountries: '{0} Länder', oneChannel: '1 Sender', nChannels: '{0} Sender', nResults: '{0} Ergebnisse',
+      noResults: 'Keine Ergebnisse', typeHint: 'OK drücken und den Namen eingeben', changeTitle: 'Liste wechseln',
+      changeHint: 'OK drücken, um eine andere Liste zu wählen oder MommyTV Manager zu suchen', noFavs: 'Noch keine Favoriten',
+      noFavsHint: 'OK auf einem Sender gedrückt halten, oder Sender ansehen, dann erscheinen sie hier', officialApp: 'Offizielle App',
+      favourite: 'Favorit', noGroup: 'Ohne Gruppe', appsOnlyTv: 'Verknüpfungen funktionieren nur auf dem Fernseher.',
+      appMissing: 'Die App „{0}“ ist auf diesem Fernseher nicht installiert.', appFail: '„{0}“ konnte nicht geöffnet werden (Fehler {1}).',
+      pinPrompt: 'Gib die PIN mit den Zifferntasten der Fernbedienung ein', pinWait: 'Zu viele Versuche. Warte eine Minute.',
+      pinWrong: 'Falsche PIN. Versuche es erneut.', reconnecting: '„{0}“ wird neu verbunden…',
+      cantPlay: '„{0}“ kann nicht abgespielt werden. Versuche einen anderen Sender.', favAdded: '„{0}“ zu Favoriten hinzugefügt',
+      favRemoved: '„{0}“ aus Favoriten entfernt',
+      dChannel: 'Sender', dRes: 'Tatsächliche Auflösung', dBuffer: 'Puffer', dStart: 'Start', dStalls: 'Aussetzer', dDropped: 'Verlorene Bilder',
+      dOf: '{0} von {1}', dLoading: 'lädt…', dPc: 'Nur auf deinem PC gespeichert', dScreen: 'Nur auf dem Bildschirm', dClose: 'blaue Taste zum Schließen',
+      diagOnPc: 'Diagnose an: Daten bleiben nur auf deinem PC', diagOn: 'Diagnose an', diagOff: 'Diagnose aus',
+      urlLabel: 'Adresse deiner M3U-Liste', urlPlaceholder: 'Leer: MommyTV Manager im Netzwerk suchen', load: 'Laden', live: 'LIVE',
+      holdOk: 'Gedrückt halten', holdOkFav: 'OK halten: Favorit', parental: 'Kindersicherung', searchPlaceholder: 'Sendername',
+      days: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
+      months: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+      date: '{D}, {d}. {m}'
+    },
+    it: {
+      loading: 'Caricamento della tua lista…', httpError: 'Il server ha risposto con l’errore {0}.', emptyList: 'La lista non contiene canali.',
+      incompatible: 'I canali di questa lista non sono compatibili con questo televisore.', noConnect: 'Impossibile connettersi a questo indirizzo.',
+      slow: 'La lista ha impiegato troppo tempo a rispondere.', searching: 'Ricerca di MommyTV Manager nella tua rete…',
+      notFound: 'MommyTV Manager non trovato. Aprilo sul tuo PC o scrivi l’indirizzo della tua lista.',
+      shortcuts: 'Scorciatoie', all: 'Tutti', inLang: 'In italiano', change: 'Cambia lista', search: 'Cerca', favs: 'Preferiti',
+      countries: 'Paesi', about: 'Informazioni', dedication: 'Dedicato a Mami Analida',
+      license: 'Licenza: GNU GPL v3 o successiva (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 o successiva',
+      source: 'Codice sorgente: codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV non include canali né liste',
+      lgLib: 'webOSTV.js di LG Electronics · Apache 2.0', font: 'Carattere Plus Jakarta Sans · SIL OFL 1.1',
+      data: 'Dati dei canali: iptv-org · pubblico dominio', org: 'IDEH Labs · Fondazione IDEH',
+      openHint: 'OK per aprire', nCountries: '{0} paesi', oneChannel: '1 canale', nChannels: '{0} canali', nResults: '{0} risultati',
+      noResults: 'Nessun risultato', typeHint: 'Premi OK e scrivi il nome', changeTitle: 'Cambia lista',
+      changeHint: 'Premi OK per scegliere un’altra lista o cercare MommyTV Manager', noFavs: 'Ancora nessun preferito',
+      noFavsHint: 'Tieni premuto OK su un canale, oppure guarda canali e appariranno qui', officialApp: 'App ufficiale',
+      favourite: 'Preferito', noGroup: 'Senza gruppo', appsOnlyTv: 'Le scorciatoie funzionano solo sul televisore.',
+      appMissing: 'L’app «{0}» non è installata su questo televisore.', appFail: 'Impossibile aprire «{0}» (errore {1}).',
+      pinPrompt: 'Scrivi il PIN con i tasti numerici del telecomando', pinWait: 'Troppi tentativi. Attendi un minuto.',
+      pinWrong: 'PIN errato. Riprova.', reconnecting: 'Riconnessione di «{0}»…',
+      cantPlay: 'Impossibile riprodurre «{0}». Prova un altro canale.', favAdded: '«{0}» aggiunto ai Preferiti',
+      favRemoved: '«{0}» rimosso dai Preferiti',
+      dChannel: 'Canale', dRes: 'Risoluzione reale', dBuffer: 'Riserva', dStart: 'Avvio', dStalls: 'Interruzioni', dDropped: 'Fotogrammi persi',
+      dOf: '{0} di {1}', dLoading: 'caricamento…', dPc: 'Salvato solo sul tuo PC', dScreen: 'Solo sullo schermo', dClose: 'tasto blu per chiudere',
+      diagOnPc: 'Diagnostica attiva: i dati restano solo sul tuo PC', diagOn: 'Diagnostica attiva', diagOff: 'Diagnostica disattivata',
+      urlLabel: 'Indirizzo della tua lista M3U', urlPlaceholder: 'Vuoto: cerca MommyTV Manager nella tua rete', load: 'Carica', live: 'IN DIRETTA',
+      holdOk: 'Tieni premuto', holdOkFav: 'Tieni premuto OK: Preferito', parental: 'Controllo parentale', searchPlaceholder: 'Nome del canale',
+      days: ['domenica', 'lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato'],
+      months: ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'],
+      date: '{D} {d} {m}'
+    },
+    pt: {
+      loading: 'A carregar a sua lista…', httpError: 'O servidor respondeu com o erro {0}.', emptyList: 'A lista não contém canais.',
+      incompatible: 'Os canais desta lista não são compatíveis com este televisor.', noConnect: 'Não foi possível ligar a esse endereço.',
+      slow: 'A lista demorou demasiado a responder.', searching: 'A procurar o MommyTV Manager na sua rede…',
+      notFound: 'MommyTV Manager não encontrado. Abra-o no seu PC ou escreva o endereço da sua lista.',
+      shortcuts: 'Atalhos', all: 'Todos', inLang: 'Em português', change: 'Mudar de lista', search: 'Pesquisar', favs: 'Favoritos',
+      countries: 'Países', about: 'Acerca de', dedication: 'Dedicado à Mami Analida',
+      license: 'Licença: GNU GPL v3 ou posterior (GPL-3.0-or-later)', licenseShort: 'GNU GPL v3 ou posterior',
+      source: 'Código-fonte: codeberg.org/IDEH-Labs/mommytv', noChannels: 'O MommyTV não inclui canais nem listas',
+      lgLib: 'webOSTV.js da LG Electronics · Apache 2.0', font: 'Tipo de letra Plus Jakarta Sans · SIL OFL 1.1',
+      data: 'Dados dos canais: iptv-org · domínio público', org: 'IDEH Labs · Fundação IDEH',
+      openHint: 'OK para abrir', nCountries: '{0} países', oneChannel: '1 canal', nChannels: '{0} canais', nResults: '{0} resultados',
+      noResults: 'Sem resultados', typeHint: 'Prima OK e escreva o nome', changeTitle: 'Mudar de lista',
+      changeHint: 'Prima OK para escolher outra lista ou procurar o MommyTV Manager', noFavs: 'Ainda não há favoritos',
+      noFavsHint: 'Mantenha OK premido num canal, ou veja canais e eles aparecerão aqui', officialApp: 'App oficial',
+      favourite: 'Favorito', noGroup: 'Sem grupo', appsOnlyTv: 'Os atalhos só funcionam no televisor.',
+      appMissing: 'A app «{0}» não está instalada neste televisor.', appFail: 'Não foi possível abrir «{0}» (erro {1}).',
+      pinPrompt: 'Escreva o PIN com as teclas numéricas do comando', pinWait: 'Demasiadas tentativas. Aguarde um minuto.',
+      pinWrong: 'PIN incorreto. Tente novamente.', reconnecting: 'A religar «{0}»…',
+      cantPlay: 'Não é possível reproduzir «{0}». Experimente outro canal.', favAdded: '«{0}» adicionado aos Favoritos',
+      favRemoved: '«{0}» removido dos Favoritos',
+      dChannel: 'Canal', dRes: 'Resolução real', dBuffer: 'Reserva', dStart: 'Arranque', dStalls: 'Cortes', dDropped: 'Fotogramas perdidos',
+      dOf: '{0} de {1}', dLoading: 'a carregar…', dPc: 'Guardado apenas no seu PC', dScreen: 'Apenas no ecrã', dClose: 'tecla azul para fechar',
+      diagOnPc: 'Diagnóstico ativo: os dados ficam apenas no seu PC', diagOn: 'Diagnóstico ativo', diagOff: 'Diagnóstico desativado',
+      urlLabel: 'Endereço da sua lista M3U', urlPlaceholder: 'Vazio: procurar o MommyTV Manager na sua rede', load: 'Carregar', live: 'AO VIVO',
+      holdOk: 'Mantenha premido', holdOkFav: 'Mantenha OK: Favorito', parental: 'Controlo parental', searchPlaceholder: 'Nome do canal',
+      days: ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'],
+      months: ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'],
+      date: '{D}, {d} de {m}'
+    },
+    zh: {
+      loading: '正在加载你的列表…', httpError: '服务器返回错误 {0}。', emptyList: '该列表没有频道。',
+      incompatible: '该列表中的频道与此电视不兼容。', noConnect: '无法连接到该地址。',
+      slow: '列表响应时间过长。', searching: '正在你的网络中查找 MommyTV Manager…',
+      notFound: '未找到 MommyTV Manager。请在电脑上打开它，或输入你的列表地址。',
+      shortcuts: '快捷方式', all: '全部', inLang: '中文频道', change: '更换列表', search: '搜索', favs: '收藏',
+      countries: '国家和地区', about: '关于', dedication: '献给 Mami Analida',
+      license: '许可证：GNU GPL v3 或更高版本（GPL-3.0-or-later）', licenseShort: 'GNU GPL v3 或更高版本',
+      source: '源代码：codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV 不包含任何频道或列表',
+      lgLib: 'LG Electronics 的 webOSTV.js · Apache 2.0', font: 'Plus Jakarta Sans 字体 · SIL OFL 1.1',
+      data: '频道数据：iptv-org · 公有领域', org: 'IDEH Labs · IDEH 基金会',
+      openHint: '按 OK 打开', nCountries: '{0} 个国家和地区', oneChannel: '1 个频道', nChannels: '{0} 个频道', nResults: '{0} 个结果',
+      noResults: '没有结果', typeHint: '按 OK 并输入名称', changeTitle: '更换列表',
+      changeHint: '按 OK 选择其他列表或查找 MommyTV Manager', noFavs: '还没有收藏',
+      noFavsHint: '在频道上长按 OK，或观看频道后它们会出现在这里', officialApp: '官方应用',
+      favourite: '收藏', noGroup: '未分组', appsOnlyTv: '快捷方式只能在电视上使用。',
+      appMissing: '此电视未安装应用“{0}”。', appFail: '无法打开“{0}”（错误 {1}）。',
+      pinPrompt: '请用遥控器的数字键输入 PIN', pinWait: '尝试次数过多，请等待一分钟。',
+      pinWrong: 'PIN 不正确，请重试。', reconnecting: '正在重新连接“{0}”…',
+      cantPlay: '无法播放“{0}”。请尝试其他频道。', favAdded: '已将“{0}”加入收藏',
+      favRemoved: '已将“{0}”移出收藏',
+      dChannel: '频道', dRes: '实际分辨率', dBuffer: '缓冲', dStart: '启动', dStalls: '中断', dDropped: '丢帧',
+      dOf: '{0} / {1}', dLoading: '加载中…', dPc: '仅保存在你的电脑上', dScreen: '仅显示在屏幕上', dClose: '按蓝色键关闭',
+      diagOnPc: '诊断已开启：数据仅保存在你的电脑上', diagOn: '诊断已开启', diagOff: '诊断已关闭',
+      urlLabel: '你的 M3U 列表地址', urlPlaceholder: '留空：在网络中查找 MommyTV Manager', load: '加载', live: '直播',
+      holdOk: '长按', holdOkFav: '长按 OK：收藏', parental: '家长控制', searchPlaceholder: '频道名称',
+      days: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+      months: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+      date: '{m}月{d}日 {D}'
+    },
+    ja: {
+      loading: 'リストを読み込み中…', httpError: 'サーバーがエラー {0} を返しました。', emptyList: 'リストにチャンネルがありません。',
+      incompatible: 'このリストのチャンネルはこのテレビに対応していません。', noConnect: 'そのアドレスに接続できませんでした。',
+      slow: 'リストの応答に時間がかかりすぎました。', searching: 'ネットワーク内で MommyTV Manager を探しています…',
+      notFound: 'MommyTV Manager が見つかりません。PC で起動するか、リストのアドレスを入力してください。',
+      shortcuts: 'ショートカット', all: 'すべて', inLang: '日本語のチャンネル', change: 'リストを変更', search: '検索', favs: 'お気に入り',
+      countries: '国と地域', about: 'このアプリについて', dedication: 'Mami Analida に捧ぐ',
+      license: 'ライセンス：GNU GPL v3 以降（GPL-3.0-or-later）', licenseShort: 'GNU GPL v3 以降',
+      source: 'ソースコード：codeberg.org/IDEH-Labs/mommytv', noChannels: 'MommyTV にはチャンネルやリストは含まれていません',
+      lgLib: 'LG Electronics の webOSTV.js · Apache 2.0', font: 'Plus Jakarta Sans フォント · SIL OFL 1.1',
+      data: 'チャンネルデータ：iptv-org · パブリックドメイン', org: 'IDEH Labs · IDEH 財団',
+      openHint: 'OK で開く', nCountries: '{0} の国と地域', oneChannel: '1 チャンネル', nChannels: '{0} チャンネル', nResults: '{0} 件',
+      noResults: '結果なし', typeHint: 'OK を押して名前を入力', changeTitle: 'リストを変更',
+      changeHint: 'OK を押して別のリストを選ぶか、MommyTV Manager を探します', noFavs: 'お気に入りはまだありません',
+      noFavsHint: 'チャンネルで OK を長押しするか、視聴するとここに表示されます', officialApp: '公式アプリ',
+      favourite: 'お気に入り', noGroup: 'グループなし', appsOnlyTv: 'ショートカットはテレビでのみ使えます。',
+      appMissing: 'アプリ「{0}」はこのテレビにインストールされていません。', appFail: '「{0}」を開けませんでした（エラー {1}）。',
+      pinPrompt: 'リモコンの数字ボタンで PIN を入力してください', pinWait: '試行回数が多すぎます。1 分お待ちください。',
+      pinWrong: 'PIN が違います。もう一度お試しください。', reconnecting: '「{0}」に再接続中…',
+      cantPlay: '「{0}」を再生できません。別のチャンネルをお試しください。', favAdded: '「{0}」をお気に入りに追加しました',
+      favRemoved: '「{0}」をお気に入りから外しました',
+      dChannel: 'チャンネル', dRes: '実際の解像度', dBuffer: 'バッファ', dStart: '起動', dStalls: '途切れ', dDropped: 'ドロップフレーム',
+      dOf: '{0} / {1}', dLoading: '読み込み中…', dPc: 'PC にのみ保存', dScreen: '画面表示のみ', dClose: '青ボタンで閉じる',
+      diagOnPc: '診断オン：データは PC にのみ保存されます', diagOn: '診断オン', diagOff: '診断オフ',
+      urlLabel: 'M3U リストのアドレス', urlPlaceholder: '空欄：ネットワーク内の MommyTV Manager を探す', load: '読み込む', live: 'ライブ',
+      holdOk: '長押し', holdOkFav: 'OK 長押し：お気に入り', parental: 'ペアレンタルコントロール', searchPlaceholder: 'チャンネル名',
+      days: ['日', '月', '火', '水', '木', '金', '土'],
+      months: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+      date: '{m}月{d}日（{D}）'
+    }
+  };
+
+  // ISO 639-3 codes used by iptv-org for "channels in your language"
+  var ISO3 = { es: 'spa', en: 'eng', fr: 'fra', de: 'deu', it: 'ita', pt: 'por', zh: 'zho', ja: 'jpn' };
+
+  var lang = String(root.navigator && navigator.language || 'en').slice(0, 2).toLowerCase();
+  if (!T[lang]) lang = 'en';
+  var dict = T[lang];
+
+  function t(key) {
+    var s = dict[key] !== undefined ? dict[key] : T.en[key];
+    for (var i = 1; i < arguments.length; i++) s = s.split('{' + (i - 1) + '}').join(arguments[i]);
+    return s;
+  }
+
+  function date(d) {
+    var day = dict.days[d.getDay()];
+    return dict.date.replace('{D}', day.charAt(0).toUpperCase() + day.slice(1))
+      .replace('{d}', d.getDate()).replace('{m}', dict.months[d.getMonth()]);
+  }
+
+  // Fills elements marked data-i18n="key" (text) and data-i18n-placeholder="key".
+  function apply(doc) {
+    var els = doc.querySelectorAll('[data-i18n]');
+    for (var i = 0; i < els.length; i++) els[i].textContent = t(els[i].getAttribute('data-i18n'));
+    els = doc.querySelectorAll('[data-i18n-placeholder]');
+    for (var j = 0; j < els.length; j++) els[j].setAttribute('placeholder', t(els[j].getAttribute('data-i18n-placeholder')));
+    doc.documentElement.lang = lang;
+  }
+
+  var api = { t: t, date: date, apply: apply, lang: lang, iso3: ISO3[lang], languages: Object.keys(T), dicts: T };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.I18N = api;
+})(this);

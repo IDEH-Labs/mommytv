@@ -1,5 +1,7 @@
 # Notice and Provenance — MommyTV
 
+*MommyTV is dedicated to Mami Analida.*
+
 ## Project Identity
 - **Application Name:** MommyTV
 - **Application ID:** `org.jpi59.mommytv`

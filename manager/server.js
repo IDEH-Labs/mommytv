@@ -133,11 +133,11 @@ function categoriesOf(lines) {
   return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
 }
 
-async function playlist() {
+async function playlist(lang) {
   const lists = [];
   for (const l of data.lists.filter((x) => x.enabled)) lists.push({ name: l.name, text: await listText(l) });
   const meta = await loadMeta(path.join(DIR, 'meta.json'), fetchText);
-  const lines = health.filter(enrich(build(data.shortcuts, lists).split('\n'), meta));
+  const lines = health.filter(enrich(build(data.shortcuts, lists).split('\n'), meta, lang));
   knownCategories = categoriesOf(lines);
   lines[0] = header();
   return lines.join('\n');
@@ -272,7 +272,10 @@ http.createServer(async (req, res) => {
     const parts = new URL(req.url, 'http://x').pathname.split('/').filter(Boolean);
     if (req.method === 'GET' && parts.length === 0) return send(res, 200, panel, 'text/html; charset=utf-8');
     if (req.method === 'GET' && parts[0] === 'mommytv.json') return send(res, 200, { app: 'mommytv-manager', playlist: '/playlist.m3u' });
-    if (req.method === 'GET' && parts[0] === 'playlist.m3u') return send(res, 200, await playlist(), 'audio/x-mpegurl; charset=utf-8');
+    if (req.method === 'GET' && parts[0] === 'playlist.m3u') {
+      const lang = new URL(req.url, 'http://x').searchParams.get('lang') || 'es';
+      return send(res, 200, await playlist(lang), 'audio/x-mpegurl; charset=utf-8');
+    }
     if (req.method === 'POST' && parts[0] === 'diag') return saveDiag(req, res);
     if (parts[0] === 'api') return await api(req, res, parts.slice(1));
     send(res, 404, { error: 'No encontrado' });

@@ -1,5 +1,7 @@
 # MommyTV
 
+*Dedicated to Mami Analida.*
+
 A minimal M3U / M3U8 playlist player for LG webOS TVs, built first for the
 LG 43LM6300 (webOS TV 4.5, Chromium 53 web engine). MommyTV is only a player:
 it ships no channels or playlists. Use playlists you are entitled to watch.
@@ -17,6 +19,8 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 - Shortcuts that open installed official apps.
 - Nightly check in the manager hides dead channels (index request only, never video).
 - Opt-in diagnostics (blue key), saved only on the user's PC.
+- Interface in the language chosen in the TV settings: Spanish, English, French, German,
+  Italian, Portuguese, Chinese or Japanese (English otherwise).
 - No accounts, no analytics.
 
 ## Remote control

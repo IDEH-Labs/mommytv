@@ -36,7 +36,7 @@
           cert: attr(line, 'mommytv-cert'), // "letsencrypt": hidden on TVs that reject that CA
           // added by MommyTV Manager from the public iptv-org data
           country: attr(line, 'tvg-country'),
-          countryName: attr(line, 'mommytv-country-es'),
+          countryName: attr(line, 'mommytv-country-name'),
           langs: attr(line, 'tvg-language'),
           cats: attr(line, 'mommytv-cats'),
           nsfw: attr(line, 'mommytv-nsfw')

@@ -212,3 +212,5 @@ ul { list-style: none; margin: 0; padding: 0; }
 .list .dedication { font-weight: 800; color: #fecdd3; }
 .list li.focus .dedication { color: #be123c; }
 .dedication-line { margin: -4px 0 28px; color: #fda4af; font-size: 30px; font-weight: 600; letter-spacing: 0.3px; }
+
+.live b { font-weight: 800; }
