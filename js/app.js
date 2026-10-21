@@ -336,6 +336,7 @@
     status('', false);
     show('browser');
     selectLast(all);
+    listenRemote();
   }
 
   // Marks the last channel watched; playback waits for the user.
@@ -586,7 +587,7 @@
     }
     if (searching) {
       heroIcon('search');
-      ui.heroGroup.textContent = g.items.length ? t('nResults', g.items.length) : (g.query ? t('noResults') : t('typeHint'));
+      ui.heroGroup.textContent = g.items.length ? (g.items.length === 1 ? t('oneResult') : t('nResults', g.items.length)) : (g.query ? t('noResults') : t('typeHint'));
       ui.heroQ.textContent = '';
       return;
     }
@@ -708,13 +709,13 @@
   var pairTimer = null;
 
   // Plain-text JSON POST: a simple request, so the manager needs no CORS preflight.
-  function remoteCall(what, body, cb) {
+  function remoteCall(what, body, cb, timeoutMs) {
     var base = managerBase();
     if (!base) { cb(null, 0); return; }
     var xhr = new XMLHttpRequest();
     xhr.open('POST', base + '/remote/' + what, true);
     xhr.setRequestHeader('Content-Type', 'text/plain');
-    xhr.timeout = 8000;
+    xhr.timeout = timeoutMs || 8000;
     xhr.onload = function () {
       var r = null;
       try { r = JSON.parse(xhr.responseText || '{}'); } catch (e) { r = {}; }
@@ -739,6 +740,39 @@
     if (!s) return;
     var ch = view === 'player' ? current() : null;
     remoteCall('state', { secret: s, view: view, title: ch ? ch.title : '', logo: ch ? ch.logo : '', url: ch ? ch.url : '' }, function () {});
+  }
+
+  var listening = false;
+  var remoteSeq = -1; // last order seen; -1 on start, so old orders are never replayed
+
+  // Waits for orders from paired phones: one request at a time, which the manager answers within 25 s.
+  function listenRemote() {
+    if (listening || !store(STORE_REMOTE) || !managerBase()) return;
+    listening = true;
+    remoteCall('wait', { secret: store(STORE_REMOTE), after: remoteSeq }, function (r, status) {
+      listening = false;
+      if (status === 403) return; // unknown to the manager; pairing again starts listening again
+      if (!r) { setTimeout(listenRemote, 10000); return; }
+      remoteSeq = r.seq;
+      for (var i = 0; i < r.cmds.length; i++) remoteOrder(r.cmds[i]);
+      listenRemote();
+    }, 35000);
+  }
+
+  // Plays what a phone chose, only if it is a channel of this TV's own list (locked ones still ask the PIN).
+  function remoteOrder(c) {
+    if (c.type !== 'play' || !channels.length) return;
+    var idx = indexByUrl()[c.url];
+    if (idx === undefined || channels[idx].url.indexOf(SHORTCUT) === 0) return;
+    for (var i = 0; i < groups.length; i++) {
+      var g = groups[i];
+      if (g.kind !== 'list' || g.name !== t('all')) continue;
+      var at = g.items.indexOf(idx);
+      if (at < 0) return;
+      if (pairOpen) closePair();
+      play(g.items, at);
+      return;
+    }
   }
 
   function renderPhones(phones) {
@@ -779,6 +813,7 @@
               closePair();
               osd(t('pairDone', p.phones[p.phones.length - 1].name));
               reportState();
+              listenRemote();
               return;
             }
             if (p) renderPhones(p.phones);

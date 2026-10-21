@@ -8,6 +8,7 @@ import org.json.JSONObject
  */
 object Remote {
     sealed interface Paired { data class Ok(val token: String) : Paired; data object Wrong : Paired; data object Locked : Paired; data object Unreachable : Paired }
+    sealed interface Sent { data class Ok(val tvListening: Boolean) : Sent; data object Unpaired : Sent; data object Unreachable : Sent }
     sealed interface Now { data class Tv(val view: String, val title: String) : Now; data object Idle : Now; data object Unpaired : Now; data object Unreachable : Now }
 
     /** MommyTV Manager's playlist, over HTTP or (on the next port) HTTPS. */
@@ -26,6 +27,17 @@ object Remote {
             status == 429 -> Paired.Locked
             status == 403 -> Paired.Wrong
             else -> Paired.Unreachable
+        }
+    }
+
+    /** Asks the TV to play a channel of its list; the TV itself checks that it is one. */
+    suspend fun play(base: String, token: String, url: String): Sent {
+        val (status, body) = runCatching { Net.post("$base/remote/play", JSONObject().put("token", token).put("url", url).toString(), 6000) }
+            .getOrElse { return Sent.Unreachable }
+        return when (status) {
+            200 -> Sent.Ok(runCatching { JSONObject(body).getBoolean("listening") }.getOrDefault(false))
+            403 -> Sent.Unpaired
+            else -> Sent.Unreachable
         }
     }
 

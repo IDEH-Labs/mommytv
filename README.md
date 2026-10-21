@@ -46,8 +46,13 @@ The Android app on a phone can follow the TV through MommyTV Manager:
 1. On the TV: About → "Controlar con el teléfono" shows a 6-digit code (one use, 5 minutes).
 2. On the phone: About → "Controlar la TV", type the code.
 
-The phone then shows what the TV is playing. The TV plays on its own: the phone can be
-closed, used for calls or other apps, or switched off. Only hashes of the TV secret and the
+The phone then shows what the TV is playing, and a TV button next to search chooses where a
+tapped channel plays: on the TV (default once paired) or on the phone. The TV keeps one
+long-poll request open to the manager and plays only channels of its own list (locked
+categories still ask for the PIN on the TV); orders not picked up within 30 seconds are
+dropped, and a restarted TV never replays old ones. If the TV does not have MommyTV open,
+the phone says so. The TV plays on its own: the phone can be closed, used for calls or
+other apps, or switched off. Only hashes of the TV secret and the
 phone tokens are stored; after 10 wrong codes in 10 minutes pairing is locked for 10 minutes.
 Paired phones can be removed in the manager's panel.
 

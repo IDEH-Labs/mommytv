@@ -32,6 +32,7 @@
     <string name="oneChannel" formatted="false">1 チャンネル</string>
     <string name="nChannels">%1$s チャンネル</string>
     <string name="nResults">%1$s 件</string>
+    <string name="oneResult" formatted="false">1 件</string>
     <string name="noResults" formatted="false">結果なし</string>
     <string name="typeHint" formatted="false">OK を押して名前を入力</string>
     <string name="changeTitle" formatted="false">リストを変更</string>
@@ -67,6 +68,11 @@
     <string name="remoteOn">テレビで再生中：%1$s</string>
     <string name="remoteIdle" formatted="false">テレビとペアリング済み</string>
     <string name="remoteForget" formatted="false">テレビの操作をやめる</string>
+    <string name="sentToTv">「%1$s」をテレビで再生します</string>
+    <string name="tvNotListening" formatted="false">テレビで MommyTV を開くと、ここから選べます。</string>
+    <string name="watchOnTv" formatted="false">テレビで見る</string>
+    <string name="watchHere" formatted="false">このスマホで見る</string>
+    <string name="remoteGone" formatted="false">このスマホはテレビとのペアリングが解除されています。</string>
     <string name="dChannel" formatted="false">チャンネル</string>
     <string name="dRes" formatted="false">実際の解像度</string>
     <string name="dBuffer" formatted="false">バッファ</string>

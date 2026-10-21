@@ -32,6 +32,7 @@
     <string name="oneChannel" formatted="false">1 个频道</string>
     <string name="nChannels">%1$s 个频道</string>
     <string name="nResults">%1$s 个结果</string>
+    <string name="oneResult" formatted="false">1 个结果</string>
     <string name="noResults" formatted="false">没有结果</string>
     <string name="typeHint" formatted="false">按 OK 并输入名称</string>
     <string name="changeTitle" formatted="false">更换列表</string>
@@ -67,6 +68,11 @@
     <string name="remoteOn">电视正在播放：%1$s</string>
     <string name="remoteIdle" formatted="false">已与电视配对</string>
     <string name="remoteForget" formatted="false">停止控制电视</string>
+    <string name="sentToTv">正在电视上播放“%1$s”</string>
+    <string name="tvNotListening" formatted="false">请在电视上打开 MommyTV，即可从这里选择。</string>
+    <string name="watchOnTv" formatted="false">在电视上观看</string>
+    <string name="watchHere" formatted="false">在这部手机上观看</string>
+    <string name="remoteGone" formatted="false">这部手机已不再与电视配对。</string>
     <string name="dChannel" formatted="false">频道</string>
     <string name="dRes" formatted="false">实际分辨率</string>
     <string name="dBuffer" formatted="false">缓冲</string>

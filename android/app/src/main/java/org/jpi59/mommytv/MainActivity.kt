@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     var remoteMsg by mutableStateOf("")
     var remoteBusy by mutableStateOf(false)
     var tvNow by mutableStateOf<String?>(null) // null: not paired; "": paired, nothing playing
+    var onTv by mutableStateOf(true) // paired phone: a tapped channel plays on the TV (the TV button in the top bar)
 
     lateinit var playback: Playback
     var parental = Parental(Header("", emptyList()))
@@ -78,6 +79,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         playback = Playback(this, this)
+        onTv = prefs.getBoolean(KEY_ON_TV, true)
         setContent {
             BackHandler { onBack() }
             MommyApp(this)
@@ -191,6 +193,20 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         }
     }
 
+    fun toggleOnTv() { onTv = !onTv; prefs.edit().putBoolean(KEY_ON_TV, onTv).apply() }
+
+    private fun sendToTv(ch: Channel) {
+        val token = prefs.getString(KEY_REMOTE, null) ?: return
+        val base = managerBase ?: return
+        lifecycleScope.launch {
+            when (val r = Remote.play(base, token, ch.url)) {
+                is Remote.Sent.Ok -> if (r.tvListening) { showOsd(getString(R.string.sentToTv, ch.title)); delay(2500); refreshTv() } else showOsd(getString(R.string.tvNotListening))
+                Remote.Sent.Unpaired -> { forgetRemote(); showOsd(getString(R.string.remoteGone)) }
+                Remote.Sent.Unreachable -> showOsd(getString(R.string.remoteNoTv))
+            }
+        }
+    }
+
     fun forgetRemote() {
         prefs.edit().remove(KEY_REMOTE).apply()
         tvNow = null
@@ -247,7 +263,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             i !in g.items.indices -> Unit // empty group: nothing to open
             else -> {
                 val ch = c.channels[g.items[i]]
-                if (ch.isShortcut) launchApp(ch) else play(g.items, i)
+                if (ch.isShortcut) launchApp(ch) else if (tvNow != null && onTv && !isTv) sendToTv(ch) else play(g.items, i)
             }
         }
     }
@@ -464,5 +480,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         const val ABOUT_ROWS = 8
         const val ABOUT_REMOTE = 1 // phones only: the row that pairs with the TV
         const val KEY_REMOTE = "remoteToken"
+        const val KEY_ON_TV = "onTv"
     }
 }

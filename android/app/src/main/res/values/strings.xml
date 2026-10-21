@@ -33,6 +33,7 @@
     <string name="oneChannel" formatted="false">1 channel</string>
     <string name="nChannels">%1$s channels</string>
     <string name="nResults">%1$s results</string>
+    <string name="oneResult" formatted="false">1 result</string>
     <string name="noResults" formatted="false">No results</string>
     <string name="typeHint" formatted="false">Press OK and type the name</string>
     <string name="changeTitle" formatted="false">Change playlist</string>
@@ -68,6 +69,11 @@
     <string name="remoteOn">On the TV: %1$s</string>
     <string name="remoteIdle" formatted="false">Paired with the TV</string>
     <string name="remoteForget" formatted="false">Stop controlling the TV</string>
+    <string name="sentToTv">Putting “%1$s” on the TV</string>
+    <string name="tvNotListening" formatted="false">Open MommyTV on the TV to choose from here.</string>
+    <string name="watchOnTv" formatted="false">Watch on the TV</string>
+    <string name="watchHere" formatted="false">Watch on this phone</string>
+    <string name="remoteGone" formatted="false">This phone is no longer paired with the TV.</string>
     <string name="dChannel" formatted="false">Channel</string>
     <string name="dRes" formatted="false">Actual resolution</string>
     <string name="dBuffer" formatted="false">Buffer</string>

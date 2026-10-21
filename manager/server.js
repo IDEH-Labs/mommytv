@@ -286,6 +286,11 @@ async function remoteApi(req, res, what) {
     const r = remote.pair(body.code, body.name);
     return send(res, r.error ? (r.error === 'locked' ? 429 : 403) : 200, r);
   }
+  if (what === 'play') {
+    const p = remote.phone(body.token);
+    if (!p) return send(res, 403, { error: 'unpaired' });
+    return send(res, 200, { listening: remote.send(p.tv, 'play', body.url) });
+  }
   if (what === 'now') {
     const p = remote.phone(body.token);
     if (!p) return send(res, 403, { error: 'unpaired' });
@@ -303,6 +308,12 @@ async function remoteApi(req, res, what) {
   if (what === 'phones') return send(res, 200, { phones: remote.phones(tv) });
   if (what === 'unpair') { remote.unpair(tv, String(body.phone || '')); return send(res, 200, { phones: remote.phones(tv) }); }
   if (what === 'state') { remote.setState(tv, body); return send(res, 204, ''); }
+  if (what === 'wait') {
+    // long poll: answered when an order arrives or after 25 s, well under the TV's own timeout
+    const cancel = remote.wait(tv, Number.isFinite(Number(body.after)) ? Number(body.after) : -1, 25000, (r) => { if (!res.writableEnded) send(res, 200, r); });
+    res.on('close', cancel);
+    return;
+  }
   return send(res, 404, { error: 'No encontrado' });
 }
 

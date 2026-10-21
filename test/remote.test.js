@@ -48,3 +48,31 @@ r.setState(tv, { view: 'player', title: 'Canal\n1', logo: 'javascript:alert(1)',
 assert.deepStrictEqual(r.state(tv), { view: 'player', title: 'Canal1', logo: '', url: 'https://a/b.m3u8', at: t });
 assert.ok(saves >= 4);
 console.log('remote: ok');
+
+// orders: delivered to a waiting TV at once, dropped when stale, never replayed
+(async () => {
+  const { COMMAND_MS } = require('../manager/remote.js');
+  const got = [];
+  const cancel = r.wait(tv, 0, 1000, (res) => got.push(res));
+  assert.strictEqual(r.send(tv, 'play', 'https://a/1.m3u8'), true); // the TV is listening
+  assert.deepStrictEqual(got, [{ seq: 1, cmds: [{ seq: 1, type: 'play', url: 'https://a/1.m3u8' }] }]);
+  cancel();
+  assert.strictEqual(r.send(tv, 'shell', 'x'), false); // only known orders
+  // an order waits for the next request, but not forever
+  r.send(tv, 'play', 'https://a/2.m3u8');
+  const early = await new Promise((ok) => r.wait(tv, 1, 1000, ok));
+  assert.deepStrictEqual(early.cmds.map((c) => c.url), ['https://a/2.m3u8']);
+  r.send(tv, 'play', 'https://a/3.m3u8');
+  t += COMMAND_MS + 1;
+  const late = await new Promise((ok) => r.wait(tv, 2, 30, ok));
+  assert.deepStrictEqual(late.cmds, []); // stale: dropped
+  assert.strictEqual(late.seq, 3);
+  // a TV that stopped asking is not listening
+  t += 60 * 1000;
+  assert.strictEqual(r.send(tv, 'play', 'https://a/4.m3u8'), false);
+  // a TV that (re)starts asks with -1 and gets only the current position, never old orders
+  r.send(tv, 'play', 'https://a/5.m3u8');
+  const start = await new Promise((ok) => r.wait(tv, -1, 1000, ok));
+  assert.deepStrictEqual(start, { seq: 5, cmds: [] });
+  console.log('remote orders: ok');
+})().catch((e) => { console.error(e); process.exit(1); });

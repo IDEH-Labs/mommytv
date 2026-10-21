@@ -8,6 +8,8 @@ const CODE_MS = 5 * 60 * 1000;
 const MAX_FAILS = 10; // wrong codes allowed per window, from any phone
 const FAIL_WINDOW_MS = 10 * 60 * 1000;
 const MAX_PHONES = 8;
+const COMMAND_MS = 30 * 1000; // an order the TV did not pick up by then is dropped, never played late
+const LISTENING_MS = 40 * 1000; // a TV that asked for orders this recently is listening
 
 const hash = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
 const token = () => crypto.randomBytes(24).toString('base64url');
@@ -22,6 +24,7 @@ class Remote {
     this.codes = new Map(); // code -> { tvId, until }
     this.fails = [];
     this.states = new Map(); // tvId -> what the TV is showing
+    this.queues = new Map(); // tvId -> { seq, cmds: [{ seq, type, url, at }], waiters: Set, seen }
   }
 
   // A TV without a secret registers itself once and keeps the secret.
@@ -98,6 +101,42 @@ class Remote {
   }
 
   state(tv) { return this.states.get(tv.id) || null; }
+
+  queue(tv) {
+    let q = this.queues.get(tv.id);
+    if (!q) { q = { seq: 0, cmds: [], waiters: new Set(), seen: 0 }; this.queues.set(tv.id, q); }
+    q.cmds = q.cmds.filter((c) => c.at > this.now() - COMMAND_MS);
+    return q;
+  }
+
+  listening(tv) { const q = this.queue(tv); return q.waiters.size > 0 || q.seen > this.now() - LISTENING_MS; }
+
+  // A paired phone asks the TV to play a channel; the TV checks it against its own list.
+  // Returns whether a TV is listening right now.
+  send(tv, type, url) {
+    if (type !== 'play') return false;
+    const q = this.queue(tv);
+    q.cmds.push({ seq: ++q.seq, type, url: clean(url, 2000), at: this.now() });
+    for (const w of q.waiters) w();
+    return this.listening(tv);
+  }
+
+  // The TV waits for orders newer than `after` (-1 when it starts: only new ones from now on);
+  // cb({ seq, cmds }) at once if there are some,
+  // else when one arrives or after timeoutMs with none. Returns a function that cancels the wait.
+  wait(tv, after, timeoutMs, cb) {
+    const q = this.queue(tv);
+    q.seen = this.now();
+    if (after < 0) { cb({ seq: q.seq, cmds: [] }); return () => {}; }
+    const ready = () => q.cmds.filter((c) => c.seq > after);
+    const reply = () => { cleanup(); cb({ seq: q.seq, cmds: ready().map((c) => ({ seq: c.seq, type: c.type, url: c.url })) }); };
+    const cleanup = () => { clearTimeout(timer); q.waiters.delete(check); q.seen = this.now(); };
+    const check = () => { if (ready().length) reply(); };
+    const timer = setTimeout(reply, timeoutMs);
+    q.waiters.add(check);
+    check();
+    return cleanup;
+  }
 }
 
-module.exports = { Remote, CODE_MS, MAX_FAILS };
+module.exports = { Remote, CODE_MS, MAX_FAILS, COMMAND_MS };

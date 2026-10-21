@@ -251,18 +251,25 @@ private fun BrowserScreen(a: MainActivity) {
 private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)))
     Spacer(Modifier.width(12.dp))
-    Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp)
     val onTv = a.tvNow?.takeIf { it.isNotEmpty() }
-    if (onTv != null) {
-        // paired phone: what the TV is playing; tap to open the remote
-        Spacer(Modifier.width(12.dp))
-        Text(
+    Column(Modifier.weight(1f)) {
+        Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp)
+        // paired phone: what the TV is playing, under the title; tap to open the remote
+        if (onTv != null) Text(
             stringResource(R.string.remoteOn, onTv),
-            color = Sky, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).combinedClickable(onClick = { a.openRemote() }),
-            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            color = Sky, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.combinedClickable(onClick = { a.openRemote() }),
         )
-    } else Spacer(Modifier.weight(1f))
+    }
+    if (compact && a.tvNow != null) {
+        // paired phone: where a tapped channel plays, like a cast button
+        val label = stringResource(if (a.onTv) R.string.watchOnTv else R.string.watchHere)
+        Box(
+            Modifier.padding(start = 4.dp).size(48.dp).clip(CircleShape).background(if (a.onTv) Sky else Color.Transparent)
+                .combinedClickable(onClick = { a.toggleOnTv() }).semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) { Icon(R.drawable.ic_tv, if (a.onTv) Color.White else Muted, 26) }
+    }
     if (compact) {
         // phones: search always at hand, like the title
         val searching = a.group?.kind == Kind.SEARCH
@@ -386,6 +393,7 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
 private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<String, String> = when {
     g.kind == Kind.ABOUT -> stringResource(R.string.dedication) to "MommyTV 0.1.0  ·  " + stringResource(R.string.licenseShort)
     g.kind == Kind.SEARCH -> "" to when {
+        g.items.size == 1 -> stringResource(R.string.oneResult)
         g.items.isNotEmpty() -> stringResource(R.string.nResults, g.items.size.toString())
         g.query.isNotEmpty() -> stringResource(R.string.noResults)
         a.isTv -> stringResource(R.string.typeHint) // phones: the field's own placeholder is enough

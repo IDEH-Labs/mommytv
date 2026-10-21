@@ -32,6 +32,7 @@
     <string name="oneChannel" formatted="false">1 Sender</string>
     <string name="nChannels">%1$s Sender</string>
     <string name="nResults">%1$s Ergebnisse</string>
+    <string name="oneResult" formatted="false">1 Ergebnis</string>
     <string name="noResults" formatted="false">Keine Ergebnisse</string>
     <string name="typeHint" formatted="false">OK drücken und den Namen eingeben</string>
     <string name="changeTitle" formatted="false">Liste wechseln</string>
@@ -67,6 +68,11 @@
     <string name="remoteOn">Auf dem Fernseher: %1$s</string>
     <string name="remoteIdle" formatted="false">Mit dem Fernseher gekoppelt</string>
     <string name="remoteForget" formatted="false">Fernseher nicht mehr steuern</string>
+    <string name="sentToTv">„%1$s“ läuft gleich auf dem Fernseher</string>
+    <string name="tvNotListening" formatted="false">Öffne MommyTV auf dem Fernseher, um von hier aus zu wählen.</string>
+    <string name="watchOnTv" formatted="false">Auf dem Fernseher ansehen</string>
+    <string name="watchHere" formatted="false">Auf diesem Handy ansehen</string>
+    <string name="remoteGone" formatted="false">Dieses Handy ist nicht mehr mit dem Fernseher gekoppelt.</string>
     <string name="dChannel" formatted="false">Sender</string>
     <string name="dRes" formatted="false">Tatsächliche Auflösung</string>
     <string name="dBuffer" formatted="false">Puffer</string>
