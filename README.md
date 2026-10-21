@@ -8,11 +8,12 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 
 ## Features
 
-- Playlists managed from a PC or phone with MommyTV Manager; the TV finds it on the LAN.
+- Playlists managed from a PC or phone with MommyTV Manager; the TV finds it on the LAN and
+  uses it only after you press Load.
 - Groups by country (the TV's own first), Spanish-language channels, all countries and
   categories, from the public iptv-org data. Adult channels are never shown.
-- Search, Favoritos (pinned plus most watched, all stored on the TV only) and resume on the
-  last channel.
+- Search, Favoritos (pinned plus most watched, all stored on the TV only); the last channel
+  watched is selected on start, and nothing plays until you choose.
 - Parental control: categories locked behind a 4-digit PIN set in the manager.
 - HLS starts at top quality and allows the panel's own resolution; freeze watchdog,
   automatic reconnect and live-edge catch-up.
@@ -51,6 +52,11 @@ shows it.
 #EXTINF:-1 tvg-logo="https://example.org/logo.png",Official app
 webos-app://com.example.officialapp
 ```
+
+The Android app uses `android-app://<package>` the same way. In the manager each
+shortcut can have a webOS app id, an Android package or both; the TV asks for
+`playlist.m3u` and the Android app for `playlist.m3u?os=android`, and each gets
+only the shortcuts for its own system.
 
 ## Build and install
 

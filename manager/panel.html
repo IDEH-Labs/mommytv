@@ -52,10 +52,11 @@
     <p id="health" class="lead"></p>
 
     <h2>Accesos directos</h2>
-    <p class="lead">Abren desde MommyTV una app oficial instalada en la TV.</p>
+    <p class="lead">Abren desde MommyTV una app oficial instalada en la TV o en Android.</p>
     <form id="add-shortcut">
       <label>Nombre <input type="text" name="name" required maxlength="80" placeholder="App oficial del canal"></label>
-      <label>Identificador de la app <input type="text" name="appId" required placeholder="com.empresa.app" pattern="[a-z0-9][a-z0-9.\-]+"></label>
+      <label>Identificador en LG webOS <input type="text" name="appId" placeholder="com.empresa.app" pattern="[a-z0-9][a-z0-9.\-]+"></label>
+      <label>Paquete en Android <input type="text" name="androidId" placeholder="com.empresa.app" pattern="[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+"></label>
       <label>Logo (opcional) <input type="url" name="logo" placeholder="https://…/logo.png"></label>
       <button type="submit">Añadir acceso directo</button>
     </form>
@@ -139,7 +140,7 @@
     $('shortcuts').replaceChildren(...(s.shortcuts.length ? s.shortcuts.map((x) => {
       const row = el('div', 'item');
       const text = el('div', 'text');
-      text.append(el('div', '', x.name), el('div', 'sub', x.appId));
+      text.append(el('div', '', x.name), el('div', 'sub', [x.appId && 'LG: ' + x.appId, x.androidId && 'Android: ' + x.androidId].filter(Boolean).join(' · ')));
       const del = el('button', 'link', 'Borrar');
       del.onclick = () => act(() => call('DELETE', 'shortcuts/' + x.id));
       row.append(text, del);
@@ -163,7 +164,7 @@
   $('add-shortcut').onsubmit = async (ev) => {
     ev.preventDefault();
     const f = ev.target;
-    if (await act(() => call('POST', 'shortcuts', { name: f.name.value, appId: f.appId.value, logo: f.logo.value }))) f.reset();
+    if (await act(() => call('POST', 'shortcuts', { name: f.name.value, appId: f.appId.value, androidId: f.androidId.value, logo: f.logo.value }))) f.reset();
   };
 
   $('parental').onsubmit = async (ev) => {

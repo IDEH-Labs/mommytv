@@ -1,8 +1,13 @@
 'use strict';
 // Builds the single playlist the TV reads from the enabled lists and shortcuts.
 
-const SHORTCUT = 'webos-app://';
 const APP_ID = /^[a-z0-9][a-z0-9.-]+$/;
+const ANDROID_ID = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/;
+// Each shortcut opens the official app of the system asking for the list: webOS or Android.
+const SYSTEMS = {
+  webos: { key: 'appId', valid: APP_ID, scheme: 'webos-app://' },
+  android: { key: 'androidId', valid: ANDROID_ID, scheme: 'android-app://' },
+};
 
 const clean = (s) => String(s).replace(/["\r\n]/g, '').trim();
 
@@ -21,15 +26,17 @@ function withGroup(text, group) {
   return out;
 }
 
-function build(shortcuts, lists) {
+function build(shortcuts, lists, os) {
+  const sys = SYSTEMS[os] || SYSTEMS.webos;
   const out = ['#EXTM3U'];
   for (const s of shortcuts) {
-    if (!APP_ID.test(s.appId)) continue;
+    const id = s[sys.key];
+    if (!id || !sys.valid.test(id)) continue;
     out.push('#EXTINF:-1' + (s.logo ? ' tvg-logo="' + clean(s.logo) + '"' : '') + ',' + clean(s.name));
-    out.push(SHORTCUT + s.appId);
+    out.push(sys.scheme + id);
   }
   for (const l of lists) out.push(...withGroup(l.text, l.name));
   return out.join('\n') + '\n';
 }
 
-module.exports = { build, withGroup, APP_ID };
+module.exports = { build, withGroup, APP_ID, ANDROID_ID };

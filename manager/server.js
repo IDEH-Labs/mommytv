@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
-const { build, APP_ID } = require('./playlist.js');
+const { build, APP_ID, ANDROID_ID } = require('./playlist.js');
 const { loadMeta, enrich } = require('./meta.js');
 const { Health, streamUrls } = require('./health.js');
 
@@ -133,11 +133,11 @@ function categoriesOf(lines) {
   return Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
 }
 
-async function playlist(lang) {
+async function playlist(lang, os) {
   const lists = [];
   for (const l of data.lists.filter((x) => x.enabled)) lists.push({ name: l.name, text: await listText(l) });
   const meta = await loadMeta(path.join(DIR, 'meta.json'), fetchText);
-  const lines = health.filter(enrich(build(data.shortcuts, lists).split('\n'), meta, lang));
+  const lines = health.filter(enrich(build(data.shortcuts, lists, os).split('\n'), meta, lang));
   knownCategories = categoriesOf(lines);
   lines[0] = header();
   return lines.join('\n');
@@ -249,9 +249,11 @@ async function api(req, res, parts) {
 
   if (kind === 'shortcuts' && req.method === 'POST' && !id) {
     const appId = String(body.appId || '').trim();
-    if (!name || !APP_ID.test(appId)) return send(res, 400, { error: 'Escribe un nombre y un identificador válido (ej. com.empresa.app)' });
+    const androidId = String(body.androidId || '').trim();
+    const valid = (appId || androidId) && (!appId || APP_ID.test(appId)) && (!androidId || ANDROID_ID.test(androidId));
+    if (!name || !valid) return send(res, 400, { error: 'Escribe un nombre y al menos un identificador válido (ej. com.empresa.app)' });
     const logo = /^https?:\/\/\S+$/i.test(String(body.logo || '').trim()) ? body.logo.trim() : '';
-    data.shortcuts.push({ id: newId(), name, appId, logo });
+    data.shortcuts.push({ id: newId(), name, appId, androidId, logo });
     save();
     return send(res, 200, state());
   }
@@ -273,8 +275,8 @@ http.createServer(async (req, res) => {
     if (req.method === 'GET' && parts.length === 0) return send(res, 200, panel, 'text/html; charset=utf-8');
     if (req.method === 'GET' && parts[0] === 'mommytv.json') return send(res, 200, { app: 'mommytv-manager', playlist: '/playlist.m3u' });
     if (req.method === 'GET' && parts[0] === 'playlist.m3u') {
-      const lang = new URL(req.url, 'http://x').searchParams.get('lang') || 'es';
-      return send(res, 200, await playlist(lang), 'audio/x-mpegurl; charset=utf-8');
+      const query = new URL(req.url, 'http://x').searchParams;
+      return send(res, 200, await playlist(query.get('lang') || 'es', query.get('os')), 'audio/x-mpegurl; charset=utf-8');
     }
     if (req.method === 'POST' && parts[0] === 'diag') return saveDiag(req, res);
     if (parts[0] === 'api') return await api(req, res, parts.slice(1));

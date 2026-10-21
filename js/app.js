@@ -239,7 +239,7 @@
     show('setup');
     status(t('searching'), true);
     discover(function (url) {
-      if (url) { ui.url.value = url; load(url); return; }
+      if (url) { ui.url.value = url; status(t('found'), false); renderSetup(); return; }
       status(t('notFound'), false);
       setupSel = 0;
       renderSetup();
@@ -322,10 +322,11 @@
     }
     status('', false);
     show('browser');
-    resumeLast(all);
+    selectLast(all);
   }
 
-  function resumeLast(all) {
+  // Marks the last channel watched; playback waits for the user.
+  function selectLast(all) {
     var last = store(STORE_LAST);
     if (!last) return;
     var g = groups[gSel], at = -1;
@@ -338,7 +339,7 @@
     if (at < 0 || gSel < 0) return;
     col = 'c';
     cSel = at;
-    play(g.items, at);
+    renderBrowser();
   }
 
   var urlIndex = null; // url -> channel index, rebuilt only when a new list arrives
