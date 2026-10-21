@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-360.5 -290 1752 1752">
+  <!-- Single-colour MommyTV glyph for Android themed icons: the television and Mom seen from behind,
+       taken from icon.svg. A gap keeps the two shapes apart where they overlap. -->
+  <defs>
+    <path id="mom" transform="translate(400 1024) scale(1.12) translate(-400 -1024)"
+      d="M196 1024 L196 900 C196 806 268 748 352 736 L362 736 L362 660 L438 660 L448 736 C532 748 604 806 604 900 L604 1024 Z
+         M302 616 C292 548 334 486 400 484 C466 486 508 548 498 616 C494 650 480 674 456 686 C428 698 372 698 344 686 C320 674 306 650 302 616 Z
+         M338 446 A64 54 0 1 1 466 446 A64 54 0 1 1 338 446 Z"/>
+    <mask id="gap">
+      <rect x="-400" y="-400" width="2000" height="2000" fill="#fff"/>
+      <use href="#mom" fill="#000" stroke="#000" stroke-width="28" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <g mask="url(#gap)">
+    <path fill-rule="evenodd"
+      d="M334 148 H826 A34 34 0 0 1 860 182 V436 A34 34 0 0 1 826 470 H334 A34 34 0 0 1 300 436 V182 A34 34 0 0 1 334 148 Z
+         M362 196 H798 A14 14 0 0 1 812 210 V408 A14 14 0 0 1 798 422 H362 A14 14 0 0 1 348 408 V210 A14 14 0 0 1 362 196 Z"/>
+    <path d="M560 274 L560 344 L618 309 Z"/>
+    <rect x="560" y="470" width="40" height="34"/>
+    <rect x="486" y="498" width="188" height="16" rx="8"/>
+  </g>
+  <use href="#mom"/>
+</svg>

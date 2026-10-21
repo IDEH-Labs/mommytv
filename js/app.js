@@ -365,14 +365,34 @@
     }
   }
 
-  function initial(text) {
-    var m = /[A-Za-z0-9À-ɏ]/.exec(text);
-    return m ? m[0].toUpperCase() : '•';
+  // "Blu Radio" → "BR": the first letter or digit of the first two words. Same rule as Android.
+  function initials(text) {
+    var out = '';
+    var words = String(text).split(' ');
+    for (var i = 0; i < words.length && out.length < 2; i++) {
+      var m = /[^\s!-\/:-@\[-`{-~¡-¿«»“”‘’–—•·]/.exec(words[i]);
+      if (m) out += m[0];
+    }
+    return out ? out.toUpperCase() : '•';
+  }
+
+  // A channel without a logo keeps one colour everywhere: its name's Java-style hash picks from the
+  // same palette as Android, so TV and phone match.
+  var TILE_PALETTE = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#059669', '#0891b2', '#ca8a04', '#dc2626'];
+  function tileBackground(title) {
+    var h = 0;
+    for (var i = 0; i < title.length; i++) h = (31 * h + title.charCodeAt(i)) | 0;
+    var c = TILE_PALETTE[((h % TILE_PALETTE.length) + TILE_PALETTE.length) % TILE_PALETTE.length];
+    return 'linear-gradient(135deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.45)), ' + c; // Chromium 53: no #rrggbbaa
   }
 
   function setTile(el, ch) {
     el.textContent = '';
-    var letter = function () { el.textContent = initial(ch ? ch.title : ''); };
+    el.style.background = '';
+    var letter = function () {
+      el.textContent = initials(ch ? ch.title : '');
+      if (ch) el.style.background = tileBackground(ch.title);
+    };
     if (ch && ch.logo) {
       var img = document.createElement('img');
       img.onerror = letter;

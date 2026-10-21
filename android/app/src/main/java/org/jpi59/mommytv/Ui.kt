@@ -31,6 +31,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.semantics.contentDescription
@@ -51,6 +52,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -125,12 +132,23 @@ private fun Tile(ch: Channel?, w: Int, h: Int, @DrawableRes icon: Int? = null, i
         when {
             icon != null -> Icon(icon, iconTint, h / 2)
             logo != null -> Image(logo, null, Modifier.fillMaxSize().padding((h / 8).dp), contentScale = ContentScale.Fit)
-            else -> Text(initial(ch?.title.orEmpty()), color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = (h / 2.4).sp)
+            ch != null -> Box(Modifier.fillMaxSize().background(Brush.linearGradient(tileColors(ch.title))), contentAlignment = Alignment.Center) {
+                Text(initials(ch.title), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = (h / 2.6).sp, maxLines = 1)
+            }
+            else -> Unit
         }
     }
 }
 
-private fun initial(t: String) = t.firstOrNull { it.isLetterOrDigit() }?.uppercase() ?: "•"
+/** "Blu Radio" → "BR": the first letter or digit of the first two words. Same rule as webOS. */
+private fun initials(t: String) = t.split(' ').mapNotNull { w -> w.firstOrNull { it.isLetterOrDigit() } }.take(2).joinToString("").uppercase().ifEmpty { "•" }
+
+/** A channel without a logo keeps one colour everywhere: picked from its name, same hash and palette as webOS. */
+private val TILE_PALETTE = listOf(0xFF2563EB, 0xFF7C3AED, 0xFFDB2777, 0xFFEA580C, 0xFF059669, 0xFF0891B2, 0xFFCA8A04, 0xFFDC2626)
+private fun tileColors(title: String): List<Color> {
+    val c = Color(TILE_PALETTE[Math.floorMod(title.hashCode(), TILE_PALETTE.size)])
+    return listOf(c, Color(c.red * 0.55f, c.green * 0.55f, c.blue * 0.55f))
+}
 
 @Composable
 private fun Chip(text: String, focused: Boolean = false) {
@@ -180,7 +198,7 @@ private fun SetupScreen(a: MainActivity) {
     val focus = LocalFocusManager.current
     LaunchedEffect(a.setupFocus) { if (a.setupFocus == 0) field.requestFocus() else focus.clearFocus() }
     Column(Modifier.fillMaxSize().safeDrawingPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(104.dp).clip(RoundedCornerShape(26.dp)))
+        Image(painterResource(R.drawable.logo), null, Modifier.size(104.dp).clip(RoundedCornerShape(26.dp)))
         Spacer(Modifier.height(18.dp))
         Text("MommyTV", color = Fg, fontSize = 46.sp, fontWeight = FontWeight.ExtraBold)
         Text(stringResource(R.string.dedication), color = Color(0xFFFDA4AF), fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
@@ -229,9 +247,20 @@ private fun BrowserScreen(a: MainActivity) {
             if (compact) {
                 RailChips(a, c)
                 Spacer(Modifier.height(10.dp))
-                Hero(a, c, compact = true)
-                Spacer(Modifier.height(10.dp))
-                ChannelList(a, c, Modifier.fillMaxWidth().weight(1f))
+                // Phones: rows already show each channel, so the large card stays only where it adds something
+                val g = a.group
+                val country = g?.country
+                when {
+                    g == null || g.kind == Kind.SEARCH || g.kind == Kind.SETTINGS || a.listLength(g) == 0 -> { Hero(a, c, compact = true); Spacer(Modifier.height(10.dp)) }
+                    g.kind == Kind.COUNTRIES && country != null -> {
+                        Row(Modifier.padding(horizontal = 4.dp, vertical = 2.dp), verticalAlignment = Alignment.Bottom) {
+                            Text(country.name, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                            Spacer(Modifier.width(10.dp)); Text(channelsText(country.items.size), color = Muted, fontSize = 15.sp)
+                        }
+                        Spacer(Modifier.height(8.dp))
+                    }
+                }
+                ChannelList(a, c, Modifier.fillMaxWidth().weight(1f), compact = true)
             } else {
                 Row(Modifier.fillMaxSize()) {
                     Rail(a, c, Modifier.width(300.dp).fillMaxHeight())
@@ -249,7 +278,7 @@ private fun BrowserScreen(a: MainActivity) {
 
 @Composable
 private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-    Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)))
+    Image(painterResource(R.drawable.logo), null, Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)))
     Spacer(Modifier.width(12.dp))
     Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp, modifier = Modifier.weight(1f))
     if (compact && a.tvName != null) {
@@ -332,7 +361,7 @@ private fun RailChips(a: MainActivity, c: Catalog) {
     val state = rememberLazyListState()
     val shown = c.groups.withIndex().filter { it.value.kind != Kind.SEARCH && it.value.kind != Kind.SETTINGS } // both are top-bar buttons
     LaunchedEffect(a.gSel) { shown.indexOfFirst { it.index == a.gSel }.takeIf { it >= 0 }?.let { state.animateScrollToItem((it - 1).coerceAtLeast(0)) } }
-    LazyRow(state = state, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+    LazyRow(Modifier.fadingEdges(state), state = state, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(shown) { (i, g) ->
             val on = i == a.gSel
             Row(
@@ -347,6 +376,15 @@ private fun RailChips(a: MainActivity, c: Catalog) {
         }
     }
 }
+
+/** Fades a scrolling row out at an edge only while there is more to scroll that way. */
+private fun Modifier.fadingEdges(state: LazyListState) = graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+    .drawWithContent {
+        drawContent()
+        val w = 28.dp.toPx()
+        if (state.canScrollBackward) drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Color.Black), 0f, w), size = Size(w, size.height), blendMode = BlendMode.DstIn)
+        if (state.canScrollForward) drawRect(Brush.horizontalGradient(listOf(Color.Black, Color.Transparent), size.width - w, size.width), Offset(size.width - w, 0f), Size(w, size.height), blendMode = BlendMode.DstIn)
+    }
 
 @Composable
 private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
@@ -363,7 +401,7 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
         val ch = if (g.kind == Kind.SETTINGS || a.showingCountries(g) || g.items.isEmpty()) null else c.channels[g.items[a.cSel.coerceIn(0, g.items.size - 1)]]
         when {
             g.kind == Kind.SETTINGS -> Box(Modifier.size(tileW.dp, tileH.dp), contentAlignment = Alignment.Center) {
-                Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size((tileH * 0.9f).dp).clip(RoundedCornerShape(16.dp)))
+                Image(painterResource(R.drawable.logo), null, Modifier.size((tileH * 0.9f).dp).clip(RoundedCornerShape(16.dp)))
             }
             g.kind == Kind.SEARCH -> Tile(null, tileW, tileH, R.drawable.ic_search)
             a.showingCountries(g) -> Tile(null, tileW, tileH, R.drawable.ic_globe)
@@ -428,7 +466,7 @@ private fun SearchField(a: MainActivity) {
 }
 
 @Composable
-private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
+private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier, compact: Boolean = false) {
     val g = a.group ?: return
     val state = rememberLazyListState()
     LaunchedEffect(a.gSel, a.cSel, a.version) { if (a.listLength(g) > 0) state.animateScrollToItem((a.cSel - 2).coerceAtLeast(0)) }
@@ -463,8 +501,10 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
                         val ch = c.channels[g.items[i]]
                         Tile(ch, 70, 40)
                         Spacer(Modifier.width(14.dp))
-                        Text((i + 1).toString(), color = if (focused) Color(0xFF475569) else Muted, fontSize = 15.sp, maxLines = 1, softWrap = false, modifier = Modifier.width(numberWidth))
-                        Text(ch.title, color = if (focused) FocusFg else Fg, fontSize = 19.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        // phones: no remote to dial numbers, so the name gets the room and up to two lines
+                        if (!compact) Text((i + 1).toString(), color = if (focused) Color(0xFF475569) else Muted, fontSize = 15.sp, maxLines = 1, softWrap = false, modifier = Modifier.width(numberWidth))
+                        Text(ch.title, color = if (focused) FocusFg else Fg, fontSize = if (compact) 17.sp else 19.sp, lineHeight = if (compact) 20.sp else 24.sp, fontWeight = FontWeight.SemiBold, maxLines = if (compact) 2 else 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                        Spacer(Modifier.width(8.dp))
                         if (c.isPinned(ch)) { Icon(R.drawable.ic_fav, Gold, 17); Spacer(Modifier.width(10.dp)) }
                         Chip(ch.quality, focused)
                     }
