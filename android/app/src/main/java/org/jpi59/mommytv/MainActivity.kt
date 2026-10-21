@@ -228,6 +228,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         when {
             g.kind == Kind.ABOUT -> if (!isTv && i == ABOUT_REMOTE) openRemote()
             showingCountries(g) -> { g.country = g.countries[i]; g.items = g.country!!.items; cSel = 0; version++ }
+            i !in g.items.indices -> Unit // empty group: nothing to open
             else -> {
                 val ch = c.channels[g.items[i]]
                 if (ch.isShortcut) launchApp(ch) else play(g.items, i)

@@ -319,7 +319,7 @@ private fun RailChips(a: MainActivity, c: Catalog) {
             val on = i == a.gSel
             Row(
                 Modifier.clip(RoundedCornerShape(20.dp)).background(if (on) FocusBg else Panel)
-                    .combinedClickable(onClick = { a.selectGroup(i); a.column = if (g.kind == Kind.SEARCH) Column.SEARCH else Column.LIST; if (g.kind == Kind.CHANGE) a.onKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) })
+                    .combinedClickable(onClick = { a.selectGroup(i); a.column = when (g.kind) { Kind.SEARCH -> Column.SEARCH; Kind.CHANGE -> Column.RAIL; else -> Column.LIST }; if (g.kind == Kind.CHANGE) a.onKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) })
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
