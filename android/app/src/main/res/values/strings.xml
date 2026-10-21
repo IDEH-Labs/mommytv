@@ -5,7 +5,6 @@
     <string name="loading" formatted="false">Loading your playlist…</string>
     <string name="httpError">The server answered with error %1$s.</string>
     <string name="emptyList" formatted="false">The playlist has no channels.</string>
-    <string name="incompatible" formatted="false">The channels in this playlist are not compatible with this TV.</string>
     <string name="noConnect" formatted="false">Could not connect to that address.</string>
     <string name="slow" formatted="false">The playlist took too long to answer.</string>
     <string name="shortcuts" formatted="false">Shortcuts</string>
@@ -68,6 +67,16 @@
     <string name="sendList" formatted="false">Send my playlist to the TV</string>
     <string name="listSent" formatted="false">Playlist sent to the TV.</string>
     <string name="tvNoApp" formatted="false">MommyTV is not installed on the TV.</string>
+    <string name="parentalIsOn" formatted="false">Parental control: on</string>
+    <string name="parentalIsOff" formatted="false">Parental control: off</string>
+    <string name="parentalHint" formatted="false">OK locks or unlocks each category</string>
+    <string name="parentalDisable" formatted="false">Turn off parental control</string>
+    <string name="parentalDisableConfirm" formatted="false">Press again to turn off parental control.</string>
+    <string name="parentalDisabled" formatted="false">Parental control turned off.</string>
+    <string name="parentalSet" formatted="false">Parental control is on. Choose which categories to lock.</string>
+    <string name="pinNew" formatted="false">Create a 4-digit PIN</string>
+    <string name="pinRepeat" formatted="false">Type the PIN again</string>
+    <string name="pinMismatch" formatted="false">The PINs do not match. Start again.</string>
     <string name="dChannel" formatted="false">Channel</string>
     <string name="dRes" formatted="false">Actual resolution</string>
     <string name="dBuffer" formatted="false">Buffer</string>

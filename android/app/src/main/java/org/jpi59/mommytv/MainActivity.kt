@@ -27,7 +27,7 @@ enum class Screen { SETUP, BROWSER, PLAYER }
 enum class Column { RAIL, LIST, SEARCH }
 
 /** Rows of Ajustes: what does something first, then the dedication and the information. */
-enum class Setting { CHANGE, DELETE, REMOTE, DEDICATION, VERSION, LICENSE, SOURCE, NO_CHANNELS, LG_LIB, FONT }
+enum class Setting { CHANGE, DELETE, PARENTAL, REMOTE, DEDICATION, VERSION, LICENSE, SOURCE, NO_CHANNELS, LG_LIB, FONT }
 
 @OptIn(UnstableApi::class)
 class MainActivity : ComponentActivity(), Playback.Listener {
@@ -59,7 +59,11 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     var onTv by mutableStateOf(true) // paired phone: a tapped channel plays on the TV (the TV button in the top bar)
 
     lateinit var playback: Playback
-    var parental = Parental(Header("", emptyList()))
+    val parental by lazy { Parental(store) }
+    var editingParental by mutableStateOf(false) // Ajustes lists the categories to lock instead of its rows
+    private var parentalArmed = 0L
+    private var pinMode = PinMode.CHECK
+    private var pinFirst = ""
     private var pinDone: (() -> Unit)? = null
     private var pinFails = 0
     private var pinWaitUntil = 0L
@@ -132,7 +136,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     }
 
     private fun useText(text: String) {
-        parental = Parental(M3u.header(text))
         useList(M3u.parse(text))
     }
 
@@ -150,6 +153,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         if (prefs.getString(KEY_URL, null) == null) return
         if (System.currentTimeMillis() - deleteArmed > 5000) { deleteArmed = System.currentTimeMillis(); showOsd(getString(R.string.deleteConfirm)); return }
         deleteArmed = 0
+        withPin { forgetListAndRestart() }
+    }
+
+    private fun forgetListAndRestart() {
         forgetList(true)
         catalog = null
         urlField = ""; setupFocus = 0; busy = false
@@ -245,7 +252,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     val group: Group? get() = catalog?.groups?.getOrNull(gSel)
     fun showingCountries(g: Group) = g.kind == Kind.COUNTRIES && g.country == null
     fun listLength(g: Group) = when {
-        g.kind == Kind.SETTINGS -> settingsRows.size
+        g.kind == Kind.SETTINGS -> if (editingParental) (catalog?.categories?.size ?: 0) + 1 else settingsRows.size
         showingCountries(g) -> g.countries.size
         else -> g.items.size
     }
@@ -269,6 +276,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     fun selectGroup(i: Int) {
         val c = catalog ?: return
         returnTo = null
+        if (editingParental) { editingParental = false; parental.unlocked = false }
         gSel = (i + c.groups.size) % c.groups.size
         cSel = 0
         if (c.groups[gSel].kind == Kind.FAV) c.refreshFavourites()
@@ -280,7 +288,15 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val g = group ?: return
         cSel = i
         when {
-            g.kind == Kind.SETTINGS -> when (settingsRows[i]) { Setting.CHANGE -> openChangeList(); Setting.DELETE -> deleteList(); Setting.REMOTE -> openRemote(); else -> Unit }
+            g.kind == Kind.SETTINGS && editingParental -> parentalTap(i)
+            g.kind == Kind.SETTINGS -> when (settingsRows[i]) {
+                // with parental control on, another list must not get around it
+                Setting.CHANGE -> withPin { openChangeList() }
+                Setting.DELETE -> deleteList()
+                Setting.PARENTAL -> parentalRow()
+                Setting.REMOTE -> openRemote()
+                else -> Unit
+            }
             showingCountries(g) -> { g.country = g.countries[i]; g.items = g.country!!.items; cSel = 0; version++ }
             i !in g.items.indices -> Unit // empty group: nothing to open
             else -> {
@@ -358,13 +374,52 @@ class MainActivity : ComponentActivity(), Playback.Listener {
 
     // ---------- parental PIN ----------
 
-    private fun askPin(done: () -> Unit) { pinDone = done; pinBuf = ""; pinMsg = getString(R.string.pinPrompt); pinOpen = true }
-    fun closePin() { pinOpen = false; pinDone = null }
+    enum class PinMode { CHECK, NEW, REPEAT }
+
+    private fun askPin(done: () -> Unit) { pinMode = PinMode.CHECK; pinDone = done; pinBuf = ""; pinMsg = getString(R.string.pinPrompt); pinOpen = true }
+    private fun newPin(done: () -> Unit) { pinMode = PinMode.NEW; pinDone = done; pinBuf = ""; pinMsg = getString(R.string.pinNew); pinOpen = true }
+    fun closePin() { pinOpen = false; pinDone = null; pinMode = PinMode.CHECK }
+
+    /** Runs [fn] now when parental control is off or already unlocked; otherwise after the right PIN. */
+    private fun withPin(always: Boolean = false, fn: () -> Unit) { if (!parental.enabled || (parental.unlocked && !always)) fn() else askPin(fn) }
+
+    private fun openParental() { editingParental = true; parentalArmed = 0; column = Column.LIST; cSel = 0; version++ }
+
+    private fun closeParental() {
+        editingParental = false
+        parental.unlocked = false // leaving the editor locks again
+        cSel = settingsRows.indexOf(Setting.PARENTAL)
+        version++
+    }
+
+    private fun parentalTap(i: Int) {
+        val cats = catalog?.categories.orEmpty()
+        when {
+            i < cats.size -> parental.toggle(cats[i])
+            System.currentTimeMillis() - parentalArmed > 5000 -> { parentalArmed = System.currentTimeMillis(); showOsd(getString(R.string.parentalDisableConfirm)) }
+            else -> { parental.disable(); editingParental = false; cSel = settingsRows.indexOf(Setting.PARENTAL); showOsd(getString(R.string.parentalDisabled)) }
+        }
+        version++
+    }
+
+    private fun parentalRow() {
+        if (parental.enabled) withPin(always = true) { openParental() }
+        else newPin { openParental(); showOsd(getString(R.string.parentalSet)) }
+    }
 
     fun pinDigit(d: Int) {
         if (System.currentTimeMillis() < pinWaitUntil) { pinMsg = getString(R.string.pinWait); return }
         pinBuf += d
         if (pinBuf.length < 4) return
+        if (pinMode == PinMode.NEW) { pinFirst = pinBuf; pinBuf = ""; pinMode = PinMode.REPEAT; pinMsg = getString(R.string.pinRepeat); return }
+        if (pinMode == PinMode.REPEAT) {
+            if (pinBuf != pinFirst) { pinMode = PinMode.NEW; pinBuf = ""; pinMsg = getString(R.string.pinMismatch); return }
+            parental.create(pinBuf)
+            val made = pinDone
+            closePin(); version++
+            made?.invoke()
+            return
+        }
         if (parental.check(pinBuf)) {
             pinFails = 0
             val done = pinDone
@@ -411,6 +466,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     fun onBack() {
         if (pinOpen) { closePin(); return }
         if (remoteOpen) { remoteOpen = false; return }
+        if (editingParental) { closeParental(); return }
         when (screen) {
             Screen.SETUP -> if (catalog != null) screen = Screen.BROWSER else finish()
             Screen.PLAYER -> stopPlayer()

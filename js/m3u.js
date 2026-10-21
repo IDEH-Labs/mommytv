@@ -32,19 +32,14 @@
         info = {
           name: titleOf(line) || attr(line, 'tvg-name'),
           logo: attr(line, 'tvg-logo'),
-          group: attr(line, 'group-title'),
-          cert: attr(line, 'mommytv-cert'), // "letsencrypt": hidden on TVs that reject that CA
-          // added by MommyTV Manager from the public iptv-org data
+          group: attr(line, 'group-title'), // may hold several categories: "Animation;Kids"
           country: attr(line, 'tvg-country'),
-          countryName: attr(line, 'mommytv-country-name'),
-          langs: attr(line, 'tvg-language'),
-          cats: attr(line, 'mommytv-cats'),
-          nsfw: attr(line, 'mommytv-nsfw')
+          langs: attr(line, 'tvg-language')
         };
       } else if (line.indexOf('#EXTGRP:') === 0) {
         group = line.slice(8).trim();
       } else if (line.charAt(0) !== '#') {
-        var ch = info || { name: '', logo: '', group: '', cert: '', country: '', countryName: '', langs: '', cats: '', nsfw: '' };
+        var ch = info || { name: '', logo: '', group: '', country: '', langs: '' };
         ch.url = line;
         if (!ch.name) ch.name = line;
         if (!ch.group) ch.group = group;
@@ -56,14 +51,7 @@
     return channels;
   }
 
-  // Attributes of the "#EXTM3U ..." line, e.g. the parental control sent by MommyTV Manager.
-  function header(text) {
-    var first = String(text).replace(/^\uFEFF/, '').split(/\r?\n/)[0] || '';
-    if (first.indexOf('#EXTM3U') !== 0) return { pin: '', locked: '' };
-    return { pin: attr(first, 'mommytv-pin'), locked: attr(first, 'mommytv-locked') };
-  }
-
-  var api = { parse: parse, header: header };
+  var api = { parse: parse };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.M3U = api;
 })(this);

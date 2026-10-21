@@ -400,6 +400,7 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
 
 @Composable
 private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<String, String> = when {
+    g.kind == Kind.SETTINGS && a.editingParental -> stringResource(R.string.parental) to stringResource(R.string.parentalHint)
     g.kind == Kind.SETTINGS -> stringResource(R.string.settings) to "MommyTV 0.1.0" // the licence has its own row
     g.kind == Kind.SEARCH -> "" to when {
         g.items.size == 1 -> stringResource(R.string.oneResult)
@@ -488,10 +489,12 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
 
 @Composable
 private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
+    if (a.editingParental) { ParentalRow(a, i, focused); return }
     val row = a.settingsRows[i]
     val (icon, text) = when (row) {
         Setting.CHANGE -> R.drawable.ic_change to stringResource(R.string.change)
         Setting.DELETE -> R.drawable.ic_trash to stringResource(R.string.deleteList)
+        Setting.PARENTAL -> R.drawable.ic_lock to stringResource(if (a.parental.enabled) R.string.parentalIsOn else R.string.parentalIsOff)
         Setting.REMOTE -> R.drawable.ic_phone to stringResource(R.string.remoteTitle)
         Setting.DEDICATION -> R.drawable.ic_heart to stringResource(R.string.dedication)
         Setting.VERSION -> R.drawable.ic_info to "MommyTV 0.1.0 · " + stringResource(R.string.org)
@@ -502,13 +505,25 @@ private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
         Setting.FONT -> R.drawable.ic_info to stringResource(R.string.font)
     }
     val heart = row == Setting.DEDICATION
-    val action = row == Setting.CHANGE || row == Setting.DELETE || row == Setting.REMOTE
+    val action = row == Setting.CHANGE || row == Setting.DELETE || row == Setting.PARENTAL || row == Setting.REMOTE
     Icon(icon, if (heart) Rose else if (focused) FocusFg else if (action) Sky else Muted, 18)
     Spacer(Modifier.width(14.dp))
     Text(
         text, fontSize = 17.sp, fontWeight = if (heart) FontWeight.ExtraBold else if (action) FontWeight.SemiBold else FontWeight.Normal,
         color = if (heart) (if (focused) Color(0xFFBE123C) else Color(0xFFFECDD3)) else if (focused) FocusFg else Fg,
     )
+}
+
+/** The parental editor: one row per category of the list (OK locks or unlocks it), then "turn off". */
+@Composable
+private fun ParentalRow(a: MainActivity, i: Int, focused: Boolean) {
+    val cats = a.catalog?.categories.orEmpty()
+    val off = i >= cats.size
+    val on = !off && a.parental.locks(cats[i])
+    Icon(if (off) R.drawable.ic_trash else if (on) R.drawable.ic_lock else R.drawable.ic_unlock, if (on) Gold else if (focused) FocusFg else Muted, 18)
+    Spacer(Modifier.width(14.dp))
+    Text(if (off) stringResource(R.string.parentalDisable) else cats[i], fontSize = 17.sp, fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
+        color = if (focused) FocusFg else Fg, maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
 
 // ---------- player ----------

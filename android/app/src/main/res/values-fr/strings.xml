@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">Chargement de votre liste…</string>
     <string name="httpError">Le serveur a répondu avec l’erreur %1$s.</string>
     <string name="emptyList" formatted="false">La liste ne contient aucune chaîne.</string>
-    <string name="incompatible" formatted="false">Les chaînes de cette liste ne sont pas compatibles avec ce téléviseur.</string>
     <string name="noConnect" formatted="false">Impossible de se connecter à cette adresse.</string>
     <string name="slow" formatted="false">La liste a mis trop de temps à répondre.</string>
     <string name="shortcuts" formatted="false">Raccourcis</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">Envoyer ma liste à la TV</string>
     <string name="listSent" formatted="false">Liste envoyée à la TV.</string>
     <string name="tvNoApp" formatted="false">MommyTV n’est pas installé sur la TV.</string>
+    <string name="parentalIsOn" formatted="false">Contrôle parental : activé</string>
+    <string name="parentalIsOff" formatted="false">Contrôle parental : désactivé</string>
+    <string name="parentalHint" formatted="false">OK verrouille ou déverrouille chaque catégorie</string>
+    <string name="parentalDisable" formatted="false">Désactiver le contrôle parental</string>
+    <string name="parentalDisableConfirm" formatted="false">Appuyez de nouveau pour désactiver le contrôle parental.</string>
+    <string name="parentalDisabled" formatted="false">Contrôle parental désactivé.</string>
+    <string name="parentalSet" formatted="false">Contrôle parental activé. Choisissez les catégories à verrouiller.</string>
+    <string name="pinNew" formatted="false">Créez un code à 4 chiffres</string>
+    <string name="pinRepeat" formatted="false">Saisissez de nouveau le code</string>
+    <string name="pinMismatch" formatted="false">Les codes ne correspondent pas. Recommencez.</string>
     <string name="dChannel" formatted="false">Chaîne</string>
     <string name="dRes" formatted="false">Résolution réelle</string>
     <string name="dBuffer" formatted="false">Réserve</string>

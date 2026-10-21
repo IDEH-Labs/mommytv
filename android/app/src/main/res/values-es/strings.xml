@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">Cargando tu lista…</string>
     <string name="httpError">El servidor respondió con el error %1$s.</string>
     <string name="emptyList" formatted="false">La lista no contiene canales.</string>
-    <string name="incompatible" formatted="false">Los canales de esta lista no son compatibles con este televisor.</string>
     <string name="noConnect" formatted="false">No se pudo conectar con esa dirección.</string>
     <string name="slow" formatted="false">La lista tardó demasiado en responder.</string>
     <string name="shortcuts" formatted="false">Accesos directos</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">Enviar mi lista a la TV</string>
     <string name="listSent" formatted="false">Lista enviada a la TV.</string>
     <string name="tvNoApp" formatted="false">MommyTV no está instalado en la TV.</string>
+    <string name="parentalIsOn" formatted="false">Control parental: activado</string>
+    <string name="parentalIsOff" formatted="false">Control parental: desactivado</string>
+    <string name="parentalHint" formatted="false">OK bloquea o desbloquea cada categoría</string>
+    <string name="parentalDisable" formatted="false">Desactivar control parental</string>
+    <string name="parentalDisableConfirm" formatted="false">Pulsa otra vez para desactivar el control parental.</string>
+    <string name="parentalDisabled" formatted="false">Control parental desactivado.</string>
+    <string name="parentalSet" formatted="false">Control parental activado. Elige qué categorías bloquear.</string>
+    <string name="pinNew" formatted="false">Crea un PIN de 4 dígitos</string>
+    <string name="pinRepeat" formatted="false">Repite el PIN</string>
+    <string name="pinMismatch" formatted="false">Los PIN no coinciden. Empieza de nuevo.</string>
     <string name="dChannel" formatted="false">Canal</string>
     <string name="dRes" formatted="false">Resolución real</string>
     <string name="dBuffer" formatted="false">Reserva</string>

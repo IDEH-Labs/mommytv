@@ -4,8 +4,7 @@
   'use strict';
   var T = {
     es: {
-      loading: 'Cargando tu lista…', httpError: 'El servidor respondió con el error {0}.', emptyList: 'La lista no contiene canales.',
-      incompatible: 'Los canales de esta lista no son compatibles con este televisor.', noConnect: 'No se pudo conectar con esa dirección.',
+      loading: 'Cargando tu lista…', httpError: 'El servidor respondió con el error {0}.', emptyList: 'La lista no contiene canales.', noConnect: 'No se pudo conectar con esa dirección.',
       slow: 'La lista tardó demasiado en responder.',
       shortcuts: 'Accesos directos', all: 'Todos', inLang: 'En español', change: 'Cambiar lista', search: 'Buscar', favs: 'Favoritos',
       countries: 'Países', settings: 'Ajustes', dedication: 'Dedicado a Mami Analida',
@@ -32,6 +31,9 @@
       remoteIntro: 'Empareja este teléfono con tu TV LG para elegir desde aquí lo que se ve en ella.', remoteFind: 'Buscar mi TV', remoteSearching: 'Buscando tu TV LG en la red…',
       remoteNone: 'No encontré ninguna TV LG. Comprueba que esté encendida y en la misma red Wi-Fi.', remoteAccept: 'Acepta el aviso en la pantalla de la TV.', remoteConnected: 'Conectado a {0}',
       sendList: 'Enviar mi lista a la TV', listSent: 'Lista enviada a la TV.', tvNoApp: 'MommyTV no está instalado en la TV.',
+      parentalIsOn: 'Control parental: activado', parentalIsOff: 'Control parental: desactivado', parentalHint: 'OK bloquea o desbloquea cada categoría',
+      parentalDisable: 'Desactivar control parental', parentalDisableConfirm: 'Pulsa otra vez para desactivar el control parental.', parentalDisabled: 'Control parental desactivado.',
+      parentalSet: 'Control parental activado. Elige qué categorías bloquear.', pinNew: 'Crea un PIN de 4 dígitos', pinRepeat: 'Repite el PIN', pinMismatch: 'Los PIN no coinciden. Empieza de nuevo.',
       dChannel: 'Canal', dRes: 'Resolución real', dBuffer: 'Reserva', dStart: 'Arranque', dStalls: 'Cortes', dDropped: 'Cuadros perdidos',
       dOf: '{0} de {1}', dLoading: 'cargando…', dScreen: 'Solo en pantalla', dClose: 'botón azul para cerrar',
       diagOn: 'Diagnóstico activado', diagOff: 'Diagnóstico desactivado',
@@ -42,8 +44,7 @@
       date: '{D} {d} de {m}'
     },
     en: {
-      loading: 'Loading your playlist…', httpError: 'The server answered with error {0}.', emptyList: 'The playlist has no channels.',
-      incompatible: 'The channels in this playlist are not compatible with this TV.', noConnect: 'Could not connect to that address.',
+      loading: 'Loading your playlist…', httpError: 'The server answered with error {0}.', emptyList: 'The playlist has no channels.', noConnect: 'Could not connect to that address.',
       slow: 'The playlist took too long to answer.',
       shortcuts: 'Shortcuts', all: 'All', inLang: 'In English', change: 'Change playlist', search: 'Search', favs: 'Favourites',
       countries: 'Countries', settings: 'Settings', dedication: 'Dedicated to Mami Analida',
@@ -70,6 +71,9 @@
       remoteIntro: 'Pair this phone with your LG TV to choose from here what it shows.', remoteFind: 'Find my TV', remoteSearching: 'Looking for your LG TV on the network…',
       remoteNone: 'No LG TV found. Check that it is on and on the same Wi-Fi.', remoteAccept: 'Accept the prompt on the TV screen.', remoteConnected: 'Connected to {0}',
       sendList: 'Send my playlist to the TV', listSent: 'Playlist sent to the TV.', tvNoApp: 'MommyTV is not installed on the TV.',
+      parentalIsOn: 'Parental control: on', parentalIsOff: 'Parental control: off', parentalHint: 'OK locks or unlocks each category',
+      parentalDisable: 'Turn off parental control', parentalDisableConfirm: 'Press again to turn off parental control.', parentalDisabled: 'Parental control turned off.',
+      parentalSet: 'Parental control is on. Choose which categories to lock.', pinNew: 'Create a 4-digit PIN', pinRepeat: 'Type the PIN again', pinMismatch: 'The PINs do not match. Start again.',
       dChannel: 'Channel', dRes: 'Actual resolution', dBuffer: 'Buffer', dStart: 'Start-up', dStalls: 'Stalls', dDropped: 'Dropped frames',
       dOf: '{0} of {1}', dLoading: 'loading…', dScreen: 'On screen only', dClose: 'blue key to close',
       diagOn: 'Diagnostics on', diagOff: 'Diagnostics off',
@@ -80,8 +84,7 @@
       date: '{D}, {m} {d}'
     },
     fr: {
-      loading: 'Chargement de votre liste…', httpError: 'Le serveur a répondu avec l’erreur {0}.', emptyList: 'La liste ne contient aucune chaîne.',
-      incompatible: 'Les chaînes de cette liste ne sont pas compatibles avec ce téléviseur.', noConnect: 'Impossible de se connecter à cette adresse.',
+      loading: 'Chargement de votre liste…', httpError: 'Le serveur a répondu avec l’erreur {0}.', emptyList: 'La liste ne contient aucune chaîne.', noConnect: 'Impossible de se connecter à cette adresse.',
       slow: 'La liste a mis trop de temps à répondre.',
       shortcuts: 'Raccourcis', all: 'Toutes', inLang: 'En français', change: 'Changer de liste', search: 'Rechercher', favs: 'Favoris',
       countries: 'Pays', settings: 'Réglages', dedication: 'Dédié à Mami Analida',
@@ -108,6 +111,9 @@
       remoteIntro: 'Associez ce téléphone à votre TV LG pour choisir d’ici ce qu’elle affiche.', remoteFind: 'Trouver ma TV', remoteSearching: 'Recherche de votre TV LG sur le réseau…',
       remoteNone: 'Aucune TV LG trouvée. Vérifiez qu’elle est allumée et sur le même Wi-Fi.', remoteAccept: 'Acceptez le message sur l’écran de la TV.', remoteConnected: 'Connecté à {0}',
       sendList: 'Envoyer ma liste à la TV', listSent: 'Liste envoyée à la TV.', tvNoApp: 'MommyTV n’est pas installé sur la TV.',
+      parentalIsOn: 'Contrôle parental : activé', parentalIsOff: 'Contrôle parental : désactivé', parentalHint: 'OK verrouille ou déverrouille chaque catégorie',
+      parentalDisable: 'Désactiver le contrôle parental', parentalDisableConfirm: 'Appuyez de nouveau pour désactiver le contrôle parental.', parentalDisabled: 'Contrôle parental désactivé.',
+      parentalSet: 'Contrôle parental activé. Choisissez les catégories à verrouiller.', pinNew: 'Créez un code à 4 chiffres', pinRepeat: 'Saisissez de nouveau le code', pinMismatch: 'Les codes ne correspondent pas. Recommencez.',
       dChannel: 'Chaîne', dRes: 'Résolution réelle', dBuffer: 'Réserve', dStart: 'Démarrage', dStalls: 'Coupures', dDropped: 'Images perdues',
       dOf: '{0} sur {1}', dLoading: 'chargement…', dScreen: 'À l’écran uniquement', dClose: 'touche bleue pour fermer',
       diagOn: 'Diagnostic activé', diagOff: 'Diagnostic désactivé',
@@ -118,8 +124,7 @@
       date: '{D} {d} {m}'
     },
     de: {
-      loading: 'Deine Liste wird geladen…', httpError: 'Der Server antwortete mit Fehler {0}.', emptyList: 'Die Liste enthält keine Sender.',
-      incompatible: 'Die Sender dieser Liste sind mit diesem Fernseher nicht kompatibel.', noConnect: 'Keine Verbindung zu dieser Adresse.',
+      loading: 'Deine Liste wird geladen…', httpError: 'Der Server antwortete mit Fehler {0}.', emptyList: 'Die Liste enthält keine Sender.', noConnect: 'Keine Verbindung zu dieser Adresse.',
       slow: 'Die Liste hat zu lange gebraucht.',
       shortcuts: 'Verknüpfungen', all: 'Alle', inLang: 'Auf Deutsch', change: 'Liste wechseln', search: 'Suchen', favs: 'Favoriten',
       countries: 'Länder', settings: 'Einstellungen', dedication: 'Gewidmet Mami Analida',
@@ -146,6 +151,9 @@
       remoteIntro: 'Kopple dieses Handy mit deinem LG-Fernseher, um von hier aus zu wählen, was er zeigt.', remoteFind: 'Meinen Fernseher suchen', remoteSearching: 'Dein LG-Fernseher wird im Netzwerk gesucht…',
       remoteNone: 'Kein LG-Fernseher gefunden. Prüfe, ob er eingeschaltet und im selben WLAN ist.', remoteAccept: 'Bestätige die Meldung auf dem Fernseher.', remoteConnected: 'Verbunden mit {0}',
       sendList: 'Meine Liste an den Fernseher senden', listSent: 'Liste an den Fernseher gesendet.', tvNoApp: 'MommyTV ist auf dem Fernseher nicht installiert.',
+      parentalIsOn: 'Jugendschutz: an', parentalIsOff: 'Jugendschutz: aus', parentalHint: 'OK sperrt oder entsperrt jede Kategorie',
+      parentalDisable: 'Jugendschutz ausschalten', parentalDisableConfirm: 'Drücke noch einmal, um den Jugendschutz auszuschalten.', parentalDisabled: 'Jugendschutz ausgeschaltet.',
+      parentalSet: 'Jugendschutz ist an. Wähle, welche Kategorien gesperrt werden.', pinNew: 'Lege eine 4-stellige PIN fest', pinRepeat: 'Gib die PIN noch einmal ein', pinMismatch: 'Die PINs stimmen nicht überein. Fang noch einmal an.',
       dChannel: 'Sender', dRes: 'Tatsächliche Auflösung', dBuffer: 'Puffer', dStart: 'Start', dStalls: 'Aussetzer', dDropped: 'Verlorene Bilder',
       dOf: '{0} von {1}', dLoading: 'lädt…', dScreen: 'Nur auf dem Bildschirm', dClose: 'blaue Taste zum Schließen',
       diagOn: 'Diagnose an', diagOff: 'Diagnose aus',
@@ -156,8 +164,7 @@
       date: '{D}, {d}. {m}'
     },
     it: {
-      loading: 'Caricamento della tua lista…', httpError: 'Il server ha risposto con l’errore {0}.', emptyList: 'La lista non contiene canali.',
-      incompatible: 'I canali di questa lista non sono compatibili con questo televisore.', noConnect: 'Impossibile connettersi a questo indirizzo.',
+      loading: 'Caricamento della tua lista…', httpError: 'Il server ha risposto con l’errore {0}.', emptyList: 'La lista non contiene canali.', noConnect: 'Impossibile connettersi a questo indirizzo.',
       slow: 'La lista ha impiegato troppo tempo a rispondere.',
       shortcuts: 'Scorciatoie', all: 'Tutti', inLang: 'In italiano', change: 'Cambia lista', search: 'Cerca', favs: 'Preferiti',
       countries: 'Paesi', settings: 'Impostazioni', dedication: 'Dedicato a Mami Analida',
@@ -184,6 +191,9 @@
       remoteIntro: 'Associa questo telefono alla tua TV LG per scegliere da qui cosa mostra.', remoteFind: 'Cerca la mia TV', remoteSearching: 'Ricerca della tua TV LG nella rete…',
       remoteNone: 'Nessuna TV LG trovata. Controlla che sia accesa e sulla stessa rete Wi-Fi.', remoteAccept: 'Accetta il messaggio sullo schermo della TV.', remoteConnected: 'Connesso a {0}',
       sendList: 'Invia la mia lista alla TV', listSent: 'Lista inviata alla TV.', tvNoApp: 'MommyTV non è installato sulla TV.',
+      parentalIsOn: 'Controllo parentale: attivo', parentalIsOff: 'Controllo parentale: disattivato', parentalHint: 'OK blocca o sblocca ogni categoria',
+      parentalDisable: 'Disattiva il controllo parentale', parentalDisableConfirm: 'Premi di nuovo per disattivare il controllo parentale.', parentalDisabled: 'Controllo parentale disattivato.',
+      parentalSet: 'Controllo parentale attivo. Scegli quali categorie bloccare.', pinNew: 'Crea un PIN di 4 cifre', pinRepeat: 'Scrivi di nuovo il PIN', pinMismatch: 'I PIN non coincidono. Ricomincia.',
       dChannel: 'Canale', dRes: 'Risoluzione reale', dBuffer: 'Riserva', dStart: 'Avvio', dStalls: 'Interruzioni', dDropped: 'Fotogrammi persi',
       dOf: '{0} di {1}', dLoading: 'caricamento…', dScreen: 'Solo sullo schermo', dClose: 'tasto blu per chiudere',
       diagOn: 'Diagnostica attiva', diagOff: 'Diagnostica disattivata',
@@ -194,8 +204,7 @@
       date: '{D} {d} {m}'
     },
     pt: {
-      loading: 'A carregar a sua lista…', httpError: 'O servidor respondeu com o erro {0}.', emptyList: 'A lista não contém canais.',
-      incompatible: 'Os canais desta lista não são compatíveis com este televisor.', noConnect: 'Não foi possível ligar a esse endereço.',
+      loading: 'A carregar a sua lista…', httpError: 'O servidor respondeu com o erro {0}.', emptyList: 'A lista não contém canais.', noConnect: 'Não foi possível ligar a esse endereço.',
       slow: 'A lista demorou demasiado a responder.',
       shortcuts: 'Atalhos', all: 'Todos', inLang: 'Em português', change: 'Mudar de lista', search: 'Pesquisar', favs: 'Favoritos',
       countries: 'Países', settings: 'Definições', dedication: 'Dedicado à Mami Analida',
@@ -222,6 +231,9 @@
       remoteIntro: 'Emparelhe este telemóvel com a sua TV LG para escolher daqui o que ela mostra.', remoteFind: 'Procurar a minha TV', remoteSearching: 'A procurar a sua TV LG na rede…',
       remoteNone: 'Nenhuma TV LG encontrada. Verifique se está ligada e na mesma rede Wi-Fi.', remoteAccept: 'Aceite o aviso no ecrã da TV.', remoteConnected: 'Ligado a {0}',
       sendList: 'Enviar a minha lista para a TV', listSent: 'Lista enviada para a TV.', tvNoApp: 'O MommyTV não está instalado na TV.',
+      parentalIsOn: 'Controlo parental: ativado', parentalIsOff: 'Controlo parental: desativado', parentalHint: 'OK bloqueia ou desbloqueia cada categoria',
+      parentalDisable: 'Desativar controlo parental', parentalDisableConfirm: 'Prima novamente para desativar o controlo parental.', parentalDisabled: 'Controlo parental desativado.',
+      parentalSet: 'Controlo parental ativado. Escolha que categorias bloquear.', pinNew: 'Crie um PIN de 4 dígitos', pinRepeat: 'Escreva o PIN novamente', pinMismatch: 'Os PIN não coincidem. Comece de novo.',
       dChannel: 'Canal', dRes: 'Resolução real', dBuffer: 'Reserva', dStart: 'Arranque', dStalls: 'Cortes', dDropped: 'Fotogramas perdidos',
       dOf: '{0} de {1}', dLoading: 'a carregar…', dScreen: 'Apenas no ecrã', dClose: 'tecla azul para fechar',
       diagOn: 'Diagnóstico ativo', diagOff: 'Diagnóstico desativado',
@@ -232,8 +244,7 @@
       date: '{D}, {d} de {m}'
     },
     zh: {
-      loading: '正在加载你的列表…', httpError: '服务器返回错误 {0}。', emptyList: '该列表没有频道。',
-      incompatible: '该列表中的频道与此电视不兼容。', noConnect: '无法连接到该地址。',
+      loading: '正在加载你的列表…', httpError: '服务器返回错误 {0}。', emptyList: '该列表没有频道。', noConnect: '无法连接到该地址。',
       slow: '列表响应时间过长。',
       shortcuts: '快捷方式', all: '全部', inLang: '中文频道', change: '更换列表', search: '搜索', favs: '收藏',
       countries: '国家和地区', settings: '设置', dedication: '献给 Mami Analida',
@@ -260,6 +271,9 @@
       remoteIntro: '将这部手机与你的 LG 电视配对，即可从这里选择电视播放的内容。', remoteFind: '查找我的电视', remoteSearching: '正在网络中查找你的 LG 电视…',
       remoteNone: '没有找到 LG 电视。请确认电视已开机并连接同一 Wi-Fi。', remoteAccept: '请在电视屏幕上接受提示。', remoteConnected: '已连接到 {0}',
       sendList: '把我的列表发送到电视', listSent: '列表已发送到电视。', tvNoApp: '电视上没有安装 MommyTV。',
+      parentalIsOn: '家长控制：已开启', parentalIsOff: '家长控制：已关闭', parentalHint: '按 OK 锁定或解锁各个类别',
+      parentalDisable: '关闭家长控制', parentalDisableConfirm: '再按一次即可关闭家长控制。', parentalDisabled: '家长控制已关闭。',
+      parentalSet: '家长控制已开启。请选择要锁定的类别。', pinNew: '设置 4 位 PIN', pinRepeat: '再次输入 PIN', pinMismatch: '两次输入的 PIN 不一致，请重新开始。',
       dChannel: '频道', dRes: '实际分辨率', dBuffer: '缓冲', dStart: '启动', dStalls: '中断', dDropped: '丢帧',
       dOf: '{0} / {1}', dLoading: '加载中…', dScreen: '仅显示在屏幕上', dClose: '按蓝色键关闭',
       diagOn: '诊断已开启', diagOff: '诊断已关闭',
@@ -270,8 +284,7 @@
       date: '{m}月{d}日 {D}'
     },
     ja: {
-      loading: 'リストを読み込み中…', httpError: 'サーバーがエラー {0} を返しました。', emptyList: 'リストにチャンネルがありません。',
-      incompatible: 'このリストのチャンネルはこのテレビに対応していません。', noConnect: 'そのアドレスに接続できませんでした。',
+      loading: 'リストを読み込み中…', httpError: 'サーバーがエラー {0} を返しました。', emptyList: 'リストにチャンネルがありません。', noConnect: 'そのアドレスに接続できませんでした。',
       slow: 'リストの応答に時間がかかりすぎました。',
       shortcuts: 'ショートカット', all: 'すべて', inLang: '日本語のチャンネル', change: 'リストを変更', search: '検索', favs: 'お気に入り',
       countries: '国と地域', settings: '設定', dedication: 'Mami Analida に捧ぐ',
@@ -298,6 +311,9 @@
       remoteIntro: 'このスマホを LG テレビとペアリングすると、ここからテレビの番組を選べます。', remoteFind: 'テレビを探す', remoteSearching: 'ネットワーク内で LG テレビを探しています…',
       remoteNone: 'LG テレビが見つかりません。電源が入っていて同じ Wi-Fi に接続しているか確認してください。', remoteAccept: 'テレビの画面に表示された確認を承認してください。', remoteConnected: '{0} に接続しました',
       sendList: 'リストをテレビに送る', listSent: 'リストをテレビに送りました。', tvNoApp: 'テレビに MommyTV がインストールされていません。',
+      parentalIsOn: 'ペアレンタルコントロール：オン', parentalIsOff: 'ペアレンタルコントロール：オフ', parentalHint: 'OK で各カテゴリをロック・解除します',
+      parentalDisable: 'ペアレンタルコントロールをオフにする', parentalDisableConfirm: 'もう一度押すとペアレンタルコントロールをオフにします。', parentalDisabled: 'ペアレンタルコントロールをオフにしました。',
+      parentalSet: 'ペアレンタルコントロールがオンです。ロックするカテゴリを選んでください。', pinNew: '4 桁の PIN を作成してください', pinRepeat: 'PIN をもう一度入力してください', pinMismatch: 'PIN が一致しません。最初からやり直してください。',
       dChannel: 'チャンネル', dRes: '実際の解像度', dBuffer: 'バッファ', dStart: '起動', dStalls: '途切れ', dDropped: 'ドロップフレーム',
       dOf: '{0} / {1}', dLoading: '読み込み中…', dScreen: '画面表示のみ', dClose: '青ボタンで閉じる',
       diagOn: '診断オン', diagOff: '診断オフ',
@@ -308,7 +324,7 @@
       date: '{m}月{d}日（{D}）'
     }
   };
-  // ISO 639-3 codes used by iptv-org for "channels in your language"
+  // ISO 639-3 codes (tvg-language) for "channels in your language"
   var ISO3 = { es: 'spa', en: 'eng', fr: 'fra', de: 'deu', it: 'ita', pt: 'por', zh: 'zho', ja: 'jpn' };
   var lang = String(root.navigator && navigator.language || 'en').slice(0, 2).toLowerCase();
   if (!T[lang]) lang = 'en';

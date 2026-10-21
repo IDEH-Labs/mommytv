@@ -7,11 +7,9 @@
   var LIST_ROWS = 6;
   var STORE_URL = 'playlistUrl';
   var STORE_PINS = 'mtvPins';      // channel URLs marked as favourite, in order
+  var STORE_PARENTAL = 'mtvParental'; // { salt, hash, locked: [categories] }: the PIN only as a salted SHA-256
   var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
   var STORE_COPY = 'mtvListCopy';  // a copy of the remembered playlist, used when its site does not answer
-  var STORE_TLS = 'mtvLetsEncrypt'; // { ok: bool, at: ms }: can this TV open Let's Encrypt HTTPS?
-  var TLS_PROBE = 'https://acme-v02.api.letsencrypt.org/directory'; // official, tiny, allows CORS
-  var TLS_MAX_AGE = 7 * 24 * 3600 * 1000;
   var SEARCH_MAX = 300;
   var SHORTCUT = 'webos-app://';   // playlist entry that opens an installed app instead of a stream
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
@@ -36,9 +34,11 @@
   // Ajustes: the rows that do something first, then the dedication and the information
   var ROW_CHANGE = 0;
   var ROW_DELETE = 1;
+  var ROW_PARENTAL = 2;
   var SETTINGS = [
     ['change', t('change')],
     ['trash', t('deleteList')],
+    ['lock', ''], // "Control parental: activado / desactivado", written when shown
     ['heart', t('dedication')],
     ['info', 'MommyTV ' + VERSION + ' · ' + t('org')],
     ['info', t('license')],
@@ -78,11 +78,16 @@
   var osdTimer = null;
   var bannerTimer = null;
   var searchTimer = null;
-  var diagOn = false;     // blue key: on-screen stats, also saved on the user's own PC by the manager
+  var diagOn = false;     // blue key: on-screen playback stats
   var stats = {};
   var retries = 0;
-  var parental = { salt: '', hash: '', locked: {} }; // from the playlist header written by MommyTV Manager
+  var parental = loadParental();
   var unlocked = false;   // the PIN was typed in this session
+  var catNames = [];      // the categories of the list, for choosing which ones to lock
+  var editingParental = false; // Ajustes shows the categories to lock instead of its rows
+  var parentalArmed = 0;  // time of the first OK on "Desactivar control parental"
+  var pinMode = 'check';  // 'check' a PIN, or create one: 'new' then 'repeat'
+  var pinFirst = '';
   var pinBuf = '';
   var pinDone = null;
   var pinFails = 0;
@@ -96,6 +101,17 @@
       localStorage.setItem(key, value);
     } catch (e) { /* storage unavailable: nothing is remembered */ }
     return null;
+  }
+
+  function loadParental() {
+    var p = storeJson(STORE_PARENTAL) || {};
+    var locked = {};
+    (p.locked || []).forEach(function (c) { locked[c] = true; });
+    return { salt: p.salt || '', hash: p.hash || '', locked: locked };
+  }
+
+  function saveParental() {
+    storeJson(STORE_PARENTAL, { salt: parental.salt, hash: parental.hash, locked: Object.keys(parental.locked) });
   }
 
   function storeJson(key, value) {
@@ -137,27 +153,6 @@
     if (setupSel === 0) ui.url.focus(); else ui.url.blur();
   }
 
-  // Older webOS TVs (e.g. 2019, Chromium 53) lack the current Let's Encrypt root; channels marked with it
-  // are then hidden instead of failing one by one. Newer TVs keep them.
-  function checkLetsEncrypt(cb) {
-    var saved = storeJson(STORE_TLS);
-    if (saved && Date.now() - saved.at < TLS_MAX_AGE) { cb(saved.ok); return; }
-    var done = false;
-    var finish = function (ok, remember) {
-      if (done) return;
-      done = true;
-      if (remember) storeJson(STORE_TLS, { ok: ok, at: Date.now() });
-      cb(ok);
-    };
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', TLS_PROBE, true);
-    xhr.timeout = 6000;
-    xhr.onload = function () { finish(true, true); };
-    xhr.onerror = function () { finish(false, navigator.onLine !== false); };
-    xhr.ontimeout = function () { finish(true, false); }; // unknown: show everything, ask again next time
-    xhr.send();
-  }
-
   // Loads the playlist the user gave. Remembered (with a copy) unless "Recordar esta lista" is off;
   // when its site does not answer, a remembered list starts from the copy.
   function load(url, fromCopy) {
@@ -183,15 +178,7 @@
   }
 
   function useText(text) {
-    var list = M3U.parse(text);
-    var head = M3U.header(text);
-    var pin = head.pin.split(':');
-    parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
-    head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
-    checkLetsEncrypt(function (ok) {
-      var usable = ok ? list : list.filter(function (ch) { return ch.cert !== 'letsencrypt'; });
-      if (usable.length) useList(usable); else fail(t('incompatible'));
-    });
+    useList(M3U.parse(text));
   }
 
   // "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, last channel).
@@ -225,7 +212,6 @@
   }
 
   function useList(list) {
-    list = list.filter(function (ch) { return ch.nsfw !== '1'; }); // adult channels are never shown
     channels = list;
     urlIndex = null;
     var region = (/-([A-Za-z]{2})$/.exec(navigator.language || '') || [])[1];
@@ -244,18 +230,19 @@
       describe(ch);
       if (ch.url.indexOf(SHORTCUT) === 0) { shortcuts.items.push(i); continue; }
       all.items.push(i);
-      var names = ch.cats ? ch.cats.split(';') : [ch.group || t('noGroup')];
+      var names = ch.group ? ch.group.split(';') : [t('noGroup')];
       for (var n = 0; n < names.length; n++) {
         if (names[n]) add(byCat, cats, names[n], function () { return { name: names[n], kind: 'list', items: [] }; }).items.push(i);
       }
       if (ch.country) {
-        add(byCountry, countries, ch.country, function () { return { code: ch.country, name: ch.countryName || ch.country, items: [] }; }).items.push(i);
-        if (ch.country === region) { home.items.push(i); home.name = ch.countryName || region; }
+        add(byCountry, countries, ch.country, function () { return { code: ch.country, name: ch.country, items: [] }; }).items.push(i);
+        if (ch.country === region) { home.items.push(i); home.name = region; }
       }
       if ((';' + ch.langs + ';').indexOf(';' + I18N.iso3 + ';') >= 0) spanish.items.push(i);
     }
     var bySize = function (a, b) { return b.items.length - a.items.length; };
     cats.sort(bySize);
+    catNames = cats.map(function (g) { return g.name; });
     countries.sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
     groups = [
       searchGroup = { name: t('search'), kind: 'search', items: [], query: '' },
@@ -351,7 +338,7 @@
   function channelsText(n) { return n === 1 ? t('oneChannel') : t('nChannels', n); }
 
   function showingCountries(g) { return g.kind === 'countries' && !g.country; }
-  function listLength(g) { return g.kind === 'settings' ? SETTINGS.length : showingCountries(g) ? g.countries.length : g.items.length; }
+  function listLength(g) { return g.kind === 'settings' ? (editingParental ? catNames.length + 1 : SETTINGS.length) : showingCountries(g) ? g.countries.length : g.items.length; }
 
   /* ---------- browser rendering ---------- */
 
@@ -403,6 +390,7 @@
     fav: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>',
     change: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 3.5v5.2h-5.2"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20.5v-5.2h5.2"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
+    unlock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 7.6-1.7"/></svg>',
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>',
@@ -451,8 +439,27 @@
   };
 
   var settingsFill = {
-    stamp: function (i) { return 'settings' + i; },
+    stamp: function (i) {
+      if (editingParental) return 'parental' + i + (parental.locked[catNames[i]] ? '1' : '0');
+      return 'settings' + i + (i === ROW_PARENTAL && parental.hash ? 'on' : '');
+    },
     row: function (li, i) {
+      if (editingParental) {
+        if (i < catNames.length) {
+          var on = !!parental.locked[catNames[i]];
+          li.appendChild(icon(on ? 'lock' : 'unlock', on ? 'gold' : ''));
+          li.appendChild(span('name', catNames[i]));
+        } else {
+          li.appendChild(icon('trash'));
+          li.appendChild(span('name', t('parentalDisable')));
+        }
+        return;
+      }
+      if (i === ROW_PARENTAL) {
+        li.appendChild(icon('lock', parental.hash ? 'gold' : ''));
+        li.appendChild(span('name', t(parental.hash ? 'parentalIsOn' : 'parentalIsOff')));
+        return;
+      }
       var heart = SETTINGS[i][0] === 'heart';
       li.appendChild(icon(SETTINGS[i][0], heart ? 'rose' : ''));
       li.appendChild(span('name' + (heart ? ' dedication' : ''), SETTINGS[i][1]));
@@ -487,8 +494,8 @@
       var logo = document.createElement('img');
       logo.src = 'img/icon_130x130.png';
       ui.heroTile.appendChild(logo);
-      ui.heroName.textContent = t('settings');
-      ui.heroGroup.textContent = 'MommyTV ' + VERSION; // the licence has its own row
+      ui.heroName.textContent = editingParental ? t('parental') : t('settings');
+      ui.heroGroup.textContent = editingParental ? t('parentalHint') : 'MommyTV ' + VERSION; // the licence has its own row
       ui.heroQ.textContent = '';
       return;
     }
@@ -515,7 +522,7 @@
     }
     setTile(ui.heroTile, ch);
     ui.heroName.textContent = ch.title;
-    var where = g.kind === 'countries' ? g.country.name : (ch.cats ? ch.cats.split(';')[0] : ch.group || t('noGroup'));
+    var where = g.kind === 'countries' ? g.country.name : (ch.group ? ch.group.split(';')[0] : t('noGroup'));
     ui.heroGroup.textContent = (ch.url.indexOf(SHORTCUT) === 0 ? t('officialApp') : where) + (isPinned(ch) ? '  ·  ' + t('favourite') : '');
     ui.heroQ.textContent = ch.q;
   }
@@ -555,6 +562,7 @@
     if (k === KEY.UP || k === KEY.DOWN) {
       var d = k === KEY.UP ? -1 : 1;
       if (col === 'g') {
+        if (editingParental) { editingParental = false; unlocked = false; }
         gSel = (gSel + d + groups.length) % groups.length; // wraps: up from the top reaches Ajustes
         cSel = 0;
         if (groups[gSel].kind === 'fav') refreshFavourites();
@@ -567,23 +575,35 @@
     } else if (k === KEY.RIGHT || (k === KEY.OK && col === 'g')) {
       if (listLength(g)) col = 'c';
     } else if (k === KEY.LEFT) {
+      if (editingParental) closeParental();
       col = 'g';
+    } else if (k === KEY.OK && g.kind === 'settings' && editingParental) {
+      parentalKey();
     } else if (k === KEY.OK && g.kind === 'settings') {
       if (cSel === ROW_CHANGE) {
-        ui.url.value = store(STORE_URL) || ui.url.value;
-        setupSel = 0;
-        show('setup');
+        withPin(function () { // with parental control on, another list must not get around it
+          ui.url.value = store(STORE_URL) || ui.url.value;
+          setupSel = 0;
+          show('setup');
+        });
         return true;
       }
       if (cSel === ROW_DELETE && store(STORE_URL)) {
         if (Date.now() - deleteArmed > 5000) { deleteArmed = Date.now(); osd(t('deleteConfirm')); return true; }
         deleteArmed = 0;
-        forgetList(true);
-        channels = [];
-        ui.url.value = '';
-        setupSel = 0;
-        show('setup');
-        status(t('listDeleted'), false);
+        withPin(function () {
+          forgetList(true);
+          channels = [];
+          ui.url.value = '';
+          setupSel = 0;
+          show('setup');
+          status(t('listDeleted'), false);
+        });
+        return true;
+      }
+      if (cSel === ROW_PARENTAL) {
+        if (parental.hash) withPin(openParental, true);
+        else newPin(function () { openParental(); osd(t('parentalSet')); });
         return true;
       } // the other rows are information only
     } else if (k === KEY.OK && showingCountries(g)) {
@@ -591,6 +611,8 @@
       g.items = g.country.items;
       g.back = cSel;
       cSel = 0;
+    } else if (k === KEY.BACK && editingParental) {
+      closeParental();
     } else if (k === KEY.BACK && col === 'c' && g.kind === 'countries' && g.country) {
       g.country = null;
       g.items = [];
@@ -639,7 +661,7 @@
 
   function foreignChannel(c) {
     for (var i = channels.length - 1; i >= 0 && channels[i].foreign; i--) if (channels[i].url === c.url) return i;
-    var ch = { name: c.title || c.url, logo: c.logo || '', group: '', cert: '', country: '', countryName: '', langs: '', cats: '', nsfw: '', url: c.url, foreign: true };
+    var ch = { name: c.title || c.url, logo: c.logo || '', group: '', country: '', langs: '', url: c.url, foreign: true };
     describe(ch);
     channels.push(ch);
     return channels.length - 1;
@@ -671,17 +693,68 @@
   function isLocked(ch) {
     if (!parental.hash || unlocked) return false;
     if (ch.foreign) return true; // from a phone's list: its category is unknown here
-    var cats = ch.cats ? ch.cats.split(';') : [ch.group || ''];
+    var cats = ch.group ? ch.group.split(';') : [''];
     for (var i = 0; i < cats.length; i++) if (parental.locked[cats[i]]) return true;
     return false;
   }
 
+  // The parental editor: Ajustes lists the categories; OK locks or unlocks one, the last row turns it off.
+  function openParental() { editingParental = true; parentalArmed = 0; col = 'c'; cSel = 0; renderBrowser(); }
+
+  function closeParental() {
+    editingParental = false;
+    unlocked = false; // leaving the editor locks again
+    cSel = ROW_PARENTAL;
+    renderBrowser();
+  }
+
+  function parentalKey() {
+    if (cSel < catNames.length) {
+      var c = catNames[cSel];
+      if (parental.locked[c]) delete parental.locked[c]; else parental.locked[c] = true;
+      saveParental();
+    } else if (Date.now() - parentalArmed > 5000) {
+      parentalArmed = Date.now();
+      osd(t('parentalDisableConfirm'));
+    } else {
+      parental = { salt: '', hash: '', locked: {} };
+      saveParental();
+      editingParental = false;
+      cSel = ROW_PARENTAL;
+      osd(t('parentalDisabled'));
+    }
+    renderBrowser();
+  }
+
+  // Runs fn now when parental control is off or already unlocked; otherwise after the right PIN.
+  // always: ask even if unlocked (to open the editor).
+  function withPin(fn, always) {
+    if (!parental.hash || (unlocked && !always)) fn(); else askPin(fn);
+  }
+
+  function newPin(done) {
+    pinMode = 'new';
+    pinDone = done;
+    pinBuf = '';
+    ui.pin.className = '';
+    renderPin();
+  }
+
+  function randomSalt() {
+    var a = new Uint8Array(8);
+    window.crypto.getRandomValues(a);
+    var s = '';
+    for (var i = 0; i < a.length; i++) s += (a[i] < 16 ? '0' : '') + a[i].toString(16);
+    return s;
+  }
+
   function renderPin(msg) {
-    ui.pinMsg.textContent = msg || t('pinPrompt');
+    ui.pinMsg.textContent = msg || t(pinMode === 'new' ? 'pinNew' : pinMode === 'repeat' ? 'pinRepeat' : 'pinPrompt');
     for (var i = 0; i < 4; i++) ui.pinDots.children[i].className = i < pinBuf.length ? 'on' : '';
   }
 
   function askPin(done) {
+    pinMode = 'check';
     pinDone = done;
     pinBuf = '';
     ui.pin.className = '';
@@ -690,6 +763,7 @@
 
   function closePin() {
     pinDone = null;
+    pinMode = 'check';
     ui.pin.className = 'hidden';
   }
 
@@ -701,6 +775,17 @@
     pinBuf += digit;
     renderPin();
     if (pinBuf.length < 4) return;
+    if (pinMode === 'new') { pinFirst = pinBuf; pinBuf = ''; pinMode = 'repeat'; renderPin(); return; }
+    if (pinMode === 'repeat') {
+      if (pinBuf !== pinFirst) { pinMode = 'new'; pinBuf = ''; renderPin(t('pinMismatch')); return; }
+      parental.salt = randomSalt();
+      parental.hash = sha256(parental.salt + ':' + pinBuf);
+      saveParental();
+      var made = pinDone;
+      closePin();
+      if (made) made();
+      return;
+    }
     if (sha256(parental.salt + ':' + pinBuf) === parental.hash) {
       unlocked = true;
       pinFails = 0;
@@ -986,7 +1071,7 @@
     });
   }
 
-  try { ['mtvRemote', 'mtvWatch', 'mtvHidden'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { /* the old PC remote and watch counts */ }
+  try { ['mtvRemote', 'mtvWatch', 'mtvHidden', 'mtvLetsEncrypt'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) { /* the old PC remote and watch counts */ }
   var launch = (window.webOSSystem || window.PalmSystem || {}).launchParams;
   var saved = store(STORE_URL);
   if (saved) {

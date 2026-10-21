@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">リストを読み込み中…</string>
     <string name="httpError">サーバーがエラー %1$s を返しました。</string>
     <string name="emptyList" formatted="false">リストにチャンネルがありません。</string>
-    <string name="incompatible" formatted="false">このリストのチャンネルはこのテレビに対応していません。</string>
     <string name="noConnect" formatted="false">そのアドレスに接続できませんでした。</string>
     <string name="slow" formatted="false">リストの応答に時間がかかりすぎました。</string>
     <string name="shortcuts" formatted="false">ショートカット</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">リストをテレビに送る</string>
     <string name="listSent" formatted="false">リストをテレビに送りました。</string>
     <string name="tvNoApp" formatted="false">テレビに MommyTV がインストールされていません。</string>
+    <string name="parentalIsOn" formatted="false">ペアレンタルコントロール：オン</string>
+    <string name="parentalIsOff" formatted="false">ペアレンタルコントロール：オフ</string>
+    <string name="parentalHint" formatted="false">OK で各カテゴリをロック・解除します</string>
+    <string name="parentalDisable" formatted="false">ペアレンタルコントロールをオフにする</string>
+    <string name="parentalDisableConfirm" formatted="false">もう一度押すとペアレンタルコントロールをオフにします。</string>
+    <string name="parentalDisabled" formatted="false">ペアレンタルコントロールをオフにしました。</string>
+    <string name="parentalSet" formatted="false">ペアレンタルコントロールがオンです。ロックするカテゴリを選んでください。</string>
+    <string name="pinNew" formatted="false">4 桁の PIN を作成してください</string>
+    <string name="pinRepeat" formatted="false">PIN をもう一度入力してください</string>
+    <string name="pinMismatch" formatted="false">PIN が一致しません。最初からやり直してください。</string>
     <string name="dChannel" formatted="false">チャンネル</string>
     <string name="dRes" formatted="false">実際の解像度</string>
     <string name="dBuffer" formatted="false">バッファ</string>

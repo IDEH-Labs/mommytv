@@ -16,12 +16,12 @@ const sample = '﻿#EXTM3U x-tvg-url="http://epg.example/guide.xml"\r\n' +
 
 const ch = M3U.parse(sample);
 assert.strictEqual(ch.length, 4);
-assert.deepStrictEqual(ch[0], { name: 'Channel A', logo: 'http://l/a.png', group: 'News, World', cert: '', country: '', countryName: '', langs: '', cats: '', nsfw: '', url: 'http://s/a.m3u8' });
+assert.deepStrictEqual(ch[0], { name: 'Channel A', logo: 'http://l/a.png', group: 'News, World', country: '', langs: '', url: 'http://s/a.m3u8' });
 assert.strictEqual(ch[1].name, 'Only Attr');
 assert.strictEqual(ch[1].url, 'http://s/b.m3u8');
 assert.strictEqual(ch[2].group, 'Sports');
-assert.deepStrictEqual(ch[3], { name: 'http://s/bare.m3u8', logo: '', group: '', cert: '', country: '', countryName: '', langs: '', cats: '', nsfw: '', url: 'http://s/bare.m3u8' });
-assert.strictEqual(M3U.parse('#EXTINF:-1 mommytv-cert="letsencrypt",LE\nhttps://le/x.m3u8')[0].cert, 'letsencrypt');
+assert.deepStrictEqual(ch[3], { name: 'http://s/bare.m3u8', logo: '', group: '', country: '', langs: '', url: 'http://s/bare.m3u8' });
+assert.strictEqual(M3U.parse('#EXTINF:-1 tvg-country="CO" group-title="Animation;Kids",K\nhttps://k/x.m3u8')[0].group, 'Animation;Kids');
 assert.strictEqual(M3U.parse('').length, 0);
 assert.strictEqual(M3U.parse('<html>not a playlist</html>').length, 1);
 console.log('m3u: ok');

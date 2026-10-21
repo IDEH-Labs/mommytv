@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">Caricamento della tua lista…</string>
     <string name="httpError">Il server ha risposto con l’errore %1$s.</string>
     <string name="emptyList" formatted="false">La lista non contiene canali.</string>
-    <string name="incompatible" formatted="false">I canali di questa lista non sono compatibili con questo televisore.</string>
     <string name="noConnect" formatted="false">Impossibile connettersi a questo indirizzo.</string>
     <string name="slow" formatted="false">La lista ha impiegato troppo tempo a rispondere.</string>
     <string name="shortcuts" formatted="false">Scorciatoie</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">Invia la mia lista alla TV</string>
     <string name="listSent" formatted="false">Lista inviata alla TV.</string>
     <string name="tvNoApp" formatted="false">MommyTV non è installato sulla TV.</string>
+    <string name="parentalIsOn" formatted="false">Controllo parentale: attivo</string>
+    <string name="parentalIsOff" formatted="false">Controllo parentale: disattivato</string>
+    <string name="parentalHint" formatted="false">OK blocca o sblocca ogni categoria</string>
+    <string name="parentalDisable" formatted="false">Disattiva il controllo parentale</string>
+    <string name="parentalDisableConfirm" formatted="false">Premi di nuovo per disattivare il controllo parentale.</string>
+    <string name="parentalDisabled" formatted="false">Controllo parentale disattivato.</string>
+    <string name="parentalSet" formatted="false">Controllo parentale attivo. Scegli quali categorie bloccare.</string>
+    <string name="pinNew" formatted="false">Crea un PIN di 4 cifre</string>
+    <string name="pinRepeat" formatted="false">Scrivi di nuovo il PIN</string>
+    <string name="pinMismatch" formatted="false">I PIN non coincidono. Ricomincia.</string>
     <string name="dChannel" formatted="false">Canale</string>
     <string name="dRes" formatted="false">Risoluzione reale</string>
     <string name="dBuffer" formatted="false">Riserva</string>

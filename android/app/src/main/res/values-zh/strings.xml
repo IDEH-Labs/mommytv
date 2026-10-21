@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">正在加载你的列表…</string>
     <string name="httpError">服务器返回错误 %1$s。</string>
     <string name="emptyList" formatted="false">该列表没有频道。</string>
-    <string name="incompatible" formatted="false">该列表中的频道与此电视不兼容。</string>
     <string name="noConnect" formatted="false">无法连接到该地址。</string>
     <string name="slow" formatted="false">列表响应时间过长。</string>
     <string name="shortcuts" formatted="false">快捷方式</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">把我的列表发送到电视</string>
     <string name="listSent" formatted="false">列表已发送到电视。</string>
     <string name="tvNoApp" formatted="false">电视上没有安装 MommyTV。</string>
+    <string name="parentalIsOn" formatted="false">家长控制：已开启</string>
+    <string name="parentalIsOff" formatted="false">家长控制：已关闭</string>
+    <string name="parentalHint" formatted="false">按 OK 锁定或解锁各个类别</string>
+    <string name="parentalDisable" formatted="false">关闭家长控制</string>
+    <string name="parentalDisableConfirm" formatted="false">再按一次即可关闭家长控制。</string>
+    <string name="parentalDisabled" formatted="false">家长控制已关闭。</string>
+    <string name="parentalSet" formatted="false">家长控制已开启。请选择要锁定的类别。</string>
+    <string name="pinNew" formatted="false">设置 4 位 PIN</string>
+    <string name="pinRepeat" formatted="false">再次输入 PIN</string>
+    <string name="pinMismatch" formatted="false">两次输入的 PIN 不一致，请重新开始。</string>
     <string name="dChannel" formatted="false">频道</string>
     <string name="dRes" formatted="false">实际分辨率</string>
     <string name="dBuffer" formatted="false">缓冲</string>

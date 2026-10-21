@@ -31,6 +31,8 @@ interface Store {
 class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: Labels, private val store: Store) {
     val channels: List<Channel> = all.filter { it.nsfw != "1" }
     val groups: List<Group>
+    var categories: List<String> = emptyList() // for choosing which ones parental control locks
+        private set
     private var homeGroup: Group? = null // channels of the system's country
     private val byUrl: Map<String, Int>
 
@@ -66,7 +68,9 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
             g.countries = countries.values.sortedWith(compareBy(java.text.Collator.getInstance()) { it.name })
         }
         if (everything.items.isNotEmpty()) list += everything
-        if (cats.size > 1) list += cats.values.sortedByDescending { it.items.size }
+        val byCategory = cats.values.sortedByDescending { it.items.size }
+        categories = byCategory.map { it.name }
+        if (cats.size > 1) list += byCategory
         list += Group(Kind.SETTINGS, labels.settings)
         groups = list
         refreshFavourites()
@@ -117,19 +121,40 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
     }
 }
 
-/** Parental control from the playlist header: salted SHA-256 of a 4-digit PIN, same as MommyTV Manager. */
-class Parental(header: Header) {
-    private val salt = header.pin.substringBefore(':', "")
-    private val hash = header.pin.substringAfter(':', "")
-    private val locked = header.locked.toSet()
+/** Parental control kept on the device: a 4-digit PIN stored only as a salted SHA-256, and the locked categories. */
+class Parental(private val store: Store) {
+    private var salt = ""
+    private var hash = ""
+    private val locked = LinkedHashSet<String>()
     var unlocked = false
+
+    init {
+        val lines = store.get(KEY)?.split('\n').orEmpty()
+        lines.firstOrNull()?.let { salt = it.substringBefore(':', ""); hash = it.substringAfter(':', "") }
+        locked += lines.drop(1).filter { it.isNotEmpty() }
+    }
+
     val enabled get() = hash.isNotEmpty()
 
     fun isLocked(ch: Channel) = enabled && !unlocked && ch.categories.any { it in locked }
     fun isLockedGroup(name: String) = enabled && !unlocked && name in locked
-    fun check(pin: String): Boolean = (sha256("$salt:$pin") == hash).also { if (it) unlocked = true }
+    fun locks(category: String) = category in locked
+    fun check(pin: String): Boolean = (enabled && sha256("$salt:$pin") == hash).also { if (it) unlocked = true }
+
+    fun create(pin: String) {
+        salt = ByteArray(8).also { java.security.SecureRandom().nextBytes(it) }.joinToString("") { "%02x".format(it) }
+        hash = sha256("$salt:$pin")
+        save()
+    }
+
+    fun toggle(category: String) { if (!locked.remove(category)) locked += category; save() }
+
+    fun disable() { salt = ""; hash = ""; locked.clear(); unlocked = false; save() }
+
+    private fun save() = store.put(KEY, "$salt:$hash\n" + locked.joinToString("\n"))
 
     companion object {
+        const val KEY = "parental"
         fun sha256(s: String): String = MessageDigest.getInstance("SHA-256").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }
     }
 }

@@ -60,15 +60,22 @@ class CatalogTest {
         assertEquals(listOf(0), c.search.items)
     }
 
-    @Test fun parentalPinMatchesTheManagerFormat() {
-        // the manager stores salt + ":" + sha256(salt + ":" + pin)
-        val salt = "a1b2c3d4"
-        val p = Parental(Header("$salt:" + Parental.sha256("$salt:1234"), listOf("Películas")))
+    @Test fun parentalControlLivesOnTheDevice() {
+        val store = MapStore()
         val movie = ch("Peli", "x", cats = "Películas")
-        assertTrue(p.isLocked(movie))
-        assertFalse(p.check("0000"))
-        assertTrue(p.check("1234"))
+        val p = Parental(store)
+        assertFalse(p.enabled)
         assertFalse(p.isLocked(movie))
+        p.create("1234")
+        p.toggle("Películas")
+        assertFalse(store.m.getValue(Parental.KEY).contains("1234")) // only a salted hash is kept
+        val again = Parental(store) // as after a restart
+        assertTrue(again.isLocked(movie))
+        assertFalse(again.check("0000"))
+        assertTrue(again.check("1234"))
+        assertFalse(again.isLocked(movie)) // unlocked for this session
+        again.disable()
+        assertFalse(Parental(store).enabled)
         assertEquals("f1e5d9d95928deb5bb58568901760888c1135569494507d5e36938a058e6bf94", Parental.sha256("a1b2c3d4:1234"))
     }
 }

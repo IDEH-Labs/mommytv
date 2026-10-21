@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">Deine Liste wird geladen…</string>
     <string name="httpError">Der Server antwortete mit Fehler %1$s.</string>
     <string name="emptyList" formatted="false">Die Liste enthält keine Sender.</string>
-    <string name="incompatible" formatted="false">Die Sender dieser Liste sind mit diesem Fernseher nicht kompatibel.</string>
     <string name="noConnect" formatted="false">Keine Verbindung zu dieser Adresse.</string>
     <string name="slow" formatted="false">Die Liste hat zu lange gebraucht.</string>
     <string name="shortcuts" formatted="false">Verknüpfungen</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">Meine Liste an den Fernseher senden</string>
     <string name="listSent" formatted="false">Liste an den Fernseher gesendet.</string>
     <string name="tvNoApp" formatted="false">MommyTV ist auf dem Fernseher nicht installiert.</string>
+    <string name="parentalIsOn" formatted="false">Jugendschutz: an</string>
+    <string name="parentalIsOff" formatted="false">Jugendschutz: aus</string>
+    <string name="parentalHint" formatted="false">OK sperrt oder entsperrt jede Kategorie</string>
+    <string name="parentalDisable" formatted="false">Jugendschutz ausschalten</string>
+    <string name="parentalDisableConfirm" formatted="false">Drücke noch einmal, um den Jugendschutz auszuschalten.</string>
+    <string name="parentalDisabled" formatted="false">Jugendschutz ausgeschaltet.</string>
+    <string name="parentalSet" formatted="false">Jugendschutz ist an. Wähle, welche Kategorien gesperrt werden.</string>
+    <string name="pinNew" formatted="false">Lege eine 4-stellige PIN fest</string>
+    <string name="pinRepeat" formatted="false">Gib die PIN noch einmal ein</string>
+    <string name="pinMismatch" formatted="false">Die PINs stimmen nicht überein. Fang noch einmal an.</string>
     <string name="dChannel" formatted="false">Sender</string>
     <string name="dRes" formatted="false">Tatsächliche Auflösung</string>
     <string name="dBuffer" formatted="false">Puffer</string>

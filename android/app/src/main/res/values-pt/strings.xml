@@ -4,7 +4,6 @@
     <string name="loading" formatted="false">A carregar a sua lista…</string>
     <string name="httpError">O servidor respondeu com o erro %1$s.</string>
     <string name="emptyList" formatted="false">A lista não contém canais.</string>
-    <string name="incompatible" formatted="false">Os canais desta lista não são compatíveis com este televisor.</string>
     <string name="noConnect" formatted="false">Não foi possível ligar a esse endereço.</string>
     <string name="slow" formatted="false">A lista demorou demasiado a responder.</string>
     <string name="shortcuts" formatted="false">Atalhos</string>
@@ -67,6 +66,16 @@
     <string name="sendList" formatted="false">Enviar a minha lista para a TV</string>
     <string name="listSent" formatted="false">Lista enviada para a TV.</string>
     <string name="tvNoApp" formatted="false">O MommyTV não está instalado na TV.</string>
+    <string name="parentalIsOn" formatted="false">Controlo parental: ativado</string>
+    <string name="parentalIsOff" formatted="false">Controlo parental: desativado</string>
+    <string name="parentalHint" formatted="false">OK bloqueia ou desbloqueia cada categoria</string>
+    <string name="parentalDisable" formatted="false">Desativar controlo parental</string>
+    <string name="parentalDisableConfirm" formatted="false">Prima novamente para desativar o controlo parental.</string>
+    <string name="parentalDisabled" formatted="false">Controlo parental desativado.</string>
+    <string name="parentalSet" formatted="false">Controlo parental ativado. Escolha que categorias bloquear.</string>
+    <string name="pinNew" formatted="false">Crie um PIN de 4 dígitos</string>
+    <string name="pinRepeat" formatted="false">Escreva o PIN novamente</string>
+    <string name="pinMismatch" formatted="false">Os PIN não coincidem. Comece de novo.</string>
     <string name="dChannel" formatted="false">Canal</string>
     <string name="dRes" formatted="false">Resolução real</string>
     <string name="dBuffer" formatted="false">Reserva</string>
