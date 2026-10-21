@@ -95,4 +95,36 @@
     <string name="holdOkFav" formatted="false">Tieni premuto OK: Preferito</string>
     <string name="parental" formatted="false">Controllo parentale</string>
     <string name="searchPlaceholder" formatted="false">Nome del canale</string>
+    <string-array name="categoryNames">
+        <item>Motori</item>
+        <item>Animazione</item>
+        <item>Economia</item>
+        <item>Classici</item>
+        <item>Comicità</item>
+        <item>Cucina</item>
+        <item>Cultura</item>
+        <item>Documentari</item>
+        <item>Istruzione</item>
+        <item>Intrattenimento</item>
+        <item>Famiglia</item>
+        <item>Generalisti</item>
+        <item>Interattivi</item>
+        <item>Bambini</item>
+        <item>Parlamento</item>
+        <item>Stile di vita</item>
+        <item>Film</item>
+        <item>Musica</item>
+        <item>Notizie</item>
+        <item>All’aperto</item>
+        <item>Pubblici</item>
+        <item>Relax</item>
+        <item>Religiosi</item>
+        <item>Serie</item>
+        <item>Scienza</item>
+        <item>Televendite</item>
+        <item>Sport</item>
+        <item>Viaggi</item>
+        <item>Meteo</item>
+        <item>Adulti</item>
+    </string-array>
 </resources>

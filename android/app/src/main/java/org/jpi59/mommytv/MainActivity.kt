@@ -136,8 +136,14 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         }
     }
 
+    /** iptv-org category id → its name in the device language ("news" → "Noticias"). */
+    private val categoryNames by lazy { resources.getStringArray(R.array.categoryKeys).zip(resources.getStringArray(R.array.categoryNames)).toMap() }
+
+    // Categories are translated here, so lists, search and parental control share one name (as on webOS).
     private fun useText(text: String) {
-        useList(M3u.parse(text))
+        useList(M3u.parse(text).map { ch ->
+            if (ch.group.isEmpty()) ch else ch.copy(group = ch.group.split(';').joinToString(";") { categoryNames[it.lowercase()] ?: it })
+        })
     }
 
     /** "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos and last channel). */
@@ -278,7 +284,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val c = catalog ?: return
         returnTo = null
         if (editingParental) { editingParental = false; parental.unlocked = false }
-        gSel = (i + c.groups.size) % c.groups.size
+        gSel = i.coerceIn(0, c.groups.size - 1) // stops at the first and last group, like the channel list
         cSel = 0
         if (c.groups[gSel].kind == Kind.FAV) c.refreshFavourites()
         version++

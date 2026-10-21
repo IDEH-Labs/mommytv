@@ -21,7 +21,9 @@ playlist its user chooses locally. MommyTV ships no channels, streams or playlis
 
 ## Playlist Metadata
 - Country, language and category information is read from standard M3U attributes supplied in the
-  user's own playlist (`tvg-country`, `tvg-language`, and `group-title`).
+  user's own playlist (`tvg-country`, `tvg-language`, and `group-title`). Without `tvg-country`, the
+  country is read from the ISO 3166-1 code that ends an iptv-org channel id (`tvg-id`). No data is
+  downloaded for this.
 
 ## Original Assets
 The app icon (`img/icon.svg` and its PNG exports) and the user interface are original designs

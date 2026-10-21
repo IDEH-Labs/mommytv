@@ -13,7 +13,10 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 - Search, favourites (only channels explicitly marked by the user), the last selected channel,
   and parental settings remain on that device only.
 - Groups by country, device language, all channels, and categories from standard M3U attributes
-  in the selected playlist (`tvg-country`, `tvg-language`, and `group-title`).
+  in the selected playlist (`tvg-country`, `tvg-language`, and `group-title`). When a channel has
+  no `tvg-country`, its country is taken from an iptv-org style `tvg-id` (`Name.co@SD` → Colombia).
+  Country names and iptv-org categories are shown in the interface language; everything is worked
+  out on the device, with no online service.
 - Per-device parental control: a four-digit PIN is salted and hashed locally; it can lock chosen
   categories and is required before changing or deleting a saved playlist.
 - Android can pair directly with a compatible LG TV on the local network, play a selected channel
@@ -74,7 +77,7 @@ npm install -g --prefix ~/.local @webos-tools/cli
 ./build.sh                      # runs the tests, then packages dist/*.ipk
 ares-setup-device --add tv -i "host=<TV IP>" -i "port=9922" -i "username=prisoner"
 ares-novacom --device tv --getkey
-ares-install --device tv dist/org.jpi59.mommytv_0.1.1_all.ipk
+ares-install --device tv dist/org.jpi59.mommytv_0.1.2_all.ipk
 ares-launch --device tv org.jpi59.mommytv
 ```
 

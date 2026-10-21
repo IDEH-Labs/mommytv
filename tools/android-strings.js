@@ -27,6 +27,11 @@ for (const lang of I18N.languages) {
     const formatted = /\{\d\}/.test(dict[key]) ? '' : ' formatted="false"';
     lines.push('    <string name="' + key + '"' + formatted + '>' + escape(dict[key]) + '</string>');
   }
+  // iptv-org categories: the ids once (untranslatable) and their names in this language, in the same order
+  const catIds = Object.keys(I18N.categoryNames.en);
+  const item = (s) => '        <item>' + escape(s) + '</item>';
+  if (lang === 'en') lines.push('    <string-array name="categoryKeys" translatable="false">', ...catIds.map(item), '    </string-array>');
+  lines.push('    <string-array name="categoryNames">', ...catIds.map((id) => item(I18N.categoryNames[lang][id])), '    </string-array>');
   lines.push('</resources>', '');
   const dir = path.join(RES, FOLDER[lang]);
   fs.mkdirSync(dir, { recursive: true });

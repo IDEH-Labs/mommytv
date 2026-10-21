@@ -30,7 +30,7 @@
     }));
   }
   var t = I18N.t;
-  var VERSION = '0.1.1';
+  var VERSION = '0.1.2';
   // Ajustes: the rows that do something first, then the dedication and the information
   var ROW_CHANGE = 0;
   var ROW_DELETE = 1;
@@ -231,6 +231,7 @@
     };
     for (var i = 0; i < list.length; i++) {
       var ch = list[i];
+      ch.group = I18N.categories(ch.group); // translated here, so lists, search and parental control share one name
       describe(ch);
       if (ch.url.indexOf(SHORTCUT) === 0) { shortcuts.items.push(i); continue; }
       all.items.push(i);
@@ -567,7 +568,7 @@
       var d = k === KEY.UP ? -1 : 1;
       if (col === 'g') {
         if (editingParental) { editingParental = false; unlocked = false; }
-        gSel = (gSel + d + groups.length) % groups.length; // wraps: up from the top reaches Ajustes
+        gSel = Math.max(0, Math.min(groups.length - 1, gSel + d)); // stops at Buscar and at Ajustes, like the channel list
         cSel = 0;
         if (groups[gSel].kind === 'fav') refreshFavourites();
       } else {

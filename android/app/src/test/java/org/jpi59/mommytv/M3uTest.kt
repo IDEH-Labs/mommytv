@@ -39,6 +39,14 @@ class M3uTest {
         assertEquals(listOf(""), ch.categories)
     }
 
+    @Test fun takesTheCountryFromAnIptvOrgIdWhenThereIsNoTvgCountry() {
+        fun country(attrs: String) = M3u.parse("#EXTINF:-1 $attrs,C\nhttps://k/c.m3u8").single().country
+        assertEquals("CO", country("tvg-id=\"CaracolTV.co@SD\""))
+        assertEquals("UK", country("tvg-id=\"Channel.5.uk\""))
+        assertEquals("MX", country("tvg-id=\"X.co@SD\" tvg-country=\"MX\""))
+        assertEquals("", country("tvg-id=\"nodot\""))
+    }
+
     @Test fun normalizesForSearch() {
         assertEquals("noticias espana", normalize("Noticias España"))
         assertEquals("cafe", normalize("CAFÉ"))

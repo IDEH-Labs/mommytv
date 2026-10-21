@@ -388,7 +388,7 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
 @Composable
 private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<String, String> = when {
     g.kind == Kind.SETTINGS && a.editingParental -> stringResource(R.string.parental) to stringResource(R.string.parentalHint)
-    g.kind == Kind.SETTINGS -> stringResource(R.string.settings) to "MommyTV 0.1.1" // the licence has its own row
+    g.kind == Kind.SETTINGS -> stringResource(R.string.settings) to "MommyTV 0.1.2" // the licence has its own row
     g.kind == Kind.SEARCH -> "" to when {
         g.items.size == 1 -> stringResource(R.string.oneResult)
         g.items.isNotEmpty() -> stringResource(R.string.nResults, g.items.size.toString())
@@ -484,7 +484,7 @@ private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
         Setting.PARENTAL -> R.drawable.ic_lock to stringResource(if (a.parental.enabled) R.string.parentalIsOn else R.string.parentalIsOff)
         Setting.REMOTE -> R.drawable.ic_phone to stringResource(R.string.remoteTitle)
         Setting.DEDICATION -> R.drawable.ic_heart to stringResource(R.string.dedication)
-        Setting.VERSION -> R.drawable.ic_info to "MommyTV 0.1.1 · " + stringResource(R.string.org)
+        Setting.VERSION -> R.drawable.ic_info to "MommyTV 0.1.2 · " + stringResource(R.string.org)
         Setting.LICENSE -> R.drawable.ic_info to stringResource(R.string.license)
         Setting.SOURCE -> R.drawable.ic_info to stringResource(R.string.source)
         Setting.NO_CHANNELS -> R.drawable.ic_info to stringResource(R.string.noChannels)

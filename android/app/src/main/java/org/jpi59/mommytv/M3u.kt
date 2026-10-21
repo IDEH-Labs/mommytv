@@ -40,6 +40,13 @@ object M3u {
     private fun attr(line: String, name: String): String =
         Regex("\\s" + Regex.escape(name) + "=\"([^\"]*)\"", RegexOption.IGNORE_CASE).find(line)?.groupValues?.get(1)?.trim() ?: ""
 
+    /**
+     * iptv-org channel ids are "name.country@feed" (country = ISO 3166-1 alpha-2): "CaracolTV.co@SD" → "CO".
+     * Used only when the playlist gives no tvg-country.
+     */
+    private fun countryOfId(id: String): String =
+        Regex("\\.([a-z]{2})(?:@[^.]*)?$", RegexOption.IGNORE_CASE).find(id)?.groupValues?.get(1)?.uppercase().orEmpty()
+
     /** The title follows the first comma outside quoted attribute values. */
     private fun titleOf(line: String): String {
         var quoted = false
@@ -70,7 +77,7 @@ object M3u {
                         logo = i?.let { attr(it, "tvg-logo") }.orEmpty(),
                         group = cleanGroup(i?.let { attr(it, "group-title") }.orEmpty()).ifEmpty { cleanGroup(group) },
                         url = line,
-                        country = i?.let { attr(it, "tvg-country") }.orEmpty(),
+                        country = i?.let { attr(it, "tvg-country").ifEmpty { countryOfId(attr(it, "tvg-id")) } }.orEmpty(),
                         langs = i?.let { attr(it, "tvg-language") }.orEmpty(),
                     )
                     info = null

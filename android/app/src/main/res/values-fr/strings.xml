@@ -95,4 +95,36 @@
     <string name="holdOkFav" formatted="false">Maintenez OK : Favori</string>
     <string name="parental" formatted="false">Contrôle parental</string>
     <string name="searchPlaceholder" formatted="false">Nom de la chaîne</string>
+    <string-array name="categoryNames">
+        <item>Automobile</item>
+        <item>Animation</item>
+        <item>Économie</item>
+        <item>Classiques</item>
+        <item>Humour</item>
+        <item>Cuisine</item>
+        <item>Culture</item>
+        <item>Documentaires</item>
+        <item>Éducation</item>
+        <item>Divertissement</item>
+        <item>Famille</item>
+        <item>Généralistes</item>
+        <item>Interactif</item>
+        <item>Jeunesse</item>
+        <item>Parlement</item>
+        <item>Art de vivre</item>
+        <item>Cinéma</item>
+        <item>Musique</item>
+        <item>Info</item>
+        <item>Plein air</item>
+        <item>Publiques</item>
+        <item>Détente</item>
+        <item>Religion</item>
+        <item>Séries</item>
+        <item>Sciences</item>
+        <item>Téléachat</item>
+        <item>Sport</item>
+        <item>Voyages</item>
+        <item>Météo</item>
+        <item>Adultes</item>
+    </string-array>
 </resources>

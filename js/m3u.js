@@ -30,6 +30,13 @@
     return kept.join(';');
   }
 
+  // iptv-org channel ids are "name.country@feed" (country = ISO 3166-1 alpha-2): "CaracolTV.co@SD" → "CO".
+  // Used only when the playlist gives no tvg-country.
+  function countryOfId(id) {
+    var m = /\.([a-z]{2})(?:@[^.]*)?$/i.exec(id || '');
+    return m ? m[1].toUpperCase() : '';
+  }
+
   function parse(text) {
     var lines = String(text).replace(/^\uFEFF/, '').split(/\r?\n/);
     var channels = [];
@@ -45,7 +52,7 @@
           name: titleOf(line) || attr(line, 'tvg-name'),
           logo: attr(line, 'tvg-logo'),
           group: cleanGroup(attr(line, 'group-title')), // may hold several categories: "Animation;Kids"
-          country: attr(line, 'tvg-country'),
+          country: attr(line, 'tvg-country') || countryOfId(attr(line, 'tvg-id')),
           langs: attr(line, 'tvg-language')
         };
       } else if (line.indexOf('#EXTGRP:') === 0) {

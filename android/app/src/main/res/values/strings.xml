@@ -96,4 +96,68 @@
     <string name="holdOkFav" formatted="false">Hold OK: Favourite</string>
     <string name="parental" formatted="false">Parental control</string>
     <string name="searchPlaceholder" formatted="false">Channel name</string>
+    <string-array name="categoryKeys" translatable="false">
+        <item>auto</item>
+        <item>animation</item>
+        <item>business</item>
+        <item>classic</item>
+        <item>comedy</item>
+        <item>cooking</item>
+        <item>culture</item>
+        <item>documentary</item>
+        <item>education</item>
+        <item>entertainment</item>
+        <item>family</item>
+        <item>general</item>
+        <item>interactive</item>
+        <item>kids</item>
+        <item>legislative</item>
+        <item>lifestyle</item>
+        <item>movies</item>
+        <item>music</item>
+        <item>news</item>
+        <item>outdoor</item>
+        <item>public</item>
+        <item>relax</item>
+        <item>religious</item>
+        <item>series</item>
+        <item>science</item>
+        <item>shop</item>
+        <item>sports</item>
+        <item>travel</item>
+        <item>weather</item>
+        <item>xxx</item>
+    </string-array>
+    <string-array name="categoryNames">
+        <item>Motoring</item>
+        <item>Animation</item>
+        <item>Business</item>
+        <item>Classics</item>
+        <item>Comedy</item>
+        <item>Cooking</item>
+        <item>Culture</item>
+        <item>Documentaries</item>
+        <item>Education</item>
+        <item>Entertainment</item>
+        <item>Family</item>
+        <item>General</item>
+        <item>Interactive</item>
+        <item>Kids</item>
+        <item>Parliament</item>
+        <item>Lifestyle</item>
+        <item>Movies</item>
+        <item>Music</item>
+        <item>News</item>
+        <item>Outdoor</item>
+        <item>Public</item>
+        <item>Relax</item>
+        <item>Religious</item>
+        <item>Series</item>
+        <item>Science</item>
+        <item>Shopping</item>
+        <item>Sports</item>
+        <item>Travel</item>
+        <item>Weather</item>
+        <item>Adult</item>
+    </string-array>
 </resources>

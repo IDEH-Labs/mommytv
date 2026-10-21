@@ -95,4 +95,36 @@
     <string name="holdOkFav" formatted="false">长按 OK：收藏</string>
     <string name="parental" formatted="false">家长控制</string>
     <string name="searchPlaceholder" formatted="false">频道名称</string>
+    <string-array name="categoryNames">
+        <item>汽车</item>
+        <item>动画</item>
+        <item>财经</item>
+        <item>经典</item>
+        <item>喜剧</item>
+        <item>美食</item>
+        <item>文化</item>
+        <item>纪录片</item>
+        <item>教育</item>
+        <item>娱乐</item>
+        <item>家庭</item>
+        <item>综合</item>
+        <item>互动</item>
+        <item>少儿</item>
+        <item>议会</item>
+        <item>生活</item>
+        <item>电影</item>
+        <item>音乐</item>
+        <item>新闻</item>
+        <item>户外</item>
+        <item>公共</item>
+        <item>放松</item>
+        <item>宗教</item>
+        <item>剧集</item>
+        <item>科学</item>
+        <item>购物</item>
+        <item>体育</item>
+        <item>旅游</item>
+        <item>天气</item>
+        <item>成人</item>
+    </string-array>
 </resources>
