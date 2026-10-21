@@ -1,0 +1,27 @@
+MommyTV reproduce las listas M3U que ya tienes en tu teléfono o tablet Android, y permite que tu teléfono elija lo que se ve en una TV LG. No incluye canales ni listas: tú añades la dirección de una lista que tengas derecho a ver.
+
+Privada por diseño
+• Sin cuentas, sin anuncios, sin analíticas, sin rastreo. Nunca se nos envía nada.
+• Tu lista, tus favoritos y tus ajustes se quedan en tu dispositivo, fuera de las copias en la nube y de los traspasos a otro teléfono.
+• Software libre bajo la GPL de GNU, versión 3 o posterior. Cualquiera puede leer y revisar el código fuente.
+
+Cómoda de usar
+• Grupos por país, idioma y categoría, con los nombres de países y categorías en tu idioma.
+• Búsqueda rápida, favoritos que eliges tú y el último canal listo cuando vuelves.
+• Los canales sin logo muestran sus iniciales sobre un color propio.
+• Una copia guardada de tu lista arranca aunque su sitio no responda.
+• Interfaz en español, inglés, francés, alemán, italiano, portugués, chino y japonés.
+
+Teléfono y TV
+• Empareja tu teléfono con una TV LG webOS en tu red de casa y reproduce un canal allí con un toque, o envíale tu lista.
+• La conexión va cifrada y fijada al certificado de tu TV. No hay ningún servidor de por medio.
+
+Para toda la familia
+• Control parental con un PIN de 4 dígitos, guardado solo como una huella con sal.
+• Las categorías para adultos siempre piden el PIN.
+
+MommyTV es solo un reproductor. IDEH Labs no ofrece, vende ni recomienda canales o listas, y no se hace responsable del contenido que cada persona reproduzca. Usa solo emisiones que tengas derecho a ver.
+
+Dedicado a Mami Analida. Hecho por IDEH Labs para la Fundación IDEH, entidad sin ánimo de lucro.
+Código fuente: https://codeberg.org/IDEH-Labs/mommytv
+Política de privacidad: https://ideh.top/mommytv-privacy

@@ -3,7 +3,7 @@
 
     <!-- Playlists, logos and streams -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- To discover and pair directly with an LG TV on the local network. -->
+    <!-- Media3's bandwidth meter notices network changes (Wi-Fi, mobile) to re-estimate stream quality. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Works on TVs (remote control) and on phones and tablets (touch) -->

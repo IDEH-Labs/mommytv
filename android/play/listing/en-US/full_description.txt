@@ -1,0 +1,27 @@
+MommyTV plays the M3U playlists you already have, on your Android phone or tablet, and lets your phone choose what plays on an LG TV. It ships no channels or playlists: you add the address of a playlist you are entitled to watch.
+
+Private by design
+• No accounts, no ads, no analytics, no tracking. Nothing is ever sent to us.
+• Your playlist, favourites and settings stay on your device, out of cloud backups and device transfers.
+• Free software under the GNU GPL, version 3 or later. Anyone can read and check the source code.
+
+Comfortable to use
+• Groups by country, language and category, with country and category names in your language.
+• Fast search, favourites you choose, and the last channel ready when you come back.
+• Channels without a logo get clear initials on their own colour.
+• A saved copy of your playlist starts even when its site does not answer.
+• Interface in English, Spanish, French, German, Italian, Portuguese, Chinese and Japanese.
+
+Phone and TV
+• Pair your phone with an LG webOS TV on your home network and play a channel there with one tap, or send your playlist to it.
+• The link is encrypted and pinned to your TV's certificate. No server sits in between.
+
+Family friendly
+• Parental control with a 4-digit PIN, kept only as a salted hash.
+• Adult categories always ask for the PIN.
+
+MommyTV is a player only. IDEH Labs does not provide, sell or recommend channels or playlists and is not responsible for the content each person plays. Use only streams you are entitled to watch.
+
+Dedicated to Mami Analida. Made by IDEH Labs for Fundación IDEH, a non-profit.
+Source code: https://codeberg.org/IDEH-Labs/mommytv
+Privacy policy: https://ideh.top/mommytv-privacy
