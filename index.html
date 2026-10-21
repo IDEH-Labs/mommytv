@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>MommyTV</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="aurora"></div>
+
+  <header id="topbar">
+    <div class="brand"><img src="img/icon_80x80.png" alt=""><span>MommyTV</span></div>
+    <div id="hint" class="hint hidden"><span class="key">OK</span>Mantén pulsado<svg viewBox="0 0 24 24"><path fill="#facc15" d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>Favorito</div>
+    <div class="clock"><span id="time"></span><span id="date"></span></div>
+  </header>
+
+  <section id="setup" class="view">
+    <div class="setup-card">
+      <img class="setup-logo" src="img/icon_130x130.png" alt="">
+      <h1>MommyTV</h1>
+      <div class="status"><span id="setup-spin" class="spinner small hidden"></span><span id="setup-msg"></span></div>
+      <label for="url">Dirección de tu lista M3U</label>
+      <input id="url" type="url" spellcheck="false" placeholder="Vacío: buscar MommyTV Manager en tu red">
+      <button id="load" type="button">Cargar</button>
+    </div>
+  </section>
+
+  <section id="browser" class="view hidden">
+    <ul id="groups" class="rail"></ul>
+    <div class="main">
+      <div class="hero">
+        <div class="tile hero-tile" id="hero-tile"></div>
+        <div class="hero-text">
+          <div class="meta"><span class="live" id="hero-live"><i></i>EN VIVO</span><span id="hero-group"></span><span id="hero-q" class="chip"></span></div>
+          <h2 id="hero-name"></h2>
+          <input id="search" class="hidden" type="text" spellcheck="false" autocomplete="off" placeholder="Nombre del canal">
+        </div>
+      </div>
+      <ul id="channels" class="list"></ul>
+    </div>
+  </section>
+
+  <section id="player" class="view hidden">
+    <video id="video" autoplay></video>
+    <span id="play-spin" class="spinner hidden"></span>
+    <div id="diag" class="hidden"></div>
+    <div id="banner" class="hidden">
+      <div class="tile banner-tile" id="banner-tile"></div>
+      <div class="banner-num" id="banner-num"></div>
+      <div class="banner-text">
+        <div class="meta"><span class="live"><i></i>EN VIVO</span><span id="banner-group"></span><span id="banner-q" class="chip"></span><span class="hint-mini">Mantén OK: Favorito</span></div>
+        <div class="banner-name" id="banner-name"></div>
+      </div>
+      <div class="banner-time" id="banner-time"></div>
+    </div>
+  </section>
+
+  <div id="osd" class="hidden"></div>
+
+  <script src="js/webOSTV.js"></script>
+  <script src="js/m3u.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

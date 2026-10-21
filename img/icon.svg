@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <clipPath id="shape"><rect width="1024" height="1024" rx="228"/></clipPath>
+    <clipPath id="screenClip"><rect x="322" y="170" width="516" height="278" rx="22"/></clipPath>
+
+    <linearGradient id="bg" x1="0" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#1e3a8a"/>
+      <stop offset="0.5" stop-color="#3730a3"/>
+      <stop offset="1" stop-color="#581c87"/>
+    </linearGradient>
+    <radialGradient id="tvLight" cx="580" cy="320" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#67e8f9" stop-opacity="0.55"/>
+      <stop offset="0.45" stop-color="#818cf8" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#818cf8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bezel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#334155"/>
+      <stop offset="1" stop-color="#0b1220"/>
+    </linearGradient>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="0.55" stop-color="#a78bfa"/>
+      <stop offset="1" stop-color="#f9a8d4"/>
+    </linearGradient>
+    <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#e0e7ff" stop-opacity="0.85"/>
+    </linearGradient>
+    <linearGradient id="screenShine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="0.45" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="hair" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#7a4a30"/>
+      <stop offset="0.55" stop-color="#4b2b1b"/>
+      <stop offset="1" stop-color="#2a170e"/>
+    </linearGradient>
+    <linearGradient id="hairShine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#c58a5c" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#d9a273" stop-opacity="0.75"/>
+      <stop offset="1" stop-color="#c58a5c" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c98b63"/>
+      <stop offset="1" stop-color="#a8694a"/>
+    </linearGradient>
+    <linearGradient id="sweater" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdba74"/>
+      <stop offset="0.6" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#c2410c"/>
+    </linearGradient>
+    <linearGradient id="sofa" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f9a8d4"/>
+      <stop offset="0.35" stop-color="#ec4899"/>
+      <stop offset="1" stop-color="#9d174d"/>
+    </linearGradient>
+    <linearGradient id="sofaTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdf2f8" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#fdf2f8" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="14"/>
+      <feOffset dy="14"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.45"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+
+  <g clip-path="url(#shape)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <rect width="1024" height="1024" fill="url(#tvLight)"/>
+
+    <!-- Television -->
+    <g filter="url(#soft)">
+      <rect x="300" y="148" width="560" height="322" rx="34" fill="url(#bezel)"/>
+      <rect x="560" y="470" width="40" height="34" fill="#0b1220"/>
+      <rect x="486" y="498" width="188" height="16" rx="8" fill="#1e293b"/>
+    </g>
+    <g clip-path="url(#screenClip)">
+      <rect x="322" y="170" width="516" height="278" fill="url(#sky)"/>
+      <circle cx="700" cy="290" r="54" fill="#fef3c7" opacity="0.9"/>
+      <path d="M322 380 C420 320 500 330 580 372 C660 414 740 360 838 330 L838 448 L322 448 Z" fill="url(#hill1)"/>
+      <path d="M322 420 C430 376 540 400 640 424 C720 444 780 420 838 404 L838 448 L322 448 Z" fill="url(#hill2)"/>
+      <rect x="322" y="170" width="516" height="278" fill="url(#screenShine)"/>
+    </g>
+    <circle cx="580" cy="309" r="66" fill="url(#glass)" filter="url(#soft)"/>
+    <path d="M560 274 L560 344 L618 309 Z" fill="#4f46e5"/>
+
+    <!-- Mom, seen from behind, lit by the screen -->
+    <g filter="url(#soft)" transform="translate(400 1024) scale(1.12) translate(-400 -1024)">
+      <!-- shoulders and sweater -->
+      <path d="M196 1024 L196 900 C196 806 268 748 352 736 L448 736 C532 748 604 806 604 900 L604 1024 Z" fill="url(#sweater)"/>
+      <path d="M352 736 C372 760 428 760 448 736" fill="none" stroke="#c2410c" stroke-width="10" stroke-linecap="round" opacity="0.55"/>
+      <path d="M262 812 C300 790 330 784 352 784" fill="none" stroke="#fed7aa" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+      <path d="M470 800 C520 812 556 840 572 880" fill="none" stroke="#9a3412" stroke-width="8" stroke-linecap="round" opacity="0.3"/>
+      <!-- neck -->
+      <path d="M362 660 L438 660 L446 742 C420 754 380 754 354 742 Z" fill="url(#skin)"/>
+      <path d="M362 700 C388 712 412 712 438 700" fill="none" stroke="#8f553a" stroke-width="10" opacity="0.35"/>
+      <!-- ears, half covered by hair -->
+      <ellipse cx="306" cy="612" rx="14" ry="24" fill="#c98b63"/>
+      <ellipse cx="494" cy="612" rx="14" ry="24" fill="#b97a55"/>
+      <!-- bun -->
+      <ellipse cx="402" cy="446" rx="64" ry="54" fill="url(#hair)"/>
+      <path d="M346 440 C360 402 444 398 460 438" fill="none" stroke="#a86f4b" stroke-width="9" stroke-linecap="round" opacity="0.55"/>
+      <path d="M360 470 C390 486 424 484 450 466" fill="none" stroke="#2a170e" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+      <!-- hair: smooth, gathered up into the bun -->
+      <path d="M302 616 C292 548 334 486 400 484 C466 486 508 548 498 616 C494 650 480 674 456 686 C428 698 372 698 344 686 C320 674 306 650 302 616 Z" fill="url(#hair)"/>
+      <!-- light and shade, following the head -->
+      <path d="M330 600 C334 548 362 512 398 500" fill="none" stroke="#a86f4b" stroke-width="14" stroke-linecap="round" opacity="0.35"/>
+      <path d="M470 640 C482 592 470 540 432 506" fill="none" stroke="#24130b" stroke-width="16" stroke-linecap="round" opacity="0.3"/>
+      <path d="M340 552 C362 520 440 520 462 552" fill="none" stroke="url(#hairShine)" stroke-width="26" stroke-linecap="round"/>
+      <path d="M378 690 C370 640 380 570 400 500" fill="none" stroke="#a86f4b" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+      <path d="M424 690 C432 640 424 570 404 500" fill="none" stroke="#24130b" stroke-width="3" stroke-linecap="round" opacity="0.35"/>
+      <!-- rim light from the TV -->
+      <path d="M408 486 C458 490 496 530 500 596" fill="none" stroke="#a5f3fc" stroke-width="7" stroke-linecap="round" opacity="0.8"/>
+      <path d="M410 392 C446 394 468 416 466 444" fill="none" stroke="#a5f3fc" stroke-width="6" stroke-linecap="round" opacity="0.75"/>
+      <path d="M452 740 C530 752 594 804 602 880" fill="none" stroke="#a5f3fc" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+      <!-- a few loose strands -->
+      <path d="M462 418 C480 404 492 404 502 412" fill="none" stroke="#6b4129" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+      <path d="M492 640 C500 660 498 676 490 690" fill="none" stroke="#4b2b1b" stroke-width="4" stroke-linecap="round"/>
+      <path d="M310 640 C302 660 304 676 312 690" fill="none" stroke="#4b2b1b" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <!-- Sofa back in front -->
+    <g filter="url(#soft)">
+      <rect x="-60" y="820" width="1144" height="300" rx="110" fill="url(#sofa)"/>
+      <rect x="-60" y="820" width="1144" height="90" rx="45" fill="url(#sofaTop)"/>
+      <path d="M512 846 L512 1024" stroke="#9d174d" stroke-width="6" opacity="0.45"/>
+      <path d="M180 870 C176 920 176 980 180 1024 M844 870 C848 920 848 980 844 1024" stroke="#be185d" stroke-width="5" opacity="0.35" fill="none"/>
+    </g>
+
+    <!-- Glass highlight over the whole icon -->
+    <path d="M0 0 L1024 0 L1024 300 C760 380 300 260 0 380 Z" fill="#ffffff" opacity="0.05"/>
+  </g>
+</svg>

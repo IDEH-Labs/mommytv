@@ -1,0 +1,14 @@
+{
+  "id": "org.jpi59.mommytv",
+  "title": "MommyTV",
+  "type": "web",
+  "main": "index.html",
+  "icon": "img/icon_80x80.png",
+  "largeIcon": "img/icon_130x130.png",
+  "version": "0.1.0",
+  "vendor": "IDEH Labs",
+  "appDescription": "Plays your own M3U playlists",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true,
+  "requiredACG": ["application.launcher", "network.query"]
+}

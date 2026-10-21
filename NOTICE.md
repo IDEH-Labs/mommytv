@@ -1,0 +1,26 @@
+# Notice and Provenance — MommyTV
+
+## Project Identity
+- **Application Name:** MommyTV
+- **Application ID:** `org.jpi59.mommytv`
+- **Maintainer:** jpi59 (IDEH Labs, Fundación IDEH)
+- **License:** GNU General Public License, version 3 or any later version (GPL-3.0-or-later)
+
+## What MommyTV Is
+MommyTV is a player for M3U playlists on LG webOS TVs, plus MommyTV Manager, a local web panel
+that runs on the user's own computer. MommyTV ships no channels, streams or playlists.
+
+## Third-Party Components
+| Component | Version | License | File |
+|---|---|---|---|
+| webOSTV.js (LG Electronics) | 1.2.13 | Apache-2.0 | `js/webOSTV.js`, `licenses/webOSTV.js-LICENSE-2.0.txt` |
+| Plus Jakarta Sans (Tokotype) | Google Fonts v12 | SIL OFL 1.1 | `fonts/`, `licenses/PlusJakartaSans-OFL.txt` |
+
+## Data Sources
+- Channel country, language and category data comes from the public
+  [iptv-org API](https://github.com/iptv-org/api), released into the public domain (Unlicense).
+  MommyTV Manager downloads it at most once a day on the user's computer.
+
+## Original Assets
+The app icon (`img/icon.svg` and its PNG exports) and the user interface are original designs
+created for MommyTV.
