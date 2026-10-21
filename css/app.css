@@ -206,3 +206,9 @@ ul { list-style: none; margin: 0; padding: 0; }
 #pin-dots { display: flex; justify-content: center; }
 #pin-dots i { width: 36px; height: 36px; margin: 0 16px; border-radius: 18px; border: 4px solid var(--muted); box-sizing: border-box; }
 #pin-dots i.on { background: var(--sky); border-color: var(--sky); }
+
+/* ---------- about ---------- */
+.icon.rose { color: #fb7185; }
+.list .dedication { font-weight: 800; color: #fecdd3; }
+.list li.focus .dedication { color: #be123c; }
+.dedication-line { margin: -4px 0 28px; color: #fda4af; font-size: 30px; font-weight: 600; letter-spacing: 0.3px; }

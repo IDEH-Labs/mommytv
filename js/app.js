@@ -34,6 +34,17 @@
       option: { adaptiveStreaming: { bps: { start: 50000000 }, maxWidth: screenSize.w, maxHeight: screenSize.h } }
     }));
   }
+  var VERSION = '0.1.0';
+  var ABOUT = [
+    ['heart', 'Dedicado a Mami Analida'],
+    ['info', 'MommyTV ' + VERSION + ' · IDEH Labs · Fundación IDEH'],
+    ['info', 'Licencia: GNU GPL v3 o posterior (GPL-3.0-or-later)'],
+    ['info', 'Código fuente: codeberg.org/IDEH-Labs/mommytv'],
+    ['info', 'MommyTV no incluye canales ni listas'],
+    ['info', 'webOSTV.js de LG Electronics · Apache 2.0'],
+    ['info', 'Tipografía Plus Jakarta Sans · SIL OFL 1.1'],
+    ['info', 'Datos de canales: iptv-org · dominio público']
+  ];
   var DAYS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
   var MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
@@ -302,6 +313,7 @@
     if (countries.length > 1) groups.push({ name: 'Países', kind: 'countries', countries: countries, country: null, items: [] });
     if (all.items.length) groups.push(all);
     if (cats.length > 1) groups = groups.concat(cats); // a single group would only repeat "Todos"
+    groups.push({ name: 'Acerca de', kind: 'about', items: [] });
     refreshFavourites();
     col = 'g'; cSel = 0;
     gSel = 2;
@@ -413,7 +425,7 @@
   function channelsText(n) { return n === 1 ? '1 canal' : n + ' canales'; }
 
   function showingCountries(g) { return g.kind === 'countries' && !g.country; }
-  function listLength(g) { return showingCountries(g) ? g.countries.length : g.items.length; }
+  function listLength(g) { return g.kind === 'about' ? ABOUT.length : showingCountries(g) ? g.countries.length : g.items.length; }
 
   /* ---------- browser rendering ---------- */
 
@@ -466,6 +478,8 @@
     change: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 3.5v5.2h-5.2"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20.5v-5.2h5.2"/></svg>',
     apps: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>',
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>'
   };
 
@@ -485,12 +499,12 @@
     stamp: function (i) { return groups[i].name + listLength(groups[i]) + (unlocked ? 'u' : ''); },
     row: function (li, i) {
       var g = groups[i];
-      var name = { search: 'search', fav: 'fav', change: 'change', apps: 'apps', countries: 'globe' }[g.kind];
+      var name = { search: 'search', fav: 'fav', change: 'change', apps: 'apps', countries: 'globe', about: 'heart' }[g.kind];
       if (!name && parental.locked[g.name] && parental.hash && !unlocked) name = 'lock';
-      if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : ''));
+      if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : g.kind === 'about' ? 'rose' : ''));
       li.appendChild(span('label', g.name));
       if (g.kind === 'countries') li.appendChild(span('count', g.countries.length));
-      else if (g.kind !== 'change' && g.kind !== 'search') li.appendChild(span('count', g.items.length));
+      else if (g.kind !== 'change' && g.kind !== 'search' && g.kind !== 'about') li.appendChild(span('count', g.items.length));
     }
   };
 
@@ -504,6 +518,14 @@
       li.appendChild(tile);
       li.appendChild(span('name', c.name));
       li.appendChild(span('count', channelsText(c.items.length)));
+    }
+  };
+
+  var aboutFill = {
+    stamp: function (i) { return 'about' + i; },
+    row: function (li, i) {
+      li.appendChild(icon(ABOUT[i][0], ABOUT[i][0] === 'heart' ? 'rose' : ''));
+      li.appendChild(span('name' + (i === 0 ? ' dedication' : ''), ABOUT[i][1]));
     }
   };
 
@@ -529,6 +551,17 @@
     ui.heroName.className = searching ? 'hidden' : '';
     var ch = g.items.length ? channels[g.items[Math.min(cSel, g.items.length - 1)]] : null;
     ui.heroLive.className = 'live' + (ch && g.kind !== 'search' && g.kind !== 'change' && ch.url.indexOf(SHORTCUT) !== 0 ? '' : ' hidden');
+    if (g.kind === 'about') {
+      ui.heroLive.className = 'live hidden';
+      ui.heroTile.textContent = '';
+      var logo = document.createElement('img');
+      logo.src = 'img/icon_130x130.png';
+      ui.heroTile.appendChild(logo);
+      ui.heroName.textContent = 'Dedicado a Mami Analida';
+      ui.heroGroup.textContent = 'MommyTV ' + VERSION + '  ·  GNU GPL v3 o posterior';
+      ui.heroQ.textContent = '';
+      return;
+    }
     if (showingCountries(g)) {
       var c = g.countries[Math.min(cSel, g.countries.length - 1)];
       heroIcon('globe');
@@ -567,7 +600,7 @@
   function renderBrowser() {
     renderWindow(ui.groups, groups.length, gSel, col === 'g', RAIL_ROWS, railFill);
     var g = groups[gSel];
-    renderWindow(ui.channels, listLength(g), cSel, col === 'c', LIST_ROWS, showingCountries(g) ? countryFill : listFill);
+    renderWindow(ui.channels, listLength(g), cSel, col === 'c', LIST_ROWS, g.kind === 'about' ? aboutFill : showingCountries(g) ? countryFill : listFill);
     renderHero();
   }
 
@@ -599,7 +632,7 @@
     if (k === KEY.UP || k === KEY.DOWN) {
       var d = k === KEY.UP ? -1 : 1;
       if (col === 'g') {
-        gSel = Math.max(0, Math.min(groups.length - 1, gSel + d));
+        gSel = (gSel + d + groups.length) % groups.length; // wraps: up from the top reaches "Acerca de"
         cSel = 0;
         if (groups[gSel].kind === 'fav') refreshFavourites();
       } else {
@@ -617,6 +650,8 @@
       if (listLength(g)) col = 'c';
     } else if (k === KEY.LEFT) {
       col = 'g';
+    } else if (k === KEY.OK && g.kind === 'about') {
+      // information only
     } else if (k === KEY.OK && showingCountries(g)) {
       g.country = g.countries[cSel];
       g.items = g.country.items;
@@ -630,7 +665,7 @@
       var ch = channels[items[cSel]];
       if (ch.url.indexOf(SHORTCUT) === 0) launchApp(ch); else play(items, cSel);
       return true;
-    } else if (k === KEY.YELLOW && col === 'c' && items.length && !showingCountries(g)) {
+    } else if (k === KEY.YELLOW && col === 'c' && items.length && !showingCountries(g) && g.kind !== 'about') {
       togglePin(channels[items[cSel]]);
       if (g.kind === 'fav') { refreshFavourites(); cSel = Math.min(cSel, Math.max(0, g.items.length - 1)); if (!g.items.length) col = 'g'; }
     } else if (k === KEY.BACK) {
