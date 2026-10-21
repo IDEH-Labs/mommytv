@@ -46,7 +46,9 @@ class Ws private constructor(private val socket: Socket, private val input: Inpu
      * LG TVs present a certificate signed by themselves, so no authority can vouch for it. Pairing
      * accepts only a valid, self-signed LG certificate and remembers it; afterwards only that exact
      * certificate is accepted ([pin]), so nobody else on the network can pose as the TV.
+     * Lint's CustomX509TrustManager is expected: this manager validates (and throws), it never accepts all.
      */
+    @android.annotation.SuppressLint("CustomX509TrustManager")
     class TvTrust(private val pin: String?) : X509TrustManager {
         override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
             val cert = chain?.firstOrNull() ?: throw CertificateException("no certificate")
