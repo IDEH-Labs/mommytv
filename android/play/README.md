@@ -19,8 +19,10 @@ real Android TV / Google TV device.
 - Texts: `listing/<language>/title.txt`, `short_description.txt`, `full_description.txt`
   (en-US default, es-419).
 - Graphics: `icon-512.png`, `listing/<language>/feature-graphic.png` (`node tools/play-graphics.js`).
-- Screenshots: phone, taken with the demo playlist below only. Never real channels, logos or
-  playlists: Google's intellectual-property policy treats them as encouraging infringement.
+- Screenshots: `listing/<language>/phone-1..4.png` (720×1440, status and navigation bars cropped
+  to meet Play's 2:1 limit), taken with the demo playlist only. Never real channels, logos or
+  playlists: Google's intellectual-property policy treats them as encouraging infringement. The
+  current ones show the Spanish interface in both listings; English ones can replace them later.
 - Category: Video Players & Editors. Contact: support@ideh.top. Website: https://ideh.top/mommytv
 - Privacy policy: https://ideh.top/mommytv-privacy
 
