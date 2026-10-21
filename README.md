@@ -64,8 +64,8 @@ shows it.
 webos-app://com.example.officialapp
 ```
 
-The Android app uses `android-app://<package>` the same way. A playlist may contain shortcuts
-for either platform; each device opens only the scheme it supports.
+The Android app uses `android-app://<package>` and Samsung TVs `tizen-app://<app id>` the same
+way. A playlist may contain shortcuts for every platform; each device shows only its own.
 
 ## Build and install
 
@@ -88,6 +88,18 @@ real TV and phone and manually verify playlist recovery, favourites, parental co
 playlist, and phone-to-TV playlist transfer.
 
 Code is plain ES5 because webOS TV 4.x runs Chromium 53.
+
+## Samsung Tizen TVs (preview)
+
+The same web app runs on Samsung TVs from 2017 on (Tizen 3.0+); `js/platform.js` holds the few
+differences (keys, shortcuts, HLS options). It starts without errors in a simulated Tizen
+environment but **has not been tested on a Samsung TV yet**. Signing needs Samsung's Tizen CLI and
+a certificate made with the owner's Samsung account, including the TV's DUID:
+
+```sh
+./tizen/build.sh <certificate profile>   # tests, then dist/tizen/MommyTV.wgt
+tizen install -n dist/tizen/MommyTV.wgt -t <TV>
+```
 
 ## Third-party code
 
