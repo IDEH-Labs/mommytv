@@ -17,7 +17,7 @@
     <string name="dedication" formatted="false">Mami Analida に捧ぐ</string>
     <string name="license" formatted="false">ライセンス：GNU GPL v3 以降（GPL-3.0-or-later）</string>
     <string name="source" formatted="false">ソースコード：codeberg.org/IDEH-Labs/mommytv</string>
-    <string name="noChannels" formatted="false">MommyTV にはチャンネルやリストは含まれていません</string>
+    <string name="noChannels" formatted="false">チャンネルは含まれていません。視聴する権利のあるリストだけを使ってください</string>
     <string name="lgLib" formatted="false">LG Electronics の webOSTV.js · Apache 2.0</string>
     <string name="font" formatted="false">Plus Jakarta Sans フォント · SIL OFL 1.1</string>
     <string name="org" formatted="false">IDEH Labs · IDEH 財団</string>

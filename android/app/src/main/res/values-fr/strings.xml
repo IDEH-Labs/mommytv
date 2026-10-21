@@ -17,7 +17,7 @@
     <string name="dedication" formatted="false">Dédié à Mami Analida</string>
     <string name="license" formatted="false">Licence : GNU GPL v3 ou ultérieure (GPL-3.0-or-later)</string>
     <string name="source" formatted="false">Code source : codeberg.org/IDEH-Labs/mommytv</string>
-    <string name="noChannels" formatted="false">MommyTV ne fournit ni chaînes ni listes</string>
+    <string name="noChannels" formatted="false">Aucune chaîne incluse : utilisez seulement des listes autorisées</string>
     <string name="lgLib" formatted="false">webOSTV.js de LG Electronics · Apache 2.0</string>
     <string name="font" formatted="false">Police Plus Jakarta Sans · SIL OFL 1.1</string>
     <string name="org" formatted="false">IDEH Labs · Fondation IDEH</string>
