@@ -2,7 +2,7 @@ package org.jpi59.mommytv
 
 import java.security.MessageDigest
 
-enum class Kind { CHANGE, SEARCH, FAV, APPS, LIST, COUNTRIES, ABOUT }
+enum class Kind { SEARCH, FAV, APPS, LIST, COUNTRIES, SETTINGS }
 
 class Country(val code: String, val name: String, val items: MutableList<Int> = ArrayList())
 
@@ -14,8 +14,8 @@ class Group(val kind: Kind, val name: String, var items: MutableList<Int> = Arra
 
 /** Texts the catalog needs, so it can be tested without Android resources. */
 data class Labels(
-    val change: String, val search: String, val favs: String, val shortcuts: String,
-    val inLang: String, val countries: String, val all: String, val about: String, val noGroup: String,
+    val search: String, val favs: String, val shortcuts: String,
+    val inLang: String, val countries: String, val all: String, val settings: String, val noGroup: String,
 )
 
 /** Small key-value storage (SharedPreferences on the device, a map in tests). */
@@ -57,7 +57,6 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
             if (";${ch.langs};".contains(";$langIso3;")) inLang.items += i
         }
         val list = ArrayList<Group>()
-        list += Group(Kind.CHANGE, labels.change)
         list += Group(Kind.SEARCH, labels.search)
         list += Group(Kind.FAV, labels.favs)
         if (shortcuts.items.isNotEmpty()) list += shortcuts
@@ -68,7 +67,7 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
         }
         if (everything.items.isNotEmpty()) list += everything
         if (cats.size > 1) list += cats.values.sortedByDescending { it.items.size }
-        list += Group(Kind.ABOUT, labels.about)
+        list += Group(Kind.SETTINGS, labels.settings)
         groups = list
         refreshFavourites()
     }

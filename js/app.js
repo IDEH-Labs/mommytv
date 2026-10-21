@@ -38,10 +38,13 @@
   }
   var t = I18N.t;
   var VERSION = '0.1.0';
-  var ABOUT_PAIR = 1; // row that opens the phone pairing code
-  var ABOUT = [
-    ['heart', t('dedication')],
+  // Ajustes: the rows that do something first, then the dedication and the information
+  var ROW_CHANGE = 0;
+  var ROW_PAIR = 1;
+  var SETTINGS = [
+    ['change', t('change')],
     ['phone', t('pairPhone')],
+    ['heart', t('dedication')],
     ['info', 'MommyTV ' + VERSION + ' · ' + t('org')],
     ['info', t('license')],
     ['info', t('source')],
@@ -72,6 +75,8 @@
   var setupSel = 0;       // 0 = input, 1 = button
   var col = 'g';          // 'g' groups rail, 'c' channel list, 's' search field
   var gSel = 0;
+  var searchGroup = null; // groups the code reaches by name, not by position
+  var favGroup = null;
   var cSel = 0;
   var playItems = [];     // the list CH+/CH- moves through
   var playIdx = 0;
@@ -315,9 +320,8 @@
     cats.sort(bySize);
     countries.sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
     groups = [
-      { name: t('change'), kind: 'change', items: [] },
-      { name: t('search'), kind: 'search', items: [], query: '' },
-      { name: t('favs'), kind: 'fav', items: [] }
+      searchGroup = { name: t('search'), kind: 'search', items: [], query: '' },
+      favGroup = { name: t('favs'), kind: 'fav', items: [] }
     ];
     if (shortcuts.items.length) groups.push(shortcuts);
     if (home.items.length) groups.push(home);
@@ -325,13 +329,13 @@
     if (countries.length > 1) groups.push({ name: t('countries'), kind: 'countries', countries: countries, country: null, items: [] });
     if (all.items.length) groups.push(all);
     if (cats.length > 1) groups = groups.concat(cats); // a single group would only repeat "Todos"
-    groups.push({ name: t('about'), kind: 'about', items: [] });
+    groups.push({ name: t('settings'), kind: 'settings', items: [] });
     refreshFavourites();
     col = 'g'; cSel = 0;
-    gSel = 2;
-    if (!groups[2].items.length) {
+    gSel = groups.indexOf(favGroup);
+    if (!favGroup.items.length) {
       gSel = groups.indexOf(home.items.length ? home : all);
-      if (gSel < 0) gSel = Math.min(3, groups.length - 1);
+      if (gSel < 0) gSel = Math.min(2, groups.length - 1); // first group after Favoritos
     }
     status('', false);
     show('browser');
@@ -377,7 +381,7 @@
     var watched = Object.keys(watch).filter(function (u) { return watch[u] >= 60 && u in map && !seen[u] && hidden.indexOf(u) < 0; });
     watched.sort(function (a, b) { return watch[b] - watch[a]; });
     for (var j = 0; j < watched.length && items.length < FAV_MAX; j++) items.push(map[watched[j]]);
-    groups[2].items = items;
+    favGroup.items = items;
   }
 
   var pinsCache = null; // the pinned list, read from storage once and kept in sync by togglePin
@@ -386,7 +390,7 @@
 
   function inFavourites(ch) {
     refreshFavourites();
-    var fav = groups[2].items;
+    var fav = favGroup.items;
     for (var i = 0; i < fav.length; i++) if (channels[fav[i]].url === ch.url) return true;
     return false;
   }
@@ -422,7 +426,7 @@
   }
 
   function runSearch() {
-    var g = groups[1];
+    var g = searchGroup;
     var q = normalize(ui.search.value.trim());
     g.query = ui.search.value;
     g.items = [];
@@ -439,7 +443,7 @@
   function channelsText(n) { return n === 1 ? t('oneChannel') : t('nChannels', n); }
 
   function showingCountries(g) { return g.kind === 'countries' && !g.country; }
-  function listLength(g) { return g.kind === 'about' ? ABOUT.length : showingCountries(g) ? g.countries.length : g.items.length; }
+  function listLength(g) { return g.kind === 'settings' ? SETTINGS.length : showingCountries(g) ? g.countries.length : g.items.length; }
 
   /* ---------- browser rendering ---------- */
 
@@ -495,6 +499,7 @@
     heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
+    settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"><path d="M10.23,4.92L10.50,2.52L13.50,2.52L13.77,4.92L15.76,5.74L17.64,4.23L19.77,6.36L18.26,8.24L19.08,10.23L21.48,10.50L21.48,13.50L19.08,13.77L18.26,15.76L19.77,17.64L17.64,19.77L15.76,18.26L13.77,19.08L13.50,21.48L10.50,21.48L10.23,19.08L8.24,18.26L6.36,19.77L4.23,17.64L5.74,15.76L4.92,13.77L2.52,13.50L2.52,10.50L4.92,10.23L5.74,8.24L4.23,6.36L6.36,4.23L8.24,5.74ZM12,8.8a3.2,3.2 0 1,0 0,6.4a3.2,3.2 0 1,0 0,-6.4"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>'
   };
 
@@ -514,12 +519,12 @@
     stamp: function (i) { return groups[i].name + listLength(groups[i]) + (unlocked ? 'u' : ''); },
     row: function (li, i) {
       var g = groups[i];
-      var name = { search: 'search', fav: 'fav', change: 'change', apps: 'apps', countries: 'globe', about: 'heart' }[g.kind];
+      var name = { search: 'search', fav: 'fav', apps: 'apps', countries: 'globe', settings: 'settings' }[g.kind];
       if (!name && parental.locked[g.name] && parental.hash && !unlocked) name = 'lock';
-      if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : g.kind === 'about' ? 'rose' : ''));
+      if (name) li.appendChild(icon(name, g.kind === 'fav' ? 'gold' : ''));
       li.appendChild(span('label', g.name));
       if (g.kind === 'countries') li.appendChild(span('count', g.countries.length));
-      else if (g.kind !== 'change' && g.kind !== 'search' && g.kind !== 'about') li.appendChild(span('count', g.items.length));
+      else if (g.kind !== 'search' && g.kind !== 'settings') li.appendChild(span('count', g.items.length));
     }
   };
 
@@ -536,11 +541,12 @@
     }
   };
 
-  var aboutFill = {
-    stamp: function (i) { return 'about' + i; },
+  var settingsFill = {
+    stamp: function (i) { return 'settings' + i; },
     row: function (li, i) {
-      li.appendChild(icon(ABOUT[i][0], ABOUT[i][0] === 'heart' ? 'rose' : ''));
-      li.appendChild(span('name' + (i === 0 ? ' dedication' : ''), ABOUT[i][1]));
+      var heart = SETTINGS[i][0] === 'heart';
+      li.appendChild(icon(SETTINGS[i][0], heart ? 'rose' : ''));
+      li.appendChild(span('name' + (heart ? ' dedication' : ''), SETTINGS[i][1]));
     }
   };
 
@@ -565,15 +571,15 @@
     ui.search.className = searching ? (col === 's' ? 'focus' : '') : 'hidden';
     ui.heroName.className = searching ? 'hidden' : '';
     var ch = g.items.length ? channels[g.items[Math.min(cSel, g.items.length - 1)]] : null;
-    ui.heroLive.className = 'live' + (ch && g.kind !== 'search' && g.kind !== 'change' && ch.url.indexOf(SHORTCUT) !== 0 ? '' : ' hidden');
-    if (g.kind === 'about') {
+    ui.heroLive.className = 'live' + (ch && g.kind !== 'search' && ch.url.indexOf(SHORTCUT) !== 0 ? '' : ' hidden');
+    if (g.kind === 'settings') {
       ui.heroLive.className = 'live hidden';
       ui.heroTile.textContent = '';
       var logo = document.createElement('img');
       logo.src = 'img/icon_130x130.png';
       ui.heroTile.appendChild(logo);
-      ui.heroName.textContent = t('dedication');
-      ui.heroGroup.textContent = 'MommyTV ' + VERSION + '  ·  ' + t('licenseShort');
+      ui.heroName.textContent = t('settings');
+      ui.heroGroup.textContent = 'MommyTV ' + VERSION; // the licence has its own row
       ui.heroQ.textContent = '';
       return;
     }
@@ -588,13 +594,6 @@
     if (searching) {
       heroIcon('search');
       ui.heroGroup.textContent = g.items.length ? (g.items.length === 1 ? t('oneResult') : t('nResults', g.items.length)) : (g.query ? t('noResults') : t('typeHint'));
-      ui.heroQ.textContent = '';
-      return;
-    }
-    if (g.kind === 'change') {
-      heroIcon('change');
-      ui.heroName.textContent = t('changeTitle');
-      ui.heroGroup.textContent = t('changeHint');
       ui.heroQ.textContent = '';
       return;
     }
@@ -615,7 +614,7 @@
   function renderBrowser() {
     renderWindow(ui.groups, groups.length, gSel, col === 'g', RAIL_ROWS, railFill);
     var g = groups[gSel];
-    renderWindow(ui.channels, listLength(g), cSel, col === 'c', LIST_ROWS, g.kind === 'about' ? aboutFill : showingCountries(g) ? countryFill : listFill);
+    renderWindow(ui.channels, listLength(g), cSel, col === 'c', LIST_ROWS, g.kind === 'settings' ? settingsFill : showingCountries(g) ? countryFill : listFill);
     renderHero();
   }
 
@@ -627,7 +626,7 @@
 
   function closeSearch(toResults) {
     ui.search.blur();
-    col = toResults && groups[1].items.length ? 'c' : 'g';
+    col = toResults && searchGroup.items.length ? 'c' : 'g';
     renderBrowser();
   }
 
@@ -647,17 +646,12 @@
     if (k === KEY.UP || k === KEY.DOWN) {
       var d = k === KEY.UP ? -1 : 1;
       if (col === 'g') {
-        gSel = (gSel + d + groups.length) % groups.length; // wraps: up from the top reaches "Acerca de"
+        gSel = (gSel + d + groups.length) % groups.length; // wraps: up from the top reaches Ajustes
         cSel = 0;
         if (groups[gSel].kind === 'fav') refreshFavourites();
       } else {
         cSel = Math.max(0, Math.min(listLength(g) - 1, cSel + d));
       }
-    } else if (k === KEY.OK && col === 'g' && g.kind === 'change') {
-      ui.url.value = store(STORE_URL) || ui.url.value;
-      setupSel = 0;
-      show('setup');
-      return true;
     } else if (k === KEY.OK && col === 'g' && g.kind === 'search') {
       openSearch();
       return true;
@@ -665,8 +659,14 @@
       if (listLength(g)) col = 'c';
     } else if (k === KEY.LEFT) {
       col = 'g';
-    } else if (k === KEY.OK && g.kind === 'about') {
-      if (cSel === ABOUT_PAIR) openPair(); // the other rows are information only
+    } else if (k === KEY.OK && g.kind === 'settings') {
+      if (cSel === ROW_CHANGE) {
+        ui.url.value = store(STORE_URL) || ui.url.value;
+        setupSel = 0;
+        show('setup');
+        return true;
+      }
+      if (cSel === ROW_PAIR) openPair(); // the other rows are information only
     } else if (k === KEY.OK && showingCountries(g)) {
       g.country = g.countries[cSel];
       g.items = g.country.items;
@@ -680,7 +680,7 @@
       var ch = channels[items[cSel]];
       if (ch.url.indexOf(SHORTCUT) === 0) launchApp(ch); else play(items, cSel);
       return true;
-    } else if (k === KEY.YELLOW && col === 'c' && items.length && !showingCountries(g) && g.kind !== 'about') {
+    } else if (k === KEY.YELLOW && col === 'c' && items.length && !showingCountries(g) && g.kind !== 'settings') {
       togglePin(channels[items[cSel]]);
       if (g.kind === 'fav') { refreshFavourites(); cSel = Math.min(cSel, Math.max(0, g.items.length - 1)); if (!g.items.length) col = 'g'; }
     } else if (k === KEY.BACK) {

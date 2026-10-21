@@ -17,10 +17,9 @@
     <string name="search" formatted="false">検索</string>
     <string name="favs" formatted="false">お気に入り</string>
     <string name="countries" formatted="false">国と地域</string>
-    <string name="about" formatted="false">このアプリについて</string>
+    <string name="settings" formatted="false">設定</string>
     <string name="dedication" formatted="false">Mami Analida に捧ぐ</string>
     <string name="license" formatted="false">ライセンス：GNU GPL v3 以降（GPL-3.0-or-later）</string>
-    <string name="licenseShort" formatted="false">GNU GPL v3 以降</string>
     <string name="source" formatted="false">ソースコード：codeberg.org/IDEH-Labs/mommytv</string>
     <string name="noChannels" formatted="false">MommyTV にはチャンネルやリストは含まれていません</string>
     <string name="lgLib" formatted="false">LG Electronics の webOSTV.js · Apache 2.0</string>
@@ -35,8 +34,6 @@
     <string name="oneResult" formatted="false">1 件</string>
     <string name="noResults" formatted="false">結果なし</string>
     <string name="typeHint" formatted="false">OK を押して名前を入力</string>
-    <string name="changeTitle" formatted="false">リストを変更</string>
-    <string name="changeHint" formatted="false">OK を押して別のリストを選ぶか、MommyTV Manager を探します</string>
     <string name="noFavs" formatted="false">お気に入りはまだありません</string>
     <string name="noFavsHint" formatted="false">チャンネルで OK を長押しするか、視聴するとここに表示されます</string>
     <string name="officialApp" formatted="false">公式アプリ</string>
@@ -54,7 +51,7 @@
     <string name="favRemoved">「%1$s」をお気に入りから外しました</string>
     <string name="pairPhone" formatted="false">スマホで操作</string>
     <string name="pairTitle" formatted="false">スマホをペアリング</string>
-    <string name="pairHelp" formatted="false">スマホの MommyTV アプリで「このアプリについて」→「テレビを操作」を開き、このコードを入力してください。5 分で無効になります。</string>
+    <string name="pairHelp" formatted="false">スマホの MommyTV アプリで「設定」→「テレビを操作」を開き、このコードを入力してください。5 分で無効になります。</string>
     <string name="pairPhones">ペアリング済み：%1$s</string>
     <string name="pairNone" formatted="false">ペアリングしたスマホはまだありません。</string>
     <string name="pairNeedsManager" formatted="false">先に MommyTV Manager のリストを読み込んでください。</string>

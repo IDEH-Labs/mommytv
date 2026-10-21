@@ -17,10 +17,9 @@
     <string name="search" formatted="false">Rechercher</string>
     <string name="favs" formatted="false">Favoris</string>
     <string name="countries" formatted="false">Pays</string>
-    <string name="about" formatted="false">À propos</string>
+    <string name="settings" formatted="false">Réglages</string>
     <string name="dedication" formatted="false">Dédié à Mami Analida</string>
     <string name="license" formatted="false">Licence : GNU GPL v3 ou ultérieure (GPL-3.0-or-later)</string>
-    <string name="licenseShort" formatted="false">GNU GPL v3 ou ultérieure</string>
     <string name="source" formatted="false">Code source : codeberg.org/IDEH-Labs/mommytv</string>
     <string name="noChannels" formatted="false">MommyTV ne fournit ni chaînes ni listes</string>
     <string name="lgLib" formatted="false">webOSTV.js de LG Electronics · Apache 2.0</string>
@@ -35,8 +34,6 @@
     <string name="oneResult" formatted="false">1 résultat</string>
     <string name="noResults" formatted="false">Aucun résultat</string>
     <string name="typeHint" formatted="false">Appuyez sur OK et tapez le nom</string>
-    <string name="changeTitle" formatted="false">Changer de liste</string>
-    <string name="changeHint" formatted="false">Appuyez sur OK pour choisir une autre liste ou chercher MommyTV Manager</string>
     <string name="noFavs" formatted="false">Pas encore de favoris</string>
     <string name="noFavsHint" formatted="false">Maintenez OK sur une chaîne, ou regardez des chaînes et elles apparaîtront ici</string>
     <string name="officialApp" formatted="false">App officielle</string>
@@ -54,7 +51,7 @@
     <string name="favRemoved">« %1$s » retirée des favoris</string>
     <string name="pairPhone" formatted="false">Contrôler avec le téléphone</string>
     <string name="pairTitle" formatted="false">Associer un téléphone</string>
-    <string name="pairHelp" formatted="false">Dans l’app MommyTV du téléphone, ouvrez À propos → Contrôler la TV et saisissez ce code. Il expire dans 5 minutes.</string>
+    <string name="pairHelp" formatted="false">Dans l’app MommyTV du téléphone, ouvrez Réglages → Contrôler la TV et saisissez ce code. Il expire dans 5 minutes.</string>
     <string name="pairPhones">Associés : %1$s</string>
     <string name="pairNone" formatted="false">Aucun téléphone associé pour l’instant.</string>
     <string name="pairNeedsManager" formatted="false">Chargez d’abord la liste de MommyTV Manager.</string>

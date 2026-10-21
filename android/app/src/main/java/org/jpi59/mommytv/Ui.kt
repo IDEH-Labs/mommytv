@@ -279,6 +279,13 @@ private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidt
                 .combinedClickable(onClick = { a.openSearch() }).semantics { contentDescription = label },
             contentAlignment = Alignment.Center,
         ) { Icon(R.drawable.ic_search, if (searching) FocusFg else Fg, 28) }
+        val inSettings = a.group?.kind == Kind.SETTINGS
+        val settingsLabel = stringResource(R.string.settings)
+        Box(
+            Modifier.size(48.dp).clip(CircleShape).background(if (inSettings) FocusBg else Color.Transparent)
+                .combinedClickable(onClick = { a.openSettings() }).semantics { contentDescription = settingsLabel },
+            contentAlignment = Alignment.Center,
+        ) { Icon(R.drawable.ic_settings, if (inSettings) FocusFg else Fg, 26) }
     }
     if (!compact) {
         Text("OK", color = Fg, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.border(1.5.dp, Muted, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 1.dp))
@@ -293,15 +300,14 @@ private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidt
 private fun groupIcon(a: MainActivity, g: Group): Pair<Int, Color>? = when (g.kind) {
     Kind.SEARCH -> R.drawable.ic_search to Fg
     Kind.FAV -> R.drawable.ic_fav to Gold
-    Kind.CHANGE -> R.drawable.ic_change to Fg
     Kind.APPS -> R.drawable.ic_apps to Fg
     Kind.COUNTRIES -> R.drawable.ic_globe to Fg
-    Kind.ABOUT -> R.drawable.ic_heart to Rose
+    Kind.SETTINGS -> R.drawable.ic_settings to Fg
     Kind.LIST -> if (a.parental.isLockedGroup(g.name)) R.drawable.ic_lock to Fg else null
 }
 
 private fun groupCount(a: MainActivity, g: Group): String = when (g.kind) {
-    Kind.CHANGE, Kind.SEARCH, Kind.ABOUT -> ""
+    Kind.SEARCH, Kind.SETTINGS -> ""
     Kind.COUNTRIES -> g.countries.size.toString()
     else -> g.items.size.toString()
 }
@@ -318,7 +324,7 @@ private fun Rail(a: MainActivity, c: Catalog, modifier: Modifier) {
             Row(
                 Modifier.fillMaxWidth().height(46.dp).scale(s).clip(RoundedCornerShape(12.dp))
                     .background(if (focused) FocusBg else if (current) Panel else Color.Transparent)
-                    .combinedClickable(onClick = { a.selectGroup(i); a.column = if (g.kind == Kind.SEARCH) Column.SEARCH else if (a.listLength(g) > 0) Column.LIST else Column.RAIL; if (g.kind == Kind.CHANGE) a.onKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) })
+                    .combinedClickable(onClick = { a.selectGroup(i); a.column = if (g.kind == Kind.SEARCH) Column.SEARCH else if (a.listLength(g) > 0) Column.LIST else Column.RAIL })
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -333,14 +339,14 @@ private fun Rail(a: MainActivity, c: Catalog, modifier: Modifier) {
 @Composable
 private fun RailChips(a: MainActivity, c: Catalog) {
     val state = rememberLazyListState()
-    val shown = c.groups.withIndex().filter { it.value.kind != Kind.SEARCH } // search is the button in the top bar
-    LaunchedEffect(a.gSel) { state.animateScrollToItem((shown.indexOfFirst { it.index == a.gSel } - 1).coerceAtLeast(0)) }
+    val shown = c.groups.withIndex().filter { it.value.kind != Kind.SEARCH && it.value.kind != Kind.SETTINGS } // both are top-bar buttons
+    LaunchedEffect(a.gSel) { shown.indexOfFirst { it.index == a.gSel }.takeIf { it >= 0 }?.let { state.animateScrollToItem((it - 1).coerceAtLeast(0)) } }
     LazyRow(state = state, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         items(shown) { (i, g) ->
             val on = i == a.gSel
             Row(
                 Modifier.clip(RoundedCornerShape(20.dp)).background(if (on) FocusBg else Panel)
-                    .combinedClickable(onClick = { a.selectGroup(i); a.column = when (g.kind) { Kind.SEARCH -> Column.SEARCH; Kind.CHANGE -> Column.RAIL; else -> Column.LIST }; if (g.kind == Kind.CHANGE) a.onKey(android.view.KeyEvent.KEYCODE_DPAD_CENTER) })
+                    .combinedClickable(onClick = { a.selectGroup(i); a.column = Column.LIST })
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -363,13 +369,12 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
             .border(1.dp, Line, RoundedCornerShape(20.dp)).padding(if (compact) 12.dp else 22.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        val ch = if (g.kind == Kind.ABOUT || a.showingCountries(g) || g.items.isEmpty()) null else c.channels[g.items[a.cSel.coerceIn(0, g.items.size - 1)]]
+        val ch = if (g.kind == Kind.SETTINGS || a.showingCountries(g) || g.items.isEmpty()) null else c.channels[g.items[a.cSel.coerceIn(0, g.items.size - 1)]]
         when {
-            g.kind == Kind.ABOUT -> Box(Modifier.size(tileW.dp, tileH.dp), contentAlignment = Alignment.Center) {
+            g.kind == Kind.SETTINGS -> Box(Modifier.size(tileW.dp, tileH.dp), contentAlignment = Alignment.Center) {
                 Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size((tileH * 0.9f).dp).clip(RoundedCornerShape(16.dp)))
             }
             g.kind == Kind.SEARCH -> Tile(null, tileW, tileH, R.drawable.ic_search)
-            g.kind == Kind.CHANGE -> Tile(null, tileW, tileH, R.drawable.ic_change)
             a.showingCountries(g) -> Tile(null, tileW, tileH, R.drawable.ic_globe)
             ch == null && g.kind == Kind.FAV -> Tile(null, tileW, tileH, R.drawable.ic_fav, Gold)
             else -> Tile(ch, tileW, tileH)
@@ -391,7 +396,7 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
 
 @Composable
 private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<String, String> = when {
-    g.kind == Kind.ABOUT -> stringResource(R.string.dedication) to "MommyTV 0.1.0  ·  " + stringResource(R.string.licenseShort)
+    g.kind == Kind.SETTINGS -> stringResource(R.string.settings) to "MommyTV 0.1.0" // the licence has its own row
     g.kind == Kind.SEARCH -> "" to when {
         g.items.size == 1 -> stringResource(R.string.oneResult)
         g.items.isNotEmpty() -> stringResource(R.string.nResults, g.items.size.toString())
@@ -399,7 +404,6 @@ private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<
         a.isTv -> stringResource(R.string.typeHint) // phones: the field's own placeholder is enough
         else -> ""
     }
-    g.kind == Kind.CHANGE -> stringResource(R.string.changeTitle) to stringResource(R.string.changeHint)
     a.showingCountries(g) -> {
         val country = g.countries.getOrNull(a.cSel)
         if (a.column == Column.LIST && country != null) country.name to channelsText(country.items.size) + "  ·  " + stringResource(R.string.openHint)
@@ -447,12 +451,12 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
                     .border(if (focused) 2.dp else 0.dp, if (focused) Color(0x5938BDF8) else Color.Transparent, RoundedCornerShape(14.dp))
                     .combinedClickable(
                         onClick = { a.column = Column.LIST; a.activate(i) },
-                        onLongClick = { if (g.kind != Kind.ABOUT && !a.showingCountries(g)) a.toggleFavourite(c.channels[g.items[i]]) },
+                        onLongClick = { if (g.kind != Kind.SETTINGS && !a.showingCountries(g)) a.toggleFavourite(c.channels[g.items[i]]) },
                     ).padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 when {
-                    g.kind == Kind.ABOUT -> AboutRow(a, i, focused)
+                    g.kind == Kind.SETTINGS -> SettingsRow(a, i, focused)
                     a.showingCountries(g) -> {
                         val country = g.countries[i]
                         Box(Modifier.size(70.dp, 40.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF1E293B)), contentAlignment = Alignment.Center) {
@@ -478,18 +482,27 @@ private fun ChannelList(a: MainActivity, c: Catalog, modifier: Modifier) {
 }
 
 @Composable
-private fun AboutRow(a: MainActivity, i: Int, focused: Boolean) {
-    val rows = mutableListOf(
-        R.string.dedication, -1, R.string.license, R.string.source, R.string.noChannels, R.string.lgLib, R.string.font, R.string.data,
-    )
-    if (!a.isTv) rows.add(MainActivity.ABOUT_REMOTE, R.string.remoteTitle)
-    val text = if (rows[i] == -1) "MommyTV 0.1.0 · " + stringResource(R.string.org) else stringResource(rows[i])
-    val remote = rows[i] == R.string.remoteTitle
-    Icon(if (i == 0) R.drawable.ic_heart else if (remote) R.drawable.ic_phone else R.drawable.ic_info, if (i == 0) Rose else if (focused) FocusFg else if (remote) Sky else Muted, 18)
+private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
+    val row = a.settingsRows[i]
+    val (icon, text) = when (row) {
+        Setting.CHANGE -> R.drawable.ic_change to stringResource(R.string.change)
+        Setting.REMOTE -> R.drawable.ic_phone to stringResource(R.string.remoteTitle)
+        Setting.DEDICATION -> R.drawable.ic_heart to stringResource(R.string.dedication)
+        Setting.VERSION -> R.drawable.ic_info to "MommyTV 0.1.0 · " + stringResource(R.string.org)
+        Setting.LICENSE -> R.drawable.ic_info to stringResource(R.string.license)
+        Setting.SOURCE -> R.drawable.ic_info to stringResource(R.string.source)
+        Setting.NO_CHANNELS -> R.drawable.ic_info to stringResource(R.string.noChannels)
+        Setting.LG_LIB -> R.drawable.ic_info to stringResource(R.string.lgLib)
+        Setting.FONT -> R.drawable.ic_info to stringResource(R.string.font)
+        Setting.DATA -> R.drawable.ic_info to stringResource(R.string.data)
+    }
+    val heart = row == Setting.DEDICATION
+    val action = row == Setting.CHANGE || row == Setting.REMOTE
+    Icon(icon, if (heart) Rose else if (focused) FocusFg else if (action) Sky else Muted, 18)
     Spacer(Modifier.width(14.dp))
     Text(
-        text, fontSize = 17.sp, fontWeight = if (i == 0) FontWeight.ExtraBold else FontWeight.Normal,
-        color = if (i == 0) (if (focused) Color(0xFFBE123C) else Color(0xFFFECDD3)) else if (focused) FocusFg else Fg,
+        text, fontSize = 17.sp, fontWeight = if (heart) FontWeight.ExtraBold else if (action) FontWeight.SemiBold else FontWeight.Normal,
+        color = if (heart) (if (focused) Color(0xFFBE123C) else Color(0xFFFECDD3)) else if (focused) FocusFg else Fg,
     )
 }
 

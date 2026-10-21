@@ -26,6 +26,9 @@ import java.util.Locale
 enum class Screen { SETUP, BROWSER, PLAYER }
 enum class Column { RAIL, LIST, SEARCH }
 
+/** Rows of Ajustes: what does something first, then the dedication and the information. */
+enum class Setting { CHANGE, REMOTE, DEDICATION, VERSION, LICENSE, SOURCE, NO_CHANNELS, LG_LIB, FONT, DATA }
+
 @OptIn(UnstableApi::class)
 class MainActivity : ComponentActivity(), Playback.Listener {
     // ---------- state shown by the interface (Ui.kt) ----------
@@ -72,7 +75,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
 
     /** On a TV this app is the screen, not the remote: no "Control the TV" row. */
     val isTv by lazy { packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK) }
-    val aboutRows get() = if (isTv) ABOUT_ROWS else ABOUT_ROWS + 1
+    val settingsRows by lazy { Setting.entries.filter { it != Setting.REMOTE || !isTv } }
 
     val lang: String get() = Locale.getDefault().language.let { if (it in LANGS) it else "en" }
 
@@ -144,8 +147,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     private fun useList(list: List<Channel>) {
         val locale = Locale.getDefault()
         val labels = Labels(
-            getString(R.string.change), getString(R.string.search), getString(R.string.favs), getString(R.string.shortcuts),
-            getString(R.string.inLang), getString(R.string.countries), getString(R.string.all), getString(R.string.about), getString(R.string.noGroup),
+            getString(R.string.search), getString(R.string.favs), getString(R.string.shortcuts),
+            getString(R.string.inLang), getString(R.string.countries), getString(R.string.all), getString(R.string.settings), getString(R.string.noGroup),
         )
         val c = Catalog(list, locale.country, runCatching { locale.isO3Language }.getOrDefault("eng"), labels, store)
         catalog = c
@@ -228,25 +231,30 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     val group: Group? get() = catalog?.groups?.getOrNull(gSel)
     fun showingCountries(g: Group) = g.kind == Kind.COUNTRIES && g.country == null
     fun listLength(g: Group) = when {
-        g.kind == Kind.ABOUT -> aboutRows
+        g.kind == Kind.SETTINGS -> settingsRows.size
         showingCountries(g) -> g.countries.size
         else -> g.items.size
     }
 
-    private var beforeSearch: kotlin.Pair<Int, Int>? = null // group and row to return to from the phone's search button
+    private var returnTo: kotlin.Pair<Int, Int>? = null // group and row to go back to from a top-bar button
 
-    /** The phone's search button: search from anywhere, Back returns to where it was. */
-    fun openSearch() {
+    /** The phone's search and settings buttons: open from anywhere, Back returns to where it was. */
+    fun openSearch() = openFromTopBar(Kind.SEARCH, Column.SEARCH)
+    fun openSettings() = openFromTopBar(Kind.SETTINGS, Column.LIST)
+
+    private fun openFromTopBar(kind: Kind, col: Column) {
         val c = catalog ?: return
-        val from = if (group?.kind == Kind.SEARCH) beforeSearch else gSel to cSel
-        selectGroup(c.groups.indexOf(c.search))
-        beforeSearch = from
-        column = Column.SEARCH
+        val from = if (group?.kind == Kind.SEARCH || group?.kind == Kind.SETTINGS) returnTo else gSel to cSel
+        selectGroup(c.groups.indexOfFirst { it.kind == kind })
+        returnTo = from
+        column = col
     }
+
+    private fun openChangeList() { urlField = prefs.getString(KEY_URL, urlField) ?: urlField; setupFocus = 0; status = ""; screen = Screen.SETUP }
 
     fun selectGroup(i: Int) {
         val c = catalog ?: return
-        beforeSearch = null
+        returnTo = null
         gSel = (i + c.groups.size) % c.groups.size
         cSel = 0
         if (c.groups[gSel].kind == Kind.FAV) c.refreshFavourites()
@@ -258,7 +266,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val g = group ?: return
         cSel = i
         when {
-            g.kind == Kind.ABOUT -> if (!isTv && i == ABOUT_REMOTE) openRemote()
+            g.kind == Kind.SETTINGS -> when (settingsRows[i]) { Setting.CHANGE -> openChangeList(); Setting.REMOTE -> openRemote(); else -> Unit }
             showingCountries(g) -> { g.country = g.countries[i]; g.items = g.country!!.items; cSel = 0; version++ }
             i !in g.items.indices -> Unit // empty group: nothing to open
             else -> {
@@ -385,7 +393,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         if (screen == Screen.PLAYER) return current
         val c = catalog ?: return null
         val g = group ?: return null
-        if (g.kind == Kind.ABOUT || showingCountries(g) || g.items.isEmpty()) return null
+        if (g.kind == Kind.SETTINGS || showingCountries(g) || g.items.isEmpty()) return null
         return c.channels[g.items[cSel.coerceIn(0, g.items.size - 1)]].takeIf { !it.isShortcut }
     }
 
@@ -398,9 +406,9 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             Screen.PLAYER -> stopPlayer()
             Screen.BROWSER -> {
                 val g = group
-                val from = beforeSearch
+                val from = returnTo
                 when {
-                    from != null && g?.kind == Kind.SEARCH -> { selectGroup(from.first); cSel = from.second; column = if (listLength(group ?: return) > 0) Column.LIST else Column.RAIL }
+                    from != null && (g?.kind == Kind.SEARCH || g?.kind == Kind.SETTINGS) -> { selectGroup(from.first); cSel = from.second; column = if (listLength(group ?: return) > 0) Column.LIST else Column.RAIL }
                     column == Column.SEARCH -> column = Column.RAIL
                     column == Column.LIST && g != null && g.kind == Kind.COUNTRIES && g.country != null -> {
                         val back = g.countries.indexOf(g.country)
@@ -449,7 +457,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
                 if (column == Column.RAIL) selectGroup(gSel + d) else cSel = (cSel + d).coerceIn(0, (listLength(g) - 1).coerceAtLeast(0))
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> when {
-                column == Column.RAIL && g.kind == Kind.CHANGE -> { urlField = prefs.getString(KEY_URL, urlField) ?: urlField; setupFocus = 0; status = ""; screen = Screen.SETUP }
                 column == Column.RAIL && g.kind == Kind.SEARCH -> column = Column.SEARCH
                 column == Column.RAIL -> if (listLength(g) > 0) column = Column.LIST
                 else -> activate(cSel)
@@ -477,8 +484,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val LANGS = setOf("es", "en", "fr", "de", "it", "pt", "zh", "ja")
         const val KEY_URL = "playlistUrl"
         const val KEY_LAST = "last"
-        const val ABOUT_ROWS = 8
-        const val ABOUT_REMOTE = 1 // phones only: the row that pairs with the TV
         const val KEY_REMOTE = "remoteToken"
         const val KEY_ON_TV = "onTv"
     }

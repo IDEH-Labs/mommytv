@@ -33,7 +33,7 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 | List | OK on a channel | Play |
 | List / Player | Hold OK (or yellow key) | Add to / remove from Favoritos |
 | Player | Blue key | Diagnostics panel |
-| List | OK on "Cambiar lista" | Change the playlist URL |
+| List | Ajustes → OK on "Cambiar lista" | Change the playlist URL |
 | List | Back | Groups column, then exit |
 | Player | Up / Down, CH+ / CH− | Next / previous channel |
 | Player | OK | Show the channel name |
@@ -43,8 +43,8 @@ it ships no channels or playlists. Use playlists you are entitled to watch.
 
 The Android app on a phone can follow the TV through MommyTV Manager:
 
-1. On the TV: About → "Controlar con el teléfono" shows a 6-digit code (one use, 5 minutes).
-2. On the phone: About → "Controlar la TV", type the code.
+1. On the TV: Ajustes (Settings) → "Controlar con el teléfono" shows a 6-digit code (one use, 5 minutes).
+2. On the phone: the gear button → "Controlar la TV", type the code.
 
 The phone then shows what the TV is playing, and a TV button next to search chooses where a
 tapped channel plays: on the TV (default once paired) or on the phone. The TV keeps one

@@ -17,10 +17,9 @@
     <string name="search" formatted="false">搜索</string>
     <string name="favs" formatted="false">收藏</string>
     <string name="countries" formatted="false">国家和地区</string>
-    <string name="about" formatted="false">关于</string>
+    <string name="settings" formatted="false">设置</string>
     <string name="dedication" formatted="false">献给 Mami Analida</string>
     <string name="license" formatted="false">许可证：GNU GPL v3 或更高版本（GPL-3.0-or-later）</string>
-    <string name="licenseShort" formatted="false">GNU GPL v3 或更高版本</string>
     <string name="source" formatted="false">源代码：codeberg.org/IDEH-Labs/mommytv</string>
     <string name="noChannels" formatted="false">MommyTV 不包含任何频道或列表</string>
     <string name="lgLib" formatted="false">LG Electronics 的 webOSTV.js · Apache 2.0</string>
@@ -35,8 +34,6 @@
     <string name="oneResult" formatted="false">1 个结果</string>
     <string name="noResults" formatted="false">没有结果</string>
     <string name="typeHint" formatted="false">按 OK 并输入名称</string>
-    <string name="changeTitle" formatted="false">更换列表</string>
-    <string name="changeHint" formatted="false">按 OK 选择其他列表或查找 MommyTV Manager</string>
     <string name="noFavs" formatted="false">还没有收藏</string>
     <string name="noFavsHint" formatted="false">在频道上长按 OK，或观看频道后它们会出现在这里</string>
     <string name="officialApp" formatted="false">官方应用</string>
@@ -54,7 +51,7 @@
     <string name="favRemoved">已将“%1$s”移出收藏</string>
     <string name="pairPhone" formatted="false">用手机控制</string>
     <string name="pairTitle" formatted="false">配对手机</string>
-    <string name="pairHelp" formatted="false">在手机上的 MommyTV 应用中打开“关于”→“控制电视”，输入此代码。代码 5 分钟后失效。</string>
+    <string name="pairHelp" formatted="false">在手机上的 MommyTV 应用中打开“设置”→“控制电视”，输入此代码。代码 5 分钟后失效。</string>
     <string name="pairPhones">已配对：%1$s</string>
     <string name="pairNone" formatted="false">还没有配对的手机。</string>
     <string name="pairNeedsManager" formatted="false">请先加载 MommyTV Manager 的列表。</string>

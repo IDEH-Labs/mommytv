@@ -6,7 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CatalogTest {
-    private val labels = Labels("Cambiar lista", "Buscar", "Favoritos", "Accesos directos", "En español", "Países", "Todos", "Acerca de", "Sin grupo")
+    private val labels = Labels("Buscar", "Favoritos", "Accesos directos", "En español", "Países", "Todos", "Ajustes", "Sin grupo")
 
     private class MapStore : Store {
         val m = HashMap<String, String>()
@@ -28,7 +28,7 @@ class CatalogTest {
     @Test fun buildsTheSameGroupsAsWebOs() {
         val c = Catalog(list, "CO", "spa", labels, MapStore())
         val names = c.groups.map { it.name }
-        assertEquals(listOf("Cambiar lista", "Buscar", "Favoritos", "Accesos directos", "Colombia", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Acerca de"), names)
+        assertEquals(listOf("Buscar", "Favoritos", "Accesos directos", "Colombia", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Ajustes"), names)
         assertEquals(4, c.channels.size) // adult channel never present
         assertEquals(listOf("Colombia", "Estados Unidos"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
         assertEquals(2, c.groups.first { it.name == "Noticias" }.items.size)
