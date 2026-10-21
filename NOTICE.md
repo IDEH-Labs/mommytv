@@ -17,6 +17,7 @@ playlist its user chooses locally. MommyTV ships no channels, streams or playlis
 |---|---|---|---|
 | webOSTV.js (LG Electronics) | 1.2.13 | Apache-2.0 | `js/webOSTV.js`, `licenses/webOSTV.js-LICENSE-2.0.txt` |
 | Plus Jakarta Sans (Tokotype) | Google Fonts v12 | SIL OFL 1.1 | `fonts/`, `licenses/PlusJakartaSans-OFL.txt` |
+| Country names (Unicode CLDR) | 47.0 | Unicode License v3 | `js/countries.js`, `licenses/CLDR-LICENSE.txt` |
 
 ## Playlist Metadata
 - Country, language and category information is read from standard M3U attributes supplied in the

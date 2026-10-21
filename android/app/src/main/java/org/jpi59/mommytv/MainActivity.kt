@@ -55,7 +55,6 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     var remoteBusy by mutableStateOf(false)
     var remoteFound by mutableStateOf<List<LgTv.Found>?>(null) // TVs answering on the LAN, while pairing
     var tvName by mutableStateOf<String?>(null) // the paired LG TV; null when not paired
-    var rememberList by mutableStateOf(true) // "Recordar esta lista", on unless the user unticks it
     var onTv by mutableStateOf(true) // paired phone: a tapped channel plays on the TV (the TV button in the top bar)
 
     lateinit var playback: Playback
@@ -94,7 +93,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             MommyApp(this)
         }
         val saved = prefs.getString(KEY_URL, null)
-        if (saved != null) { urlField = saved; setupFocus = 1; load(saved, fromCopy = true) } else { setupFocus = 0; screen = Screen.SETUP }
+        // on "Entrar": nothing loads until the user confirms
+        if (saved != null) { urlField = saved; setupFocus = 1 } else setupFocus = 0
     }
 
     override fun onStop() {
@@ -112,7 +112,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     private val copyFile get() = java.io.File(filesDir, "playlist-copy.m3u")
 
     /**
-     * Loads the playlist the user gave. Remembered, with a copy, unless "Recordar esta lista" is off;
+     * Loads the playlist the user gave and remembers it with a copy ("Eliminar lista" forgets it);
      * when its site does not answer, a remembered list starts from the copy.
      */
     fun load(url: String, fromCopy: Boolean = false) {
@@ -130,7 +130,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
                 return@launch
             }
             if (M3u.parse(text).isEmpty()) { fail(getString(R.string.emptyList)); return@launch }
-            if (rememberList) { prefs.edit().putString(KEY_URL, u).apply(); runCatching { copyFile.writeText(text) } } else forgetList(false)
+            prefs.edit().putString(KEY_URL, u).apply()
+            runCatching { copyFile.writeText(text) }
             useText(text)
         }
     }
@@ -505,9 +506,9 @@ class MainActivity : ComponentActivity(), Playback.Listener {
 
     private fun setupKey(code: Int): Boolean = when (code) {
         // focus order: address (0), "Recordar esta lista" (2), Load (1)
-        KeyEvent.KEYCODE_DPAD_UP -> { setupFocus = if (setupFocus == 1) 2 else 0; true }
-        KeyEvent.KEYCODE_DPAD_DOWN -> { setupFocus = if (setupFocus == 0) 2 else 1; true }
-        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { if (setupFocus == 1) load(urlField) else if (setupFocus == 2) rememberList = !rememberList; true }
+        KeyEvent.KEYCODE_DPAD_UP -> { setupFocus = 0; true }
+        KeyEvent.KEYCODE_DPAD_DOWN -> { setupFocus = 1; true }
+        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { if (setupFocus == 1) load(urlField, fromCopy = true); true }
         else -> false
     }
 

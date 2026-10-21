@@ -51,7 +51,6 @@
     <string name="watchOnTv" formatted="false">Regarder sur la TV</string>
     <string name="watchHere" formatted="false">Regarder sur ce téléphone</string>
     <string name="remoteGone" formatted="false">Ce téléphone n’est plus associé à la TV.</string>
-    <string name="remember" formatted="false">Mémoriser cette liste</string>
     <string name="needUrl" formatted="false">Saisissez l’adresse de votre liste M3U.</string>
     <string name="usingCopy" formatted="false">La liste n’a pas répondu : copie enregistrée utilisée.</string>
     <string name="deleteList" formatted="false">Supprimer la liste</string>
@@ -90,7 +89,7 @@
     <string name="diagOff" formatted="false">Diagnostic désactivé</string>
     <string name="urlLabel" formatted="false">Adresse de votre liste M3U</string>
     <string name="urlPlaceholder" formatted="false">https://…/liste.m3u</string>
-    <string name="load" formatted="false">Charger</string>
+    <string name="load" formatted="false">Ouvrir</string>
     <string name="live" formatted="false">EN DIRECT</string>
     <string name="holdOk" formatted="false">Maintenez</string>
     <string name="holdOkFav" formatted="false">Maintenez OK : Favori</string>

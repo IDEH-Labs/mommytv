@@ -6,6 +6,12 @@ enum class Kind { SEARCH, FAV, APPS, LIST, COUNTRIES, SETTINGS }
 
 class Country(val code: String, val name: String, val items: MutableList<Int> = ArrayList())
 
+/** "CO" → "Colombia" in the device language; an unknown code is shown as it is ("UK" is the playlists' name for GB). */
+fun countryName(code: String): String {
+    val c = code.uppercase().let { if (it == "UK") "GB" else it }
+    return runCatching { java.util.Locale.Builder().setRegion(c).build().getDisplayCountry(java.util.Locale.getDefault()) }.getOrNull()?.ifEmpty { null } ?: code
+}
+
 class Group(val kind: Kind, val name: String, var items: MutableList<Int> = ArrayList()) {
     var countries: List<Country> = emptyList()
     var country: Country? = null // open country inside "Countries"
@@ -53,8 +59,8 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
                 cats.getOrPut(name) { Group(Kind.LIST, name) }.items += i
             }
             if (ch.country.isNotEmpty()) {
-                countries.getOrPut(ch.country) { Country(ch.country, ch.country) }.items += i
-                if (ch.country.equals(region, ignoreCase = true)) { home += i; homeName = region }
+                countries.getOrPut(ch.country) { Country(ch.country, countryName(ch.country)) }.items += i
+                if (ch.country.equals(region, ignoreCase = true)) { home += i; homeName = countryName(region) }
             }
             if (";${ch.langs};".contains(";$langIso3;")) inLang.items += i
         }

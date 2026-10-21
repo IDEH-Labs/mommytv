@@ -3,9 +3,16 @@ package org.jpi59.mommytv
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
+import java.util.Locale
 
 class CatalogTest {
+    private val before = Locale.getDefault()
+    @Before fun spanish() = Locale.setDefault(Locale.forLanguageTag("es")) // country names depend on the device language
+    @After fun restore() = Locale.setDefault(before)
+
     private val labels = Labels("Buscar", "Favoritos", "Accesos directos", "En español", "Países", "Todos", "Ajustes", "Sin grupo")
 
     private class MapStore : Store {
@@ -28,17 +35,17 @@ class CatalogTest {
     @Test fun buildsTheSameGroupsAsWebOs() {
         val c = Catalog(list, "CO", "spa", labels, MapStore())
         val names = c.groups.map { it.name }
-        assertEquals(listOf("Buscar", "Favoritos", "Accesos directos", "CO", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Adultos", "Ajustes"), names)
+        assertEquals(listOf("Buscar", "Favoritos", "Accesos directos", "Colombia", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Adultos", "Ajustes"), names)
         assertEquals(5, c.channels.size) // channels are not silently hidden by manager-only attributes
-        assertEquals(listOf("CO", "US"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
+        assertEquals(listOf("Colombia", "Estados Unidos"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
         assertEquals(2, c.groups.first { it.name == "Noticias" }.items.size)
-        assertEquals(c.groups.indexOfFirst { it.name == "CO" }, c.startGroup())
+        assertEquals(c.groups.indexOfFirst { it.name == "Colombia" }, c.startGroup())
     }
 
     @Test fun startsOnTheSystemCountryOrEverything() {
         val noApps = list.filter { !it.url.startsWith("android-app://") }
         val home = Catalog(noApps, "CO", "spa", labels, MapStore())
-        assertEquals("CO", home.groups[home.startGroup()].name)
+        assertEquals("Colombia", home.groups[home.startGroup()].name)
         val abroad = Catalog(noApps, "JP", "jpn", labels, MapStore())
         assertEquals("Todos", abroad.groups[abroad.startGroup()].name)
     }
@@ -77,5 +84,11 @@ class CatalogTest {
         again.disable()
         assertFalse(Parental(store).enabled)
         assertEquals("f1e5d9d95928deb5bb58568901760888c1135569494507d5e36938a058e6bf94", Parental.sha256("a1b2c3d4:1234"))
+    }
+
+    @Test fun namesCountriesInTheDeviceLanguage() {
+        assertEquals("Colombia", countryName("CO"))
+        assertEquals("Reino Unido", countryName("UK"))
+        assertEquals("INT", countryName("INT"))
     }
 }

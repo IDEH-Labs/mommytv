@@ -51,7 +51,6 @@
     <string name="watchOnTv" formatted="false">在电视上观看</string>
     <string name="watchHere" formatted="false">在这部手机上观看</string>
     <string name="remoteGone" formatted="false">这部手机已不再与电视配对。</string>
-    <string name="remember" formatted="false">记住此列表</string>
     <string name="needUrl" formatted="false">请输入你的 M3U 列表地址。</string>
     <string name="usingCopy" formatted="false">列表没有响应：正在使用保存的副本。</string>
     <string name="deleteList" formatted="false">删除列表</string>
@@ -90,7 +89,7 @@
     <string name="diagOff" formatted="false">诊断已关闭</string>
     <string name="urlLabel" formatted="false">你的 M3U 列表地址</string>
     <string name="urlPlaceholder" formatted="false">https://…/playlist.m3u</string>
-    <string name="load" formatted="false">加载</string>
+    <string name="load" formatted="false">打开</string>
     <string name="live" formatted="false">直播</string>
     <string name="holdOk" formatted="false">长按</string>
     <string name="holdOkFav" formatted="false">长按 OK：收藏</string>

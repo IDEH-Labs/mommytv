@@ -51,7 +51,6 @@
     <string name="watchOnTv" formatted="false">Auf dem Fernseher ansehen</string>
     <string name="watchHere" formatted="false">Auf diesem Handy ansehen</string>
     <string name="remoteGone" formatted="false">Dieses Handy ist nicht mehr mit dem Fernseher gekoppelt.</string>
-    <string name="remember" formatted="false">Diese Liste merken</string>
     <string name="needUrl" formatted="false">Gib die Adresse deiner M3U-Liste ein.</string>
     <string name="usingCopy" formatted="false">Die Liste antwortet nicht: gespeicherte Kopie wird verwendet.</string>
     <string name="deleteList" formatted="false">Liste löschen</string>
@@ -90,7 +89,7 @@
     <string name="diagOff" formatted="false">Diagnose aus</string>
     <string name="urlLabel" formatted="false">Adresse deiner M3U-Liste</string>
     <string name="urlPlaceholder" formatted="false">https://…/liste.m3u</string>
-    <string name="load" formatted="false">Laden</string>
+    <string name="load" formatted="false">Öffnen</string>
     <string name="live" formatted="false">LIVE</string>
     <string name="holdOk" formatted="false">Gedrückt halten</string>
     <string name="holdOkFav" formatted="false">OK halten: Favorit</string>

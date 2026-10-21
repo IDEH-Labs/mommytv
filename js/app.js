@@ -59,14 +59,13 @@
     bannerTile: $('banner-tile'), bannerNum: $('banner-num'), bannerName: $('banner-name'),
     bannerGroup: $('banner-group'), bannerQ: $('banner-q'), bannerTime: $('banner-time'),
     osd: $('osd'), diag: $('diag'),
-    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots'), remember: $('remember')
+    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots')
   };
 
   var view = 'setup';
   var channels = [];
   var groups = [];        // [{ name, kind, items: [channel index] }]
-  var setupSel = 0;       // 0 = input, 1 = remember box, 2 = button
-  var rememberList = true; // "Recordar esta lista", on unless the user unticks it
+  var setupSel = 0;       // 0 = input, 1 = button
   var deleteArmed = 0;    // time of the first OK on "Eliminar lista"; a second one within 5 s deletes
   var col = 'g';          // 'g' groups rail, 'c' channel list, 's' search field
   var gSel = 0;
@@ -148,12 +147,11 @@
 
   function renderSetup() {
     ui.url.className = setupSel === 0 ? 'focus' : '';
-    ui.remember.className = 'check' + (rememberList ? ' on' : '') + (setupSel === 1 ? ' focus' : '');
-    ui.load.className = setupSel === 2 ? 'focus' : '';
+    ui.load.className = setupSel === 1 ? 'focus' : '';
     if (setupSel === 0) ui.url.focus(); else ui.url.blur();
   }
 
-  // Loads the playlist the user gave. Remembered (with a copy) unless "Recordar esta lista" is off;
+  // Loads the playlist the user gave and remembers it with a copy ("Eliminar lista" forgets it);
   // when its site does not answer, a remembered list starts from the copy.
   function load(url, fromCopy) {
     url = url.trim();
@@ -169,7 +167,8 @@
     xhr.onload = function () {
       if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) { copy(t('httpError', xhr.status)); return; }
       if (!M3U.parse(xhr.responseText).length) { fail(t('emptyList')); return; }
-      if (rememberList) { store(STORE_URL, url); store(STORE_COPY, xhr.responseText); } else forgetList(false);
+      store(STORE_URL, url);
+      store(STORE_COPY, xhr.responseText);
       useText(xhr.responseText);
     };
     xhr.onerror = function () { copy(t('noConnect')); };
@@ -195,6 +194,11 @@
   }
 
   /* ---------- channels and groups ---------- */
+
+  // "CO" → "Colombia" in the interface language; an unknown code is shown as it is.
+  function countryName(code) {
+    return (COUNTRY_NAMES[I18N.lang] || {})[String(code).toUpperCase()] || code;
+  }
 
   var QUALITY = { 2160: '4K', 1440: 'QHD', 1080: 'FULL HD', 720: 'HD' };
 
@@ -235,15 +239,15 @@
         if (names[n]) add(byCat, cats, names[n], function () { return { name: names[n], kind: 'list', items: [] }; }).items.push(i);
       }
       if (ch.country) {
-        add(byCountry, countries, ch.country, function () { return { code: ch.country, name: ch.country, items: [] }; }).items.push(i);
-        if (ch.country === region) { home.items.push(i); home.name = region; }
+        add(byCountry, countries, ch.country, function () { return { code: ch.country, name: countryName(ch.country), items: [] }; }).items.push(i);
+        if (ch.country === region) { home.items.push(i); home.name = countryName(region); }
       }
       if ((';' + ch.langs + ';').indexOf(';' + I18N.iso3 + ';') >= 0) spanish.items.push(i);
     }
     var bySize = function (a, b) { return b.items.length - a.items.length; };
     cats.sort(bySize);
     catNames = cats.map(function (g) { return g.name; });
-    countries.sort(function (a, b) { return a.name.localeCompare(b.name, 'es'); });
+    countries.sort(function (a, b) { return a.name.localeCompare(b.name, I18N.lang); });
     groups = [
       searchGroup = { name: t('search'), kind: 'search', items: [], query: '' },
       favGroup = { name: t('favs'), kind: 'fav', items: [] }
@@ -677,13 +681,15 @@
     var c = /^https?:\/\//.test(p.mtvPlay || '') ? { url: p.mtvPlay, title: p.mtvTitle || '', logo: p.mtvLogo || '' } : null;
     if (/^https?:\/\//.test(p.mtvList || '')) {
       pendingPlay = c;
-      rememberList = true;
       ui.url.value = p.mtvList;
       show('setup');
       load(p.mtvList, false);
       return;
     }
-    if (c) { if (channels.length) remotePlay(c); else pendingPlay = c; }
+    if (!c) return;
+    if (channels.length) { remotePlay(c); return; }
+    pendingPlay = c;
+    if (store(STORE_URL)) load(store(STORE_URL), true); // the phone is the user's OK: open the saved list for it
   }
 
   document.addEventListener('webOSRelaunch', function (e) { phoneOrder(e.detail); });
@@ -988,13 +994,10 @@
 
   function setupKey(k, e) {
     if (k === KEY.UP || k === KEY.DOWN) {
-      setupSel = Math.max(0, Math.min(2, setupSel + (k === KEY.UP ? -1 : 1)));
+      setupSel = Math.max(0, Math.min(1, setupSel + (k === KEY.UP ? -1 : 1)));
       renderSetup();
     } else if (k === KEY.OK && setupSel === 1) {
-      rememberList = !rememberList;
-      renderSetup();
-    } else if (k === KEY.OK && setupSel === 2) {
-      load(ui.url.value, false);
+      load(ui.url.value, true);
     } else if (k === KEY.BACK) {
       if (channels.length) show('browser'); else window.close();
     } else {
@@ -1076,11 +1079,8 @@
   var saved = store(STORE_URL);
   if (saved) {
     ui.url.value = saved;
-    setupSel = 2; // keep the on-screen keyboard closed while the saved list loads
-    show('setup');
-    load(saved, true);
-  } else {
-    show('setup');
+    setupSel = 1; // on "Entrar": nothing loads until the user presses OK, and the keyboard stays closed
   }
+  show('setup');
   if (launch && launch !== '{}') phoneOrder(launch); // opened by a phone
 })();

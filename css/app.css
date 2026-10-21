@@ -75,11 +75,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 #url.focus, #load.focus { transform: scale(1.03); border-color: var(--focus-bg); }
 #url.focus { background: var(--focus-bg); color: var(--focus-fg); }
 #load.focus { box-shadow: 0 12px 40px rgba(14, 165, 233, 0.45); }
-.check { display: flex; align-items: center; margin: 24px 0 0 8px; padding: 10px 16px; border-radius: 14px; color: var(--muted); font-size: 28px; font-weight: 600; transition: background-color 0.2s; }
-.check .box { width: 34px; height: 34px; margin-right: 18px; border-radius: 9px; border: 3px solid var(--muted); box-sizing: border-box; }
-.check.on .box { background: var(--sky); border-color: var(--sky); box-shadow: inset 0 0 0 5px var(--panel); }
-.check.focus { background: var(--focus-bg); color: var(--focus-fg); }
-.check.focus .box { border-color: var(--focus-fg); }
 
 /* ---------- browser ---------- */
 #browser { display: flex; padding: 132px 72px 48px; box-sizing: border-box; }

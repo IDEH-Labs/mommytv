@@ -193,30 +193,17 @@ private fun SetupScreen(a: MainActivity) {
         OutlinedTextField(
             value = a.urlField, onValueChange = { a.urlField = it }, singleLine = true,
             label = { Text(stringResource(R.string.urlLabel)) }, placeholder = { Text(stringResource(R.string.urlPlaceholder)) },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go), keyboardActions = KeyboardActions(onGo = { a.setupFocus = 1; a.load(a.urlField) }),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go), keyboardActions = KeyboardActions(onGo = { a.setupFocus = 1; a.load(a.urlField, fromCopy = true) }),
             colors = fieldColors(), modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth().focusRequester(field),
         )
-        // "Recordar esta lista": on by default; off, the list is used this time only
-        val boxFocused = a.setupFocus == 2
-        Row(
-            Modifier.widthIn(max = 640.dp).fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(12.dp))
-                .background(if (boxFocused) FocusBg else Color.Transparent)
-                .combinedClickable(onClick = { a.rememberList = !a.rememberList }).padding(horizontal = 8.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Box(Modifier.size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (a.rememberList) Sky else Color.Transparent)
-                .border(2.dp, if (a.rememberList) Sky else Muted, RoundedCornerShape(6.dp)))
-            Spacer(Modifier.width(12.dp))
-            Text(stringResource(R.string.remember), color = if (boxFocused) FocusFg else Muted, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(20.dp))
         val focused = a.setupFocus == 1
         Text(
             stringResource(R.string.load), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp,
             modifier = Modifier.scale(if (focused) 1.05f else 1f).clip(RoundedCornerShape(14.dp))
                 .background(Brush.linearGradient(listOf(Color(0xFF0EA5E9), Color(0xFF2563EB))))
                 .border(if (focused) 3.dp else 0.dp, FocusBg, RoundedCornerShape(14.dp))
-                .combinedClickable(onClick = { a.load(a.urlField) }).padding(horizontal = 44.dp, vertical = 12.dp),
+                .combinedClickable(onClick = { a.load(a.urlField, fromCopy = true) }).padding(horizontal = 44.dp, vertical = 12.dp),
         )
     }
 }

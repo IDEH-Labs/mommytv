@@ -52,7 +52,6 @@
     <string name="watchOnTv" formatted="false">Watch on the TV</string>
     <string name="watchHere" formatted="false">Watch on this phone</string>
     <string name="remoteGone" formatted="false">This phone is no longer paired with the TV.</string>
-    <string name="remember" formatted="false">Remember this playlist</string>
     <string name="needUrl" formatted="false">Type the address of your M3U playlist.</string>
     <string name="usingCopy" formatted="false">The playlist did not answer: using the saved copy.</string>
     <string name="deleteList" formatted="false">Delete playlist</string>
@@ -91,7 +90,7 @@
     <string name="diagOff" formatted="false">Diagnostics off</string>
     <string name="urlLabel" formatted="false">Address of your M3U playlist</string>
     <string name="urlPlaceholder" formatted="false">https://…/playlist.m3u</string>
-    <string name="load" formatted="false">Load</string>
+    <string name="load" formatted="false">Open</string>
     <string name="live" formatted="false">LIVE</string>
     <string name="holdOk" formatted="false">Hold</string>
     <string name="holdOkFav" formatted="false">Hold OK: Favourite</string>

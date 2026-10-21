@@ -51,7 +51,6 @@
     <string name="watchOnTv" formatted="false">テレビで見る</string>
     <string name="watchHere" formatted="false">このスマホで見る</string>
     <string name="remoteGone" formatted="false">このスマホはテレビとのペアリングが解除されています。</string>
-    <string name="remember" formatted="false">このリストを記憶する</string>
     <string name="needUrl" formatted="false">M3U リストのアドレスを入力してください。</string>
     <string name="usingCopy" formatted="false">リストが応答しません。保存したコピーを使います。</string>
     <string name="deleteList" formatted="false">リストを削除</string>
@@ -90,7 +89,7 @@
     <string name="diagOff" formatted="false">診断オフ</string>
     <string name="urlLabel" formatted="false">M3U リストのアドレス</string>
     <string name="urlPlaceholder" formatted="false">https://…/playlist.m3u</string>
-    <string name="load" formatted="false">読み込む</string>
+    <string name="load" formatted="false">開く</string>
     <string name="live" formatted="false">ライブ</string>
     <string name="holdOk" formatted="false">長押し</string>
     <string name="holdOkFav" formatted="false">OK 長押し：お気に入り</string>

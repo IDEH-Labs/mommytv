@@ -18,4 +18,7 @@ for (const lang of I18N.languages) {
   assert.ok(/Analida/.test(d.dedication), lang + ' dedication names Mami Analida');
 }
 assert.strictEqual(I18N.t('appFail', 'X', -1).indexOf('{'), -1);
+const COUNTRY_NAMES = require('../js/countries.js');
+for (const lang of I18N.languages) assert.ok(COUNTRY_NAMES[lang] && COUNTRY_NAMES[lang].CO, lang + ' names Colombia');
+assert.strictEqual(COUNTRY_NAMES.es.CO, 'Colombia');
 console.log('i18n: ok (' + I18N.languages.join(', ') + ')');
