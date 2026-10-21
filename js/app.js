@@ -20,7 +20,11 @@
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
   var FREEZE_S = 8;       // reconnect after this long without progress
   var RETRIES = 3;
-  var LIVE_LAG_S = 20;    // after a stall, jump back to the live edge if this far behind
+  // Live sweet spot, measured on the 2019 test TV over Wi-Fi: right at the live edge the player keeps only
+  // 3-6 s of buffer and drops to 240p on every network hiccup; 8 s behind it keeps ~15 s of buffer and
+  // holds full quality, for about 12 s of total delay.
+  var LIVE_TARGET_S = 8;
+  var LIVE_LAG_S = 30;    // if a stall leaves us this far behind, come back to the sweet spot
 
   // webOS mediaOption: start HLS at the top quality instead of ramping up (the player still steps down if
   // the network can't keep up) and allow up to the panel's own resolution.
@@ -778,12 +782,16 @@
     if (frozenS >= FREEZE_S) { frozenS = 0; reconnect(); }
   }, 2000);
 
-  function catchUpLive() {
+  // Moves a live stream to LIVE_TARGET_S behind its edge when it is too close (first start) or,
+  // after a stall, too far. Streams without a live window are left alone.
+  function placeInLive(first) {
     var v = ui.video;
     try {
       if (!v.seekable.length) return;
-      var edge = v.seekable.end(v.seekable.length - 1);
-      if (edge - v.currentTime > LIVE_LAG_S) v.currentTime = edge - 6;
+      var start = v.seekable.start(0), edge = v.seekable.end(v.seekable.length - 1);
+      if (edge - start < LIVE_TARGET_S + 4) return;
+      var lag = edge - v.currentTime;
+      if ((first && lag < LIVE_TARGET_S - 2) || lag > LIVE_LAG_S) v.currentTime = edge - LIVE_TARGET_S;
     } catch (e) { /* not seekable: keep playing where it is */ }
   }
 
@@ -828,8 +836,8 @@
   ui.video.addEventListener('playing', function () {
     if (view !== 'player') return;
     ui.playSpin.className = 'spinner hidden';
-    if (!stats.startup) stats.startup = Date.now() - stats.t0;
-    if (stats.stallAt) { stats.stallMs += Date.now() - stats.stallAt; stats.stallAt = 0; catchUpLive(); }
+    if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); }
+    if (stats.stallAt) { stats.stallMs += Date.now() - stats.stallAt; stats.stallAt = 0; placeInLive(false); }
     if (retries) hideOsd();
     if (!watchTimer) startWatch();
   });
