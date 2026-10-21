@@ -217,8 +217,20 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         else -> g.items.size
     }
 
+    private var beforeSearch: kotlin.Pair<Int, Int>? = null // group and row to return to from the phone's search button
+
+    /** The phone's search button: search from anywhere, Back returns to where it was. */
+    fun openSearch() {
+        val c = catalog ?: return
+        val from = if (group?.kind == Kind.SEARCH) beforeSearch else gSel to cSel
+        selectGroup(c.groups.indexOf(c.search))
+        beforeSearch = from
+        column = Column.SEARCH
+    }
+
     fun selectGroup(i: Int) {
         val c = catalog ?: return
+        beforeSearch = null
         gSel = (i + c.groups.size) % c.groups.size
         cSel = 0
         if (c.groups[gSel].kind == Kind.FAV) c.refreshFavourites()
@@ -370,7 +382,9 @@ class MainActivity : ComponentActivity(), Playback.Listener {
             Screen.PLAYER -> stopPlayer()
             Screen.BROWSER -> {
                 val g = group
+                val from = beforeSearch
                 when {
+                    from != null && g?.kind == Kind.SEARCH -> { selectGroup(from.first); cSel = from.second; column = if (listLength(group ?: return) > 0) Column.LIST else Column.RAIL }
                     column == Column.SEARCH -> column = Column.RAIL
                     column == Column.LIST && g != null && g.kind == Kind.COUNTRIES && g.country != null -> {
                         val back = g.countries.indexOf(g.country)

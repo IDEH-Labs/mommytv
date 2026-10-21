@@ -29,9 +29,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -260,6 +263,16 @@ private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidt
             textAlign = androidx.compose.ui.text.style.TextAlign.End,
         )
     } else Spacer(Modifier.weight(1f))
+    if (compact) {
+        // phones: search always at hand, like the title
+        val searching = a.group?.kind == Kind.SEARCH
+        val label = stringResource(R.string.search)
+        Box(
+            Modifier.padding(start = 4.dp).size(48.dp).clip(CircleShape).background(if (searching) FocusBg else Color.Transparent)
+                .combinedClickable(onClick = { a.openSearch() }).semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) { Icon(R.drawable.ic_search, if (searching) FocusFg else Fg, 28) }
+    }
     if (!compact) {
         Text("OK", color = Fg, fontSize = 12.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.border(1.5.dp, Muted, RoundedCornerShape(6.dp)).padding(horizontal = 7.dp, vertical = 1.dp))
         Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.holdOk), color = Muted, fontSize = 14.sp)
@@ -313,9 +326,10 @@ private fun Rail(a: MainActivity, c: Catalog, modifier: Modifier) {
 @Composable
 private fun RailChips(a: MainActivity, c: Catalog) {
     val state = rememberLazyListState()
-    LaunchedEffect(a.gSel) { state.animateScrollToItem((a.gSel - 1).coerceAtLeast(0)) }
+    val shown = c.groups.withIndex().filter { it.value.kind != Kind.SEARCH } // search is the button in the top bar
+    LaunchedEffect(a.gSel) { state.animateScrollToItem((shown.indexOfFirst { it.index == a.gSel } - 1).coerceAtLeast(0)) }
     LazyRow(state = state, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        itemsIndexed(c.groups) { i, g ->
+        items(shown) { (i, g) ->
             val on = i == a.gSel
             Row(
                 Modifier.clip(RoundedCornerShape(20.dp)).background(if (on) FocusBg else Panel)
@@ -333,6 +347,7 @@ private fun RailChips(a: MainActivity, c: Catalog) {
 @Composable
 private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
     val g = a.group ?: return
+    @Suppress("UNUSED_EXPRESSION") a.version // recompose when results change in place
     val tileW = if (compact) 96 else 190
     val tileH = if (compact) 56 else 108
     Row(
@@ -356,9 +371,10 @@ private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
         Column(Modifier.weight(1f)) {
             val (title, meta) = heroText(a, c, g, ch)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (ch != null && !ch.isShortcut) { LiveBadge(); Spacer(Modifier.width(12.dp)) }
+                val tagged = ch != null && g.kind != Kind.SEARCH // like webOS: the search card shows only the count
+                if (tagged && !ch!!.isShortcut) { LiveBadge(); Spacer(Modifier.width(12.dp)) }
                 Text(meta, color = Muted, fontSize = if (compact) 13.sp else 15.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-                if (ch != null) { Spacer(Modifier.width(10.dp)); Chip(ch.quality) }
+                if (tagged) { Spacer(Modifier.width(10.dp)); Chip(ch!!.quality) }
             }
             if (g.kind == Kind.SEARCH) SearchField(a)
             else Text(title, color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = if (compact) 22.sp else 36.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -372,7 +388,8 @@ private fun heroText(a: MainActivity, c: Catalog, g: Group, ch: Channel?): Pair<
     g.kind == Kind.SEARCH -> "" to when {
         g.items.isNotEmpty() -> stringResource(R.string.nResults, g.items.size.toString())
         g.query.isNotEmpty() -> stringResource(R.string.noResults)
-        else -> stringResource(R.string.typeHint)
+        a.isTv -> stringResource(R.string.typeHint) // phones: the field's own placeholder is enough
+        else -> ""
     }
     g.kind == Kind.CHANGE -> stringResource(R.string.changeTitle) to stringResource(R.string.changeHint)
     a.showingCountries(g) -> {
