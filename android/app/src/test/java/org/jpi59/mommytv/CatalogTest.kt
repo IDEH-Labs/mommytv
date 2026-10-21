@@ -14,31 +14,31 @@ class CatalogTest {
         override fun put(key: String, value: String) { m[key] = value }
     }
 
-    private fun ch(name: String, url: String, country: String = "", cname: String = "", langs: String = "", cats: String = "", nsfw: String = "") =
-        Channel(name = name, logo = "", group = "", url = url, country = country, countryName = cname, langs = langs, cats = cats, nsfw = nsfw)
+    private fun ch(name: String, url: String, country: String = "", langs: String = "", group: String = "") =
+        Channel(name = name, logo = "", group = group, url = url, country = country, langs = langs)
 
     private val list = listOf(
-        ch("Uno CO", "u1", "CO", "Colombia", "spa", "Noticias"),
-        ch("Dos CO", "u2", "CO", "Colombia", "spa", "Películas"),
-        ch("Three US", "u3", "US", "Estados Unidos", "eng", "Noticias;General"),
-        ch("Adulto", "u4", "US", "Estados Unidos", "eng", "Adultos", nsfw = "1"),
+        ch("Uno CO", "u1", "CO", "spa", "Noticias"),
+        ch("Dos CO", "u2", "CO", "spa", "Películas"),
+        ch("Three US", "u3", "US", "eng", "Noticias;General"),
+        ch("Adulto", "u4", "US", "eng", "Adultos"),
         ch("App", "android-app://org.example"),
     )
 
     @Test fun buildsTheSameGroupsAsWebOs() {
         val c = Catalog(list, "CO", "spa", labels, MapStore())
         val names = c.groups.map { it.name }
-        assertEquals(listOf("Buscar", "Favoritos", "Accesos directos", "Colombia", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Ajustes"), names)
-        assertEquals(4, c.channels.size) // adult channel never present
-        assertEquals(listOf("Colombia", "Estados Unidos"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
+        assertEquals(listOf("Buscar", "Favoritos", "Accesos directos", "CO", "En español", "Países", "Todos", "Noticias", "Películas", "General", "Adultos", "Ajustes"), names)
+        assertEquals(5, c.channels.size) // channels are not silently hidden by manager-only attributes
+        assertEquals(listOf("CO", "US"), c.groups.first { it.kind == Kind.COUNTRIES }.countries.map { it.name })
         assertEquals(2, c.groups.first { it.name == "Noticias" }.items.size)
-        assertEquals(c.groups.indexOfFirst { it.name == "Colombia" }, c.startGroup())
+        assertEquals(c.groups.indexOfFirst { it.name == "CO" }, c.startGroup())
     }
 
     @Test fun startsOnTheSystemCountryOrEverything() {
         val noApps = list.filter { !it.url.startsWith("android-app://") }
         val home = Catalog(noApps, "CO", "spa", labels, MapStore())
-        assertEquals("Colombia", home.groups[home.startGroup()].name)
+        assertEquals("CO", home.groups[home.startGroup()].name)
         val abroad = Catalog(noApps, "JP", "jpn", labels, MapStore())
         assertEquals("Todos", abroad.groups[abroad.startGroup()].name)
     }
@@ -62,7 +62,7 @@ class CatalogTest {
 
     @Test fun parentalControlLivesOnTheDevice() {
         val store = MapStore()
-        val movie = ch("Peli", "x", cats = "Películas")
+        val movie = ch("Peli", "x", group = "Películas")
         val p = Parental(store)
         assertFalse(p.enabled)
         assertFalse(p.isLocked(movie))

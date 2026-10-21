@@ -4,8 +4,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class M3uTest {
-    private val sample = "\uFEFF#EXTM3U mommytv-pin=\"ab:cd\" mommytv-locked=\"Películas;Series\"\r\n" +
-        "#EXTINF:-1 tvg-id=\"a\" tvg-logo=\"http://l/a.png\" group-title=\"News, World\" tvg-country=\"CO\" mommytv-country-name=\"Colombia\" tvg-language=\"spa\" mommytv-cats=\"Noticias;General\",Channel A (1080p) [Not 24/7]\r\n" +
+    private val sample = "\uFEFF#EXTM3U\r\n" +
+        "#EXTINF:-1 tvg-id=\"a\" tvg-logo=\"http://l/a.png\" group-title=\"Noticias;General\" tvg-country=\"CO\" tvg-language=\"spa\" mommytv-cats=\"Ignored\" mommytv-nsfw=\"1\",Channel A (1080p) [Not 24/7]\r\n" +
         "http://s/a.m3u8\r\n\r\n" +
         "#EXTINF:-1 tvg-name=\"Only Attr\",\n#EXTVLCOPT:http-user-agent=Foo\nhttp://s/b.m3u8\n" +
         "#EXTINF:0,Channel C\n#EXTGRP:Sports\nhttp://s/c.ts\n" +
@@ -17,9 +17,8 @@ class M3uTest {
         assertEquals("Channel A (1080p) [Not 24/7]", ch[0].name)
         assertEquals("Channel A", ch[0].title)
         assertEquals("FULL HD", ch[0].quality)
-        assertEquals("News, World", ch[0].group)
+        assertEquals("Noticias;General", ch[0].group)
         assertEquals("CO", ch[0].country)
-        assertEquals("Colombia", ch[0].countryName)
         assertEquals("spa", ch[0].langs)
         assertEquals(listOf("Noticias", "General"), ch[0].categories)
         assertEquals("Only Attr", ch[1].name)
@@ -32,13 +31,6 @@ class M3uTest {
         val ch = Channel(name = "TV Fronteira (480i)", logo = "", group = "", url = "u")
         assertEquals("TV Fronteira", ch.title)
         assertEquals("", ch.quality) // below HD: no badge
-    }
-
-    @Test fun readsParentalHeader() {
-        val h = M3u.header(sample)
-        assertEquals("ab:cd", h.pin)
-        assertEquals(listOf("Películas", "Series"), h.locked)
-        assertEquals(Header("", emptyList()), M3u.header("#EXTINF:-1,x\nhttp://a"))
     }
 
     @Test fun normalizesForSearch() {

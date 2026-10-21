@@ -8,18 +8,15 @@ data class Channel(
     val logo: String,
     val group: String,
     val url: String,
-    val cert: String = "",
     val country: String = "",
-    val countryName: String = "",
     val langs: String = "",
-    val cats: String = "",
-    val nsfw: String = "",
 ) {
     /** "Canal (1080p) [Not 24/7]" -> "Canal"; also "(480i)" */
     val title: String = name.replace(Regex("\\s*\\(\\d{3,4}[pi]\\)"), "").replace(Regex("\\s*\\[[^\\]]*]"), "").trim().ifEmpty { name }
     val quality: String = Regex("\\((\\d{3,4})[pi]\\)").find(name)?.groupValues?.get(1)?.let { QUALITY[it] } ?: ""
     val key: String = normalize(title)
-    val categories: List<String> get() = if (cats.isNotEmpty()) cats.split(';').filter { it.isNotEmpty() } else listOf(group)
+    /** Categories come from the standard group-title attribute, like on the TV. */
+    val categories: List<String> get() = if (group.isEmpty()) listOf("") else group.split(';').filter { it.isNotEmpty() }
     val isShortcut: Boolean get() = url.startsWith(SHORTCUT)
 
     companion object {
@@ -27,9 +24,6 @@ data class Channel(
         private val QUALITY = mapOf("2160" to "4K", "1440" to "QHD", "1080" to "FULL HD", "720" to "HD")
     }
 }
-
-/** Attributes of the "#EXTM3U ..." line written by MommyTV Manager (parental control). */
-data class Header(val pin: String, val locked: List<String>)
 
 fun normalize(s: String): String =
     Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "")
@@ -70,12 +64,8 @@ object M3u {
                         logo = i?.let { attr(it, "tvg-logo") }.orEmpty(),
                         group = i?.let { attr(it, "group-title") }.orEmpty().ifEmpty { group },
                         url = line,
-                        cert = i?.let { attr(it, "mommytv-cert") }.orEmpty(),
                         country = i?.let { attr(it, "tvg-country") }.orEmpty(),
-                        countryName = i?.let { attr(it, "mommytv-country-name") }.orEmpty(),
                         langs = i?.let { attr(it, "tvg-language") }.orEmpty(),
-                        cats = i?.let { attr(it, "mommytv-cats") }.orEmpty(),
-                        nsfw = i?.let { attr(it, "mommytv-nsfw") }.orEmpty(),
                     )
                     info = null
                     group = ""
@@ -85,9 +75,4 @@ object M3u {
         return out
     }
 
-    fun header(text: String): Header {
-        val first = text.removePrefix(BOM).lineSequence().firstOrNull().orEmpty()
-        if (!first.startsWith("#EXTM3U")) return Header("", emptyList())
-        return Header(attr(first, "mommytv-pin"), attr(first, "mommytv-locked").split(';').filter { it.isNotEmpty() })
-    }
 }

@@ -139,7 +139,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         useList(M3u.parse(text))
     }
 
-    /** "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, watch time, last channel). */
+    /** "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos and last channel). */
     private fun forgetList(everything: Boolean) {
         prefs.edit().remove(KEY_URL).apply {
             if (everything) listOf(KEY_LAST, Catalog.PINS).forEach { remove(it) }

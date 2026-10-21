@@ -26,10 +26,10 @@ interface Store {
 
 /**
  * The same organisation as the webOS app: Search, Favourites, shortcuts, the device's country,
- * channels in the device language, Countries, All and the categories. Adult channels never appear.
+ * channels in the device language, Countries, All and the categories.
  */
 class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: Labels, private val store: Store) {
-    val channels: List<Channel> = all.filter { it.nsfw != "1" }
+    val channels: List<Channel> = all
     val groups: List<Group>
     var categories: List<String> = emptyList() // for choosing which ones parental control locks
         private set
@@ -53,8 +53,8 @@ class Catalog(all: List<Channel>, region: String, langIso3: String, val labels: 
                 cats.getOrPut(name) { Group(Kind.LIST, name) }.items += i
             }
             if (ch.country.isNotEmpty()) {
-                countries.getOrPut(ch.country) { Country(ch.country, ch.countryName.ifEmpty { ch.country }) }.items += i
-                if (ch.country.equals(region, ignoreCase = true)) { home += i; homeName = ch.countryName.ifEmpty { region } }
+                countries.getOrPut(ch.country) { Country(ch.country, ch.country) }.items += i
+                if (ch.country.equals(region, ignoreCase = true)) { home += i; homeName = region }
             }
             if (";${ch.langs};".contains(";$langIso3;")) inLang.items += i
         }
