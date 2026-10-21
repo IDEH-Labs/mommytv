@@ -6,14 +6,21 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.security.MessageDigest
 import java.security.SecureRandom
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
 import java.util.Base64
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocket
+import javax.net.ssl.X509TrustManager
 
 /**
- * The little of WebSocket (RFC 6455) the TV link needs: one text conversation over a LAN socket.
+ * The little of WebSocket (RFC 6455) the TV link needs: one text conversation over TLS on the LAN.
  * Client frames are masked, server frames are not; pings are answered, a close ends the talk.
+ * [fingerprint] is the SHA-256 of the TV's certificate, pinned at pairing.
  */
-class Ws private constructor(private val socket: Socket, private val input: InputStream, private val output: OutputStream) : Closeable {
+class Ws private constructor(private val socket: Socket, private val input: InputStream, private val output: OutputStream, val fingerprint: String) : Closeable {
 
     class Closed : Exception("closed")
 
@@ -35,6 +42,26 @@ class Ws private constructor(private val socket: Socket, private val input: Inpu
 
     override fun close() { runCatching { socket.close() } }
 
+    /**
+     * LG TVs present a certificate signed by themselves, so no authority can vouch for it. Pairing
+     * accepts only a valid, self-signed LG certificate and remembers it; afterwards only that exact
+     * certificate is accepted ([pin]), so nobody else on the network can pose as the TV.
+     */
+    class TvTrust(private val pin: String?) : X509TrustManager {
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            val cert = chain?.firstOrNull() ?: throw CertificateException("no certificate")
+            if (pin != null) {
+                if (!MessageDigest.isEqual(fingerprint(cert).toByteArray(), pin.toByteArray())) throw CertificateException("not the paired TV")
+                return
+            }
+            cert.checkValidity()
+            if (cert.subjectX500Principal != cert.issuerX500Principal || !cert.subjectX500Principal.name.contains("O=LG Electronics")) throw CertificateException("not an LG TV")
+            cert.verify(cert.publicKey) // its own signature
+        }
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) = throw CertificateException("server only")
+        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+    }
+
     companion object {
         const val OP_TEXT = 1
         const val OP_CLOSE = 8
@@ -42,11 +69,18 @@ class Ws private constructor(private val socket: Socket, private val input: Inpu
         const val OP_PONG = 10
         private val random = SecureRandom()
 
-        fun connect(host: String, port: Int, timeoutMs: Int = 5000): Ws {
-            val socket = Socket()
+        fun fingerprint(cert: X509Certificate): String =
+            MessageDigest.getInstance("SHA-256").digest(cert.encoded).joinToString("") { "%02x".format(it) }
+
+        /** Connects over TLS; [pin] is the paired TV's certificate fingerprint, null only while pairing. */
+        fun connect(host: String, port: Int, pin: String?, timeoutMs: Int = 5000): Ws {
+            val tls = SSLContext.getInstance("TLS").apply { init(null, arrayOf(TvTrust(pin)), random) }
+            val socket = tls.socketFactory.createSocket() as SSLSocket
             try {
                 socket.connect(InetSocketAddress(host, port), timeoutMs)
                 socket.soTimeout = timeoutMs
+                socket.startHandshake()
+                val seen = fingerprint(socket.session.peerCertificates[0] as X509Certificate)
                 val key = Base64.getEncoder().encodeToString(ByteArray(16).also { random.nextBytes(it) })
                 val out = socket.getOutputStream()
                 out.write(("GET / HTTP/1.1\r\nHost: $host:$port\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n" +
@@ -55,7 +89,7 @@ class Ws private constructor(private val socket: Socket, private val input: Inpu
                 val input = socket.getInputStream()
                 val head = readHead(input)
                 if (!head.startsWith("HTTP/1.1 101")) throw IllegalStateException(head.lineSequence().first())
-                return Ws(socket, input, out)
+                return Ws(socket, input, out, seen)
             } catch (e: Exception) {
                 socket.close()
                 throw e

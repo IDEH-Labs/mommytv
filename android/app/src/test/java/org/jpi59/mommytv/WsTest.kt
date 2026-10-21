@@ -2,6 +2,7 @@ package org.jpi59.mommytv
 
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
 import java.io.ByteArrayInputStream
 
@@ -28,5 +29,20 @@ class WsTest {
         val (op, payload) = Ws.readFrame(ByteArrayInputStream(first + rest))
         assertEquals(Ws.OP_TEXT, op)
         assertEquals("hello", payload.toString(Charsets.UTF_8))
+    }
+
+    private fun cert(name: String) = java.security.cert.CertificateFactory.getInstance("X.509")
+        .generateCertificate(javaClass.classLoader!!.getResourceAsStream(name)) as java.security.cert.X509Certificate
+
+    @Test fun pairingAcceptsOnlyAValidSelfSignedLgCertificate() {
+        Ws.TvTrust(null).checkServerTrusted(arrayOf(cert("lg-tv-test.pem")), "RSA")
+        assertThrows(java.security.cert.CertificateException::class.java) { Ws.TvTrust(null).checkServerTrusted(arrayOf(cert("other-test.pem")), "RSA") }
+        assertThrows(java.security.cert.CertificateException::class.java) { Ws.TvTrust(null).checkServerTrusted(emptyArray(), "RSA") }
+    }
+
+    @Test fun afterPairingOnlyThePinnedCertificateIsAccepted() {
+        val tv = cert("lg-tv-test.pem")
+        Ws.TvTrust(Ws.fingerprint(tv)).checkServerTrusted(arrayOf(tv), "RSA")
+        assertThrows(java.security.cert.CertificateException::class.java) { Ws.TvTrust(Ws.fingerprint(cert("other-test.pem"))).checkServerTrusted(arrayOf(tv), "RSA") }
     }
 }

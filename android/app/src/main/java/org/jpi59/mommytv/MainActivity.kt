@@ -217,10 +217,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         if (remoteBusy) return
         remoteBusy = true; remoteMsg = getString(R.string.remoteAccept)
         lifecycleScope.launch {
-            val key = LgTv.pair(tv.host, null)
+            val paired = LgTv.pair(tv.host, null)
             remoteBusy = false
-            if (key == null) { remoteMsg = getString(R.string.remoteNoTv); return@launch }
-            prefs.edit().putString(KEY_TV_HOST, tv.host).putString(KEY_TV_KEY, key).putString(KEY_TV_NAME, tv.name).apply()
+            if (paired == null) { remoteMsg = getString(R.string.remoteNoTv); return@launch }
+            prefs.edit().putString(KEY_TV_HOST, tv.host).putString(KEY_TV_KEY, paired.key).putString(KEY_TV_PIN, paired.pin).putString(KEY_TV_NAME, tv.name).apply()
             tvName = tv.name; remoteFound = null; remoteMsg = ""
         }
     }
@@ -232,7 +232,8 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val host = prefs.getString(KEY_TV_HOST, null) ?: return
         val key = prefs.getString(KEY_TV_KEY, null) ?: return
         lifecycleScope.launch {
-            when (LgTv.launch(host, key, params)) {
+            val pin = prefs.getString(KEY_TV_PIN, null)
+            when (LgTv.launch(host, key, pin, params) { prefs.edit().putString(KEY_TV_PIN, it).apply() }) {
                 LgTv.Sent.Ok -> showOsd(ok)
                 LgTv.Sent.NoApp -> showOsd(getString(R.string.tvNoApp))
                 LgTv.Sent.NotAllowed -> { forgetRemote(); showOsd(getString(R.string.remoteGone)) }
@@ -250,7 +251,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     }
 
     fun forgetRemote() {
-        prefs.edit().remove(KEY_TV_HOST).remove(KEY_TV_KEY).remove(KEY_TV_NAME).apply()
+        prefs.edit().remove(KEY_TV_HOST).remove(KEY_TV_KEY).remove(KEY_TV_PIN).remove(KEY_TV_NAME).apply()
         tvName = null
     }
 
@@ -568,6 +569,7 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         const val KEY_LAST = "last"
         const val KEY_TV_HOST = "tvHost"
         const val KEY_TV_KEY = "tvKey" // granted by the TV when its owner accepted this phone
+        const val KEY_TV_PIN = "tvCert" // SHA-256 of the TV's TLS certificate, pinned at pairing
         const val KEY_TV_NAME = "tvName"
         const val KEY_ON_TV = "onTv"
     }

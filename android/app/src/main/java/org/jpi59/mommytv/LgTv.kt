@@ -16,7 +16,7 @@ import java.net.SocketTimeoutException
  */
 object LgTv {
     const val APP_ID = "org.jpi59.mommytv"
-    private const val PORT = 3000
+    private const val PORT = 3001 // TLS; newer firmware closes the plain 3000
     private const val SSDP_TYPE = "urn:lge-com:service:webos-second-screen:1"
 
     data class Found(val host: String, val name: String)
@@ -70,16 +70,19 @@ object LgTv {
             .put("vendorId", "IDEH Labs").put("localizedAppNames", JSONObject().put("", "MommyTV"))
             .put("permissions", JSONArray(listOf("LAUNCH", "LAUNCH_WEBAPP", "READ_RUNNING_APPS"))))).toString()
 
-    /** Pairs with the TV: it shows a prompt and waits up to a minute for its owner. Returns the key it grants. */
-    suspend fun pair(host: String, key: String?): String? = withContext(Dispatchers.IO) {
+    /** What pairing yields: the key the TV grants and its certificate's fingerprint, pinned from now on. */
+    data class Paired(val key: String, val pin: String)
+
+    /** Pairs with the TV: it shows a prompt and waits up to a minute for its owner. */
+    suspend fun pair(host: String, key: String?): Paired? = withContext(Dispatchers.IO) {
         runCatching {
-            Ws.connect(host, PORT).use { ws ->
+            Ws.connect(host, PORT, pin = null).use { ws ->
                 ws.send(register(key))
                 ws.timeout(60_000)
                 while (true) {
                     val r = JSONObject(ws.receive())
                     when (r.optString("type")) {
-                        "registered" -> return@runCatching r.getJSONObject("payload").getString("client-key")
+                        "registered" -> return@runCatching Paired(r.getJSONObject("payload").getString("client-key"), ws.fingerprint)
                         "error" -> return@runCatching null
                     }
                 }
@@ -88,10 +91,14 @@ object LgTv {
         }.getOrNull()
     }
 
-    /** Opens MommyTV on the TV with [params]; a running MommyTV gets them at once. */
-    suspend fun launch(host: String, key: String, params: Map<String, String>): Sent = withContext(Dispatchers.IO) {
+    /**
+     * Opens MommyTV on the TV with [params]; a running MommyTV gets them at once. [pin] is the TV's
+     * certificate fingerprint; [learned] receives it when a phone paired before 0.1.3 meets the TV first.
+     */
+    suspend fun launch(host: String, key: String, pin: String?, params: Map<String, String>, learned: (String) -> Unit = {}): Sent = withContext(Dispatchers.IO) {
         runCatching {
-            Ws.connect(host, PORT).use { ws ->
+            Ws.connect(host, PORT, pin).use { ws ->
+                if (pin == null) learned(ws.fingerprint)
                 ws.send(register(key))
                 ws.timeout(8000)
                 while (true) {

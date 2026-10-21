@@ -5,7 +5,7 @@
   "main": "index.html",
   "icon": "img/icon_80x80.png",
   "largeIcon": "img/icon_130x130.png",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "vendor": "IDEH Labs",
   "appDescription": "Plays your own M3U playlists",
   "resolution": "1920x1080",

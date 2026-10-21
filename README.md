@@ -77,7 +77,7 @@ npm install -g --prefix ~/.local @webos-tools/cli
 ./build.sh                      # runs the tests, then packages dist/*.ipk
 ares-setup-device --add tv -i "host=<TV IP>" -i "port=9922" -i "username=prisoner"
 ares-novacom --device tv --getkey
-ares-install --device tv dist/org.jpi59.mommytv_0.1.2_all.ipk
+ares-install --device tv dist/org.jpi59.mommytv_0.1.3_all.ipk
 ares-launch --device tv org.jpi59.mommytv
 ```
 
