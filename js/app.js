@@ -10,15 +10,13 @@
   var STORE_WATCH = 'mtvWatch';    // { url: seconds watched }
   var STORE_LAST = 'mtvLast';      // URL of the last channel played: MommyTV opens on it, like a TV
   var STORE_HIDDEN = 'mtvHidden';  // channel URLs removed from Favoritos: never added back for being watched
-  var STORE_REMOTE = 'mtvRemote';  // this TV's secret for the phone remote, kept by MommyTV Manager as a hash
+  var STORE_COPY = 'mtvListCopy';  // a copy of the remembered playlist, used when its site does not answer
   var STORE_TLS = 'mtvLetsEncrypt'; // { ok: bool, at: ms }: can this TV open Let's Encrypt HTTPS?
   var TLS_PROBE = 'https://acme-v02.api.letsencrypt.org/directory'; // official, tiny, allows CORS
   var TLS_MAX_AGE = 7 * 24 * 3600 * 1000;
   var FAV_MAX = 30;
   var SEARCH_MAX = 300;
   var SHORTCUT = 'webos-app://';   // playlist entry that opens an installed app instead of a stream
-  var MANAGER_PORT = 8642;         // MommyTV Manager on a PC of the same network
-  var MANAGER_LIST = /^(https?:\/\/[^\/:]+:(?:8642|8643))\/playlist\.m3u$/; // its playlist, over HTTP or HTTPS
   var screenSize = { w: 1920, h: 1080 }; // replaced by the panel size, so 4K TVs get the original 4K
   var FREEZE_S = 8;       // reconnect after this long without progress
   var RETRIES = 3;
@@ -40,18 +38,17 @@
   var VERSION = '0.1.0';
   // Ajustes: the rows that do something first, then the dedication and the information
   var ROW_CHANGE = 0;
-  var ROW_PAIR = 1;
+  var ROW_DELETE = 1;
   var SETTINGS = [
     ['change', t('change')],
-    ['phone', t('pairPhone')],
+    ['trash', t('deleteList')],
     ['heart', t('dedication')],
     ['info', 'MommyTV ' + VERSION + ' · ' + t('org')],
     ['info', t('license')],
     ['info', t('source')],
     ['info', t('noChannels')],
     ['info', t('lgLib')],
-    ['info', t('font')],
-    ['info', t('data')]
+    ['info', t('font')]
   ];
 
   var $ = function (id) { return document.getElementById(id); };
@@ -65,14 +62,15 @@
     bannerTile: $('banner-tile'), bannerNum: $('banner-num'), bannerName: $('banner-name'),
     bannerGroup: $('banner-group'), bannerQ: $('banner-q'), bannerTime: $('banner-time'),
     osd: $('osd'), diag: $('diag'),
-    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots'),
-    pair: $('pair'), pairCode: $('pair-code'), pairMsg: $('pair-msg'), pairPhones: $('pair-phones')
+    pin: $('pin'), pinMsg: $('pin-msg'), pinDots: $('pin-dots'), remember: $('remember')
   };
 
   var view = 'setup';
   var channels = [];
   var groups = [];        // [{ name, kind, items: [channel index] }]
-  var setupSel = 0;       // 0 = input, 1 = button
+  var setupSel = 0;       // 0 = input, 1 = remember box, 2 = button
+  var rememberList = true; // "Recordar esta lista", on unless the user unticks it
+  var deleteArmed = 0;    // time of the first OK on "Eliminar lista"; a second one within 5 s deletes
   var col = 'g';          // 'g' groups rail, 'c' channel list, 's' search field
   var gSel = 0;
   var searchGroup = null; // groups the code reaches by name, not by position
@@ -85,7 +83,6 @@
   var searchTimer = null;
   var watchTimer = null;
   var diagOn = false;     // blue key: on-screen stats, also saved on the user's own PC by the manager
-  var diagTick = 0;
   var stats = {};
   var retries = 0;
   var parental = { salt: '', hash: '', locked: {} }; // from the playlist header written by MommyTV Manager
@@ -119,7 +116,6 @@
     ui.hint.className = name === 'browser' ? 'hint' : 'hint hidden';
     if (name === 'setup') renderSetup();
     if (name === 'browser') renderBrowser();
-    reportState();
   }
 
   function pad(n) { return n < 10 ? '0' + n : String(n); }
@@ -140,7 +136,8 @@
 
   function renderSetup() {
     ui.url.className = setupSel === 0 ? 'focus' : '';
-    ui.load.className = setupSel === 1 ? 'focus' : '';
+    ui.remember.className = 'check' + (rememberList ? ' on' : '') + (setupSel === 1 ? ' focus' : '');
+    ui.load.className = setupSel === 2 ? 'focus' : '';
     if (setupSel === 0) ui.url.focus(); else ui.url.blur();
   }
 
@@ -165,103 +162,48 @@
     xhr.send();
   }
 
-  function load(url, onError) {
+  // Loads the playlist the user gave. Remembered (with a copy) unless "Recordar esta lista" is off;
+  // when its site does not answer, a remembered list starts from the copy.
+  function load(url, fromCopy) {
     url = url.trim();
-    if (!url) { findManager(); return; }
+    if (!url) { fail(t('needUrl')); return; }
     status(t('loading'), true);
+    var copy = function (why) {
+      var saved = fromCopy && store(STORE_COPY);
+      if (saved && store(STORE_URL) === url) { useText(saved); osd(t('usingCopy')); } else fail(why);
+    };
     var xhr = new XMLHttpRequest();
-    // MommyTV Manager sends category and country names in the TV's language
-    xhr.open('GET', MANAGER_LIST.test(url) ? url + '?lang=' + I18N.lang : url, true);
+    xhr.open('GET', url, true);
     xhr.timeout = 20000;
     xhr.onload = function () {
-      if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) {
-        (onError || fail)(t('httpError', xhr.status));
-        return;
-      }
-      var list = M3U.parse(xhr.responseText);
-      var head = M3U.header(xhr.responseText);
-      var pin = head.pin.split(':');
-      parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
-      head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
-      if (!list.length) { fail(t('emptyList')); return; }
-      // a manager that moved to HTTPS redirects; keep its secure address
-      var moved = (xhr.responseURL || '').replace(/\?lang=[^&]*$/, '');
-      if (moved !== url && MANAGER_LIST.test(moved) && moved.indexOf('https:') === 0) { url = moved; ui.url.value = url; }
-      store(STORE_URL, url);
-      checkLetsEncrypt(function (ok) {
-        var usable = ok ? list : list.filter(function (ch) { return ch.cert !== 'letsencrypt'; });
-        if (usable.length) useList(usable); else fail(t('incompatible'));
-      });
+      if (xhr.status !== 0 && (xhr.status < 200 || xhr.status >= 300)) { copy(t('httpError', xhr.status)); return; }
+      if (!M3U.parse(xhr.responseText).length) { fail(t('emptyList')); return; }
+      if (rememberList) { store(STORE_URL, url); store(STORE_COPY, xhr.responseText); } else forgetList(false);
+      useText(xhr.responseText);
     };
-    xhr.onerror = function () { (onError || fail)(t('noConnect')); };
-    xhr.ontimeout = function () { (onError || fail)(t('slow')); };
+    xhr.onerror = function () { copy(t('noConnect')); };
+    xhr.ontimeout = function () { copy(t('slow')); };
     xhr.send();
   }
 
-  /* ---------- finding MommyTV Manager on the local network ---------- */
-
-  function myIp(cb) {
-    if (!window.webOS || !webOS.service) { cb(''); return; }
-    webOS.service.request('luna://com.palm.connectionmanager', {
-      method: 'getStatus',
-      onSuccess: function (r) { cb((r.wired && r.wired.ipAddress) || (r.wifi && r.wifi.ipAddress) || ''); },
-      onFailure: function () { cb(''); }
+  function useText(text) {
+    var list = M3U.parse(text);
+    var head = M3U.header(text);
+    var pin = head.pin.split(':');
+    parental = { salt: pin[0] || '', hash: pin[1] || '', locked: {} };
+    head.locked.split(';').forEach(function (c) { if (c) parental.locked[c] = true; });
+    checkLetsEncrypt(function (ok) {
+      var usable = ok ? list : list.filter(function (ch) { return ch.cert !== 'letsencrypt'; });
+      if (usable.length) useList(usable); else fail(t('incompatible'));
     });
   }
 
-  function probe(host, cb) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://' + host + ':' + MANAGER_PORT + '/mommytv.json', true);
-    xhr.timeout = 1500;
-    xhr.onload = function () {
-      var ok = false, secure = '';
-      try {
-        var r = JSON.parse(xhr.responseText);
-        ok = r.app === 'mommytv-manager';
-        if (ok && MANAGER_LIST.test(r.secure || '') && r.secure.indexOf('https:') === 0) secure = r.secure;
-      } catch (e) { /* not the manager */ }
-      cb(ok, secure);
-    };
-    xhr.onerror = xhr.ontimeout = function () { cb(false, ''); };
-    xhr.send();
-  }
-
-  // Probes every address of the TV's /24 network, 32 at a time; calls back with the playlist URL or ''.
-  function discover(cb) {
-    myIp(function (ip) {
-      var m = /^(\d+\.\d+\.\d+)\.(\d+)$/.exec(ip);
-      if (!m) { cb(''); return; }
-      var hosts = [];
-      for (var n = 1; n < 255; n++) if (String(n) !== m[2]) hosts.push(m[1] + '.' + n);
-      var next = 0, pending = 0, found = false;
-      (function pump() {
-        while (!found && pending < 32 && next < hosts.length) {
-          pending++;
-          probe(hosts[next], (function (host) {
-            return function (ok, secure) {
-              pending--;
-              if (found) return;
-              if (ok) { found = true; cb(secure || 'http://' + host + ':' + MANAGER_PORT + '/playlist.m3u'); }
-              else if (next < hosts.length) pump();
-              else if (!pending) cb('');
-            };
-          })(hosts[next]));
-          next++;
-        }
-      })();
-    });
-  }
-
-  function findManager() {
-    setupSel = 1; // keep the on-screen keyboard closed while searching
-    show('setup');
-    status(t('searching'), true);
-    discover(function (url) {
-      if (url) { ui.url.value = url; status(t('found'), false); renderSetup(); return; }
-      status(t('notFound'), false);
-      setupSel = 0;
-      renderSetup();
-    });
+  // "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, watch time, last channel).
+  function forgetList(everything) {
+    var keys = [STORE_URL, STORE_COPY];
+    if (everything) keys.push(STORE_LAST, STORE_PINS, STORE_WATCH, STORE_HIDDEN);
+    for (var i = 0; i < keys.length; i++) { try { localStorage.removeItem(keys[i]); } catch (e) { /* storage unavailable */ } }
+    if (everything) pinsCache = null;
   }
 
   function fail(text) {
@@ -340,7 +282,7 @@
     status('', false);
     show('browser');
     selectLast(all);
-    listenRemote();
+    if (pendingPlay) { var c = pendingPlay; pendingPlay = null; remotePlay(c); }
   }
 
   // Marks the last channel watched; playback waits for the user.
@@ -498,6 +440,7 @@
     lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>',
     info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.6" r="0.6" fill="currentColor"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5a1.5 1.5 0 0 0 1.5 1.5h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4.5h6V7"/></svg>',
     phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>',
     settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round"><path d="M10.23,4.92L10.50,2.52L13.50,2.52L13.77,4.92L15.76,5.74L17.64,4.23L19.77,6.36L18.26,8.24L19.08,10.23L21.48,10.50L21.48,13.50L19.08,13.77L18.26,15.76L19.77,17.64L17.64,19.77L15.76,18.26L13.77,19.08L13.50,21.48L10.50,21.48L10.23,19.08L8.24,18.26L6.36,19.77L4.23,17.64L5.74,15.76L4.92,13.77L2.52,13.50L2.52,10.50L4.92,10.23L5.74,8.24L4.23,6.36L6.36,4.23L8.24,5.74ZM12,8.8a3.2,3.2 0 1,0 0,6.4a3.2,3.2 0 1,0 0,-6.4"/></svg>',
     globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.8 3 2.8 15 0 18M12 3c-2.8 3-2.8 15 0 18"/></svg>'
@@ -666,7 +609,17 @@
         show('setup');
         return true;
       }
-      if (cSel === ROW_PAIR) openPair(); // the other rows are information only
+      if (cSel === ROW_DELETE && store(STORE_URL)) {
+        if (Date.now() - deleteArmed > 5000) { deleteArmed = Date.now(); osd(t('deleteConfirm')); return true; }
+        deleteArmed = 0;
+        forgetList(true);
+        channels = [];
+        ui.url.value = '';
+        setupSel = 0;
+        show('setup');
+        status(t('listDeleted'), false);
+        return true;
+      } // the other rows are information only
     } else if (k === KEY.OK && showingCountries(g)) {
       g.country = g.countries[cSel];
       g.items = g.country.items;
@@ -703,82 +656,19 @@
     });
   }
 
-  /* ---------- phone remote ---------- */
+  /* ---------- phone remote: a paired phone relaunches MommyTV through LG's own second-screen link ---------- */
 
-  var pairOpen = false;
-  var pairTimer = null;
-
-  // Plain-text JSON POST: a simple request, so the manager needs no CORS preflight.
-  function remoteCall(what, body, cb, timeoutMs) {
-    var base = managerBase();
-    if (!base) { cb(null, 0); return; }
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', base + '/remote/' + what, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain');
-    xhr.timeout = timeoutMs || 8000;
-    xhr.onload = function () {
-      var r = null;
-      try { r = JSON.parse(xhr.responseText || '{}'); } catch (e) { r = {}; }
-      cb(xhr.status >= 200 && xhr.status < 300 ? r : null, xhr.status);
-    };
-    xhr.onerror = xhr.ontimeout = function () { cb(null, 0); };
-    xhr.send(JSON.stringify(body));
-  }
-
-  // The TV gets its secret the first time it shows a pairing code, and keeps it.
-  function remoteSecret(cb) {
-    var s = store(STORE_REMOTE) || '';
-    remoteCall('tv', { secret: s }, function (r) {
-      if (r && r.secret) { s = r.secret; store(STORE_REMOTE, s); }
-      cb(r ? s : '');
-    });
-  }
-
-  // Tells paired phones what is on screen; only a TV that opened pairing once reports.
-  function reportState() {
-    var s = store(STORE_REMOTE);
-    if (!s) return;
-    var ch = view === 'player' ? current() : null;
-    remoteCall('state', {
-      secret: s, view: view, title: ch ? ch.title : '', logo: ch ? ch.logo : '', url: ch ? ch.url : '',
-      order: order ? order.seq : 0, result: order ? order.result : ''
-    }, function () {});
-  }
-
-  var listening = false;
-  var remoteSeq = -1; // last order seen; -1 on start, so old orders are never replayed
-
-  // Waits for orders from paired phones: one request at a time, which the manager answers within 25 s.
-  function listenRemote() {
-    if (listening || !store(STORE_REMOTE) || !managerBase()) return;
-    listening = true;
-    remoteCall('wait', { secret: store(STORE_REMOTE), after: remoteSeq }, function (r, status) {
-      listening = false;
-      if (status === 403) return; // unknown to the manager; pairing again starts listening again
-      if (!r) { setTimeout(listenRemote, 10000); return; }
-      remoteSeq = r.seq;
-      for (var i = 0; i < r.cmds.length; i++) remoteOrder(r.cmds[i]);
-      listenRemote();
-    }, 35000);
-  }
-
-  var order = null; // the last order from a phone and what became of it: 'received', 'pin', 'playing' or 'failed'
-
-  // Plays what a paired phone chose. A channel of this TV's list plays within "Todos", so CH+/CH-
-  // move on from it; one from the phone's own list plays alone and leaves no trace (watch time,
-  // Favoritos, last channel), and asks the PIN when parental control is on.
-  function remoteOrder(c) {
-    if (c.type !== 'play' || !/^https?:\/\//.test(c.url || '') || !channels.length) return;
-    order = { seq: c.seq, url: c.url, result: 'received' };
+  // Plays what a phone chose. A channel of this TV's list plays within "Todos", so CH+/CH- move on
+  // from it; one from the phone's own list plays alone and leaves no trace (watch time, Favoritos,
+  // last channel, search), and asks the PIN when parental control is on.
+  function remotePlay(c) {
+    if (!/^https?:\/\//.test(c.url || '') || !channels.length) return;
     var idx = indexByUrl()[c.url], items = null;
     for (var i = 0; idx !== undefined && i < groups.length; i++) {
       if (groups[i].kind === 'list' && groups[i].name === t('all') && groups[i].items.indexOf(idx) >= 0) items = groups[i].items;
     }
     if (!items) { idx = foreignChannel(c); items = [idx]; }
-    if (pairOpen) closePair();
-    if (isLocked(channels[idx])) order.result = 'pin';
     play(items, items.indexOf(idx));
-    reportState(); // received (or asking the PIN): the phone learns the TV got it
   }
 
   function foreignChannel(c) {
@@ -789,67 +679,26 @@
     return channels.length - 1;
   }
 
-  // Tells the phone what became of its order, once.
-  function orderResult(result) {
-    if (!order || order.result === result || current().url !== order.url) return;
-    order.result = result;
-    reportState();
+  var pendingPlay = null; // a channel that arrived before its playlist was ready
+
+  // Launch parameters from a paired phone: { mtvList } loads and remembers that playlist,
+  // { mtvPlay, mtvTitle, mtvLogo } plays a channel; both together play it from that list.
+  function phoneOrder(p) {
+    if (typeof p === 'string') { try { p = JSON.parse(p); } catch (e) { return; } }
+    if (!p || typeof p !== 'object') return;
+    var c = /^https?:\/\//.test(p.mtvPlay || '') ? { url: p.mtvPlay, title: p.mtvTitle || '', logo: p.mtvLogo || '' } : null;
+    if (/^https?:\/\//.test(p.mtvList || '')) {
+      pendingPlay = c;
+      rememberList = true;
+      ui.url.value = p.mtvList;
+      show('setup');
+      load(p.mtvList, false);
+      return;
+    }
+    if (c) { if (channels.length) remotePlay(c); else pendingPlay = c; }
   }
 
-  function renderPhones(phones) {
-    var names = [];
-    for (var i = 0; i < phones.length; i++) names.push(phones[i].name);
-    ui.pairPhones.textContent = names.length ? t('pairPhones', names.join(', ')) : t('pairNone');
-  }
-
-  function openPair() {
-    if (!managerBase()) { osd(t('pairNeedsManager')); return; }
-    pairOpen = true;
-    ui.pair.className = '';
-    ui.pairCode.textContent = '';
-    ui.pairMsg.textContent = t('pairHelp');
-    ui.pairPhones.textContent = '';
-    remoteSecret(function (s) {
-      if (!pairOpen) return;
-      if (s) newPairCode(s); else ui.pairMsg.textContent = t('remoteNoTv');
-    });
-  }
-
-  // Shows a fresh code and watches for the phone that uses it; a used or expired code is replaced.
-  function newPairCode(s) {
-    remoteCall('code', { secret: s }, function (r) {
-      if (!pairOpen) return;
-      if (!r) { ui.pairMsg.textContent = t('remoteNoTv'); return; }
-      ui.pairCode.textContent = r.code;
-      renderPhones(r.phones);
-      var known = r.phones.length;
-      var until = Date.now() + r.expiresIn * 1000;
-      (function watch() {
-        pairTimer = setTimeout(function () {
-          if (!pairOpen) return;
-          if (Date.now() >= until) { newPairCode(s); return; }
-          remoteCall('phones', { secret: s }, function (p) {
-            if (!pairOpen) return;
-            if (p && p.phones.length > known) {
-              closePair();
-              osd(t('pairDone', p.phones[p.phones.length - 1].name));
-              reportState();
-              listenRemote();
-              return;
-            }
-            if (p) renderPhones(p.phones);
-            watch();
-          });
-        }, 3000);
-      })();
-    });
-  }
-
-  function closePair() {
-    pairOpen = false;
-    clearTimeout(pairTimer);
-    ui.pair.className = 'hidden';
-  }
+  document.addEventListener('webOSRelaunch', function (e) { phoneOrder(e.detail); });
 
   /* ---------- parental control ---------- */
 
@@ -1023,7 +872,6 @@
     if (reconnect()) return;
     ui.playSpin.className = 'spinner hidden';
     osd(t('cantPlay', current().title), true);
-    orderResult('failed');
   }
 
   ui.video.addEventListener('error', playError);
@@ -1035,7 +883,7 @@
   ui.video.addEventListener('playing', function () {
     if (view !== 'player') return;
     ui.playSpin.className = 'spinner hidden';
-    if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); orderResult('playing'); }
+    if (!stats.startup) { stats.startup = Date.now() - stats.t0; placeInLive(true); }
     if (stats.stallAt) { stats.stallMs += Date.now() - stats.stallAt; stats.stallAt = 0; placeInLive(false); }
     if (retries) hideOsd();
     if (!watchTimer) startWatch();
@@ -1059,12 +907,6 @@
     };
   }
 
-  // MommyTV Manager's address when the list comes from it, else ''.
-  function managerBase() {
-    var m = MANAGER_LIST.exec(store(STORE_URL) || '');
-    return m ? m[1] : '';
-  }
-
   function renderDiag(d) {
     var line = function (label, value, bad) { return '<div' + (bad ? ' class="bad"' : '') + '>' + label + ' <b>' + value + '</b></div>'; };
     var esc = function (t) { var e = document.createElement('i'); e.textContent = t; return e.innerHTML; };
@@ -1075,26 +917,19 @@
       line(esc(t('dStart')), d.startupMs ? (d.startupMs / 1000).toFixed(1) + ' s' : esc(t('dLoading')), d.startupMs > 5000) +
       line(esc(t('dStalls')), d.stalls + (d.stallMs ? ' (' + (d.stallMs / 1000).toFixed(1) + ' s)' : ''), d.stalls > 0) +
       line(esc(t('dDropped')), esc(t('dOf', d.dropped, d.decoded)), d.decoded && d.dropped / d.decoded > 0.01) +
-      '<div style="margin-top:10px;color:#94a3b8;font-size:20px">' + esc((managerBase() ? t('dPc') : t('dScreen')) + ' · ' + t('dClose')) + '</div>';
+      '<div style="margin-top:10px;color:#94a3b8;font-size:20px">' + esc(t('dScreen') + ' · ' + t('dClose')) + '</div>';
   }
 
   setInterval(function () {
     if (!diagOn || view !== 'player') return;
     var d = sample();
     renderDiag(d);
-    var base = managerBase();
-    if (base && ++diagTick % 3 === 0) {
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', base + '/diag', true);
-      xhr.setRequestHeader('Content-Type', 'text/plain');
-      xhr.send(JSON.stringify(d));
-    }
   }, 2000);
 
   function toggleDiag() {
     diagOn = !diagOn;
     ui.diag.className = diagOn ? '' : 'hidden';
-    if (diagOn) { renderDiag(sample()); osd(managerBase() ? t('diagOnPc') : t('diagOn')); }
+    if (diagOn) { renderDiag(sample()); osd(t('diagOn')); }
     else osd(t('diagOff'));
   }
 
@@ -1115,10 +950,13 @@
 
   function setupKey(k, e) {
     if (k === KEY.UP || k === KEY.DOWN) {
-      setupSel = k === KEY.UP ? 0 : 1;
+      setupSel = Math.max(0, Math.min(2, setupSel + (k === KEY.UP ? -1 : 1)));
       renderSetup();
     } else if (k === KEY.OK && setupSel === 1) {
-      load(ui.url.value);
+      rememberList = !rememberList;
+      renderSetup();
+    } else if (k === KEY.OK && setupSel === 2) {
+      load(ui.url.value, false);
     } else if (k === KEY.BACK) {
       if (channels.length) show('browser'); else window.close();
     } else {
@@ -1161,7 +999,7 @@
 
   document.addEventListener('keyup', function (e) {
     keyupSeen = true; // any key: this remote reports releases
-    if (pinDone || pairOpen) return;
+    if (pinDone) return;
     if (e.keyCode !== KEY.OK) return;
     if (okHeld) { okHeld = false; return; }
     if (!okTimer) return;
@@ -1172,7 +1010,6 @@
 
   document.addEventListener('keydown', function (e) {
     var k = e.keyCode === KEY.ESC ? KEY.BACK : e.keyCode;
-    if (pairOpen) { e.preventDefault(); if (k === KEY.BACK || k === KEY.OK) closePair(); return; }
     if (pinDone) { e.preventDefault(); pinKey(k); return; }
     if (k === KEY.OK && keyupSeen && (okTimer || okHeld || holdTarget())) {
       e.preventDefault();
@@ -1196,13 +1033,16 @@
     });
   }
 
+  try { localStorage.removeItem('mtvRemote'); } catch (e) { /* the old remote through a PC manager */ }
+  var launch = (window.webOSSystem || window.PalmSystem || {}).launchParams;
   var saved = store(STORE_URL);
   if (saved) {
     ui.url.value = saved;
-    setupSel = 1; // keep the on-screen keyboard closed while the saved list loads
+    setupSel = 2; // keep the on-screen keyboard closed while the saved list loads
     show('setup');
-    load(saved, findManager); // the manager's PC may have a new address
+    load(saved, true);
   } else {
-    findManager();
+    show('setup');
   }
+  if (launch && launch !== '{}') phoneOrder(launch); // opened by a phone
 })();

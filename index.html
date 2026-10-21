@@ -21,7 +21,8 @@
       <p class="dedication-line" data-i18n="dedication">Dedicado a Mami Analida</p>
       <div class="status"><span id="setup-spin" class="spinner small hidden"></span><span id="setup-msg"></span></div>
       <label for="url" data-i18n="urlLabel">Dirección de tu lista M3U</label>
-      <input id="url" type="url" spellcheck="false" placeholder="Vacío: buscar MommyTV Manager en tu red" data-i18n-placeholder="urlPlaceholder">
+      <input id="url" type="url" spellcheck="false" placeholder="https://…/lista.m3u" data-i18n-placeholder="urlPlaceholder">
+      <div id="remember" class="check on"><span class="box"></span><span data-i18n="remember">Recordar esta lista</span></div>
       <button id="load" type="button" data-i18n="load">Cargar</button>
     </div>
   </section>
@@ -64,16 +65,6 @@
       <h3 data-i18n="parental">Control parental</h3>
       <p id="pin-msg"></p>
       <div id="pin-dots"><i></i><i></i><i></i><i></i></div>
-    </div>
-  </div>
-
-  <div id="pair" class="hidden">
-    <div class="pin-card">
-      <svg class="pin-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>
-      <h3 data-i18n="pairTitle">Emparejar teléfono</h3>
-      <p id="pair-msg"></p>
-      <div id="pair-code"></div>
-      <p id="pair-phones"></p>
     </div>
   </div>
 

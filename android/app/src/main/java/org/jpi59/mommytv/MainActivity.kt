@@ -27,7 +27,7 @@ enum class Screen { SETUP, BROWSER, PLAYER }
 enum class Column { RAIL, LIST, SEARCH }
 
 /** Rows of Ajustes: what does something first, then the dedication and the information. */
-enum class Setting { CHANGE, REMOTE, DEDICATION, VERSION, LICENSE, SOURCE, NO_CHANNELS, LG_LIB, FONT, DATA }
+enum class Setting { CHANGE, DELETE, REMOTE, DEDICATION, VERSION, LICENSE, SOURCE, NO_CHANNELS, LG_LIB, FONT }
 
 @OptIn(UnstableApi::class)
 class MainActivity : ComponentActivity(), Playback.Listener {
@@ -51,10 +51,11 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     var pinBuf by mutableStateOf("")
     var pinMsg by mutableStateOf("")
     var remoteOpen by mutableStateOf(false)
-    var remoteCode by mutableStateOf("")
     var remoteMsg by mutableStateOf("")
     var remoteBusy by mutableStateOf(false)
-    var tvNow by mutableStateOf<String?>(null) // null: not paired; "": paired, nothing playing
+    var remoteFound by mutableStateOf<List<LgTv.Found>?>(null) // TVs answering on the LAN, while pairing
+    var tvName by mutableStateOf<String?>(null) // the paired LG TV; null when not paired
+    var rememberList by mutableStateOf(true) // "Recordar esta lista", on unless the user unticks it
     var onTv by mutableStateOf(true) // paired phone: a tapped channel plays on the TV (the TV button in the top bar)
 
     lateinit var playback: Playback
@@ -83,14 +84,14 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         super.onCreate(savedInstanceState)
         playback = Playback(this, this)
         onTv = prefs.getBoolean(KEY_ON_TV, true)
+        prefs.edit().remove("remoteToken").remove("remoteBase").apply() // the old remote through a PC manager
+        tvName = prefs.getString(KEY_TV_NAME, null)?.takeIf { prefs.getString(KEY_TV_KEY, null) != null }
         setContent {
             BackHandler { onBack() }
             MommyApp(this)
         }
         val saved = prefs.getString(KEY_URL, null)
-        if (saved != null) { urlField = saved; load(saved, retryWithDiscovery = true) } else findManager()
-        // while MommyTV is on screen only: show what the paired TV plays
-        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { while (true) { refreshTv(); delay(10_000) } } }
+        if (saved != null) { urlField = saved; setupFocus = 1; load(saved, fromCopy = true) } else { setupFocus = 0; screen = Screen.SETUP }
     }
 
     override fun onStop() {
@@ -105,42 +106,56 @@ class MainActivity : ComponentActivity(), Playback.Listener {
 
     // ---------- loading ----------
 
-    fun load(url: String, retryWithDiscovery: Boolean = false) {
+    private val copyFile get() = java.io.File(filesDir, "playlist-copy.m3u")
+
+    /**
+     * Loads the playlist the user gave. Remembered, with a copy, unless "Recordar esta lista" is off;
+     * when its site does not answer, a remembered list starts from the copy.
+     */
+    fun load(url: String, fromCopy: Boolean = false) {
         val u = url.trim()
-        if (u.isEmpty()) { findManager(); return }
+        if (u.isEmpty()) { fail(getString(R.string.needUrl)); return }
         screen = Screen.SETUP
         status = getString(R.string.loading); busy = true
         lifecycleScope.launch {
-            val query = "?lang=$lang&os=android"
-            val requestUrl = if (Remote.isManagerList(u)) u + query else u
-            val (text, finalUrl) = try {
-                Net.fetchWithUrl(requestUrl)
+            val text = try {
+                Net.fetch(u)
             } catch (e: Exception) {
-                if (retryWithDiscovery) { findManager(); return@launch }
-                fail(if (e is Net.HttpError) getString(R.string.httpError, e.code.toString()) else getString(R.string.noConnect))
+                val copy = if (fromCopy && prefs.getString(KEY_URL, null) == u) runCatching { copyFile.readText() }.getOrNull() else null
+                if (copy != null) { useText(copy); showOsd(getString(R.string.usingCopy)) }
+                else fail(if (e is Net.HttpError) getString(R.string.httpError, e.code.toString()) else getString(R.string.noConnect))
                 return@launch
             }
-            val list = M3u.parse(text)
-            if (list.isEmpty()) { fail(getString(R.string.emptyList)); return@launch }
-            // a manager that moved to HTTPS redirects; keep its secure address
-            val moved = finalUrl.removeSuffix(query)
-            val saved = if (moved != u && moved.startsWith("https:") && Remote.isManagerList(moved)) moved.also { urlField = it } else u
-            prefs.edit().putString(KEY_URL, saved).apply()
-            Remote.managerBase(saved)?.let { prefs.edit().putString(KEY_REMOTE_BASE, it).apply() } // follows a move to HTTPS too
-            parental = Parental(M3u.header(text))
-            useList(list)
+            if (M3u.parse(text).isEmpty()) { fail(getString(R.string.emptyList)); return@launch }
+            if (rememberList) { prefs.edit().putString(KEY_URL, u).apply(); runCatching { copyFile.writeText(text) } } else forgetList(false)
+            useText(text)
         }
     }
 
-    fun findManager() {
+    private fun useText(text: String) {
+        parental = Parental(M3u.header(text))
+        useList(M3u.parse(text))
+    }
+
+    /** "Eliminar lista": the playlist, its copy and what belongs to it (Favoritos, watch time, last channel). */
+    private fun forgetList(everything: Boolean) {
+        prefs.edit().remove(KEY_URL).apply {
+            if (everything) listOf(KEY_LAST, Catalog.PINS, Catalog.HIDDEN, Catalog.WATCH).forEach { remove(it) }
+        }.apply()
+        copyFile.delete()
+    }
+
+    private var deleteArmed = 0L
+
+    private fun deleteList() {
+        if (prefs.getString(KEY_URL, null) == null) return
+        if (System.currentTimeMillis() - deleteArmed > 5000) { deleteArmed = System.currentTimeMillis(); showOsd(getString(R.string.deleteConfirm)); return }
+        deleteArmed = 0
+        forgetList(true)
+        catalog = null
+        urlField = ""; setupFocus = 0; busy = false
+        status = getString(R.string.listDeleted)
         screen = Screen.SETUP
-        setupFocus = 1
-        status = getString(R.string.searching); busy = true
-        lifecycleScope.launch {
-            val found = Net.findManager(this@MainActivity)
-            busy = false
-            if (found != null) { urlField = found; status = getString(R.string.found) } else { status = getString(R.string.notFound); setupFocus = 0 }
-        }
     }
 
     private fun fail(text: String) { busy = false; status = text; screen = Screen.SETUP }
@@ -170,88 +185,60 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         column = Column.LIST; cSel = at
     }
 
-    // ---------- phone remote ----------
+    // ---------- phone remote: LG's own second-screen link, no server in between ----------
 
-    // the manager the phone is paired through, kept apart so the remote works with any playlist
-    private val managerBase get() = Remote.managerBase(prefs.getString(KEY_URL, null)) ?: prefs.getString(KEY_REMOTE_BASE, null)
+    fun openRemote() { remoteMsg = ""; remoteBusy = false; remoteFound = null; remoteOpen = true }
 
-    fun openRemote() {
-        remoteCode = ""; remoteBusy = false
-        remoteMsg = if (managerBase == null) getString(R.string.pairNeedsManager) else ""
-        remoteOpen = true
-        lifecycleScope.launch { refreshTv() }
+    fun findTvs() {
+        if (remoteBusy) return
+        remoteBusy = true; remoteMsg = getString(R.string.remoteSearching); remoteFound = null
+        lifecycleScope.launch {
+            val found = LgTv.discover()
+            remoteBusy = false
+            remoteFound = found
+            remoteMsg = if (found.isEmpty()) getString(R.string.remoteNone) else ""
+        }
     }
 
-    fun pairRemote() {
-        val base = managerBase ?: return
-        val code = remoteCode.filter { it.isDigit() }
-        if (code.length != 6 || remoteBusy) return
-        remoteBusy = true; remoteMsg = ""
+    fun pairTv(tv: LgTv.Found) {
+        if (remoteBusy) return
+        remoteBusy = true; remoteMsg = getString(R.string.remoteAccept)
         lifecycleScope.launch {
-            when (val r = Remote.pair(base, code, Build.MODEL.take(40))) {
-                is Remote.Paired.Ok -> { prefs.edit().putString(KEY_REMOTE, r.token).putString(KEY_REMOTE_BASE, base).apply(); tvNow = ""; remoteCode = ""; refreshTv() }
-                Remote.Paired.Wrong -> remoteMsg = getString(R.string.remoteWrong)
-                Remote.Paired.Locked -> remoteMsg = getString(R.string.remoteLocked)
-                Remote.Paired.Unreachable -> remoteMsg = getString(R.string.remoteNoTv)
-            }
+            val key = LgTv.pair(tv.host, null)
             remoteBusy = false
+            if (key == null) { remoteMsg = getString(R.string.remoteNoTv); return@launch }
+            prefs.edit().putString(KEY_TV_HOST, tv.host).putString(KEY_TV_KEY, key).putString(KEY_TV_NAME, tv.name).apply()
+            tvName = tv.name; remoteFound = null; remoteMsg = ""
         }
     }
 
     fun toggleOnTv() { onTv = !onTv; prefs.edit().putBoolean(KEY_ON_TV, onTv).apply() }
 
-    private fun sendToTv(ch: Channel) {
-        val token = prefs.getString(KEY_REMOTE, null) ?: return
-        val base = managerBase ?: return
+    /** Opens MommyTV on the paired TV with [params]; says plainly what happened. */
+    private fun tellTv(params: Map<String, String>, ok: String) {
+        val host = prefs.getString(KEY_TV_HOST, null) ?: return
+        val key = prefs.getString(KEY_TV_KEY, null) ?: return
         lifecycleScope.launch {
-            when (val r = Remote.play(base, token, ch)) {
-                is Remote.Sent.Ok -> if (!r.tvListening) showOsd(getString(R.string.tvNotListening)) else {
-                    showOsd(getString(R.string.sentToTv, ch.title))
-                    // say what really happened on the TV, never just assume it worked
-                    var result: String? = null
-                    for (i in 0 until 40) {
-                        delay(500)
-                        result = Remote.outcome(base, token, r.order) ?: result
-                        if (result != null && result != "received") break
-                        if (result == null && i == 9) break // not even received in 5 s
-                    }
-                    when (result) {
-                        "playing" -> refreshTv()
-                        "pin" -> showOsd(getString(R.string.tvAsksPin))
-                        "failed" -> showOsd(getString(R.string.tvCantPlay, ch.title))
-                        "received" -> refreshTv() // still loading on the TV: nothing more to say
-                        else -> showOsd(getString(R.string.tvNoAnswer))
-                    }
-                }
-                Remote.Sent.Unpaired -> { forgetRemote(); showOsd(getString(R.string.remoteGone)) }
-                Remote.Sent.Unreachable -> showOsd(getString(R.string.remoteNoTv))
+            when (LgTv.launch(host, key, params)) {
+                LgTv.Sent.Ok -> showOsd(ok)
+                LgTv.Sent.NoApp -> showOsd(getString(R.string.tvNoApp))
+                LgTv.Sent.NotAllowed -> { forgetRemote(); showOsd(getString(R.string.remoteGone)) }
+                LgTv.Sent.Unreachable -> showOsd(getString(R.string.remoteNoTv))
             }
         }
     }
 
-    /** Paired, with a playlist from elsewhere and no manager known yet: look for it on the LAN, once. */
-    private suspend fun findRemoteBase(): String? {
-        if (lookedForManager) return null
-        lookedForManager = true
-        return Net.findManager(this)?.let { Remote.managerBase(it) }?.also { prefs.edit().putString(KEY_REMOTE_BASE, it).apply() }
+    // a channel from any list: the TV plays it within its own list when it has it, alone otherwise
+    private fun sendToTv(ch: Channel) = tellTv(mapOf("mtvPlay" to ch.url, "mtvTitle" to ch.title, "mtvLogo" to ch.logo), getString(R.string.sentToTv, ch.title))
+
+    fun sendList() {
+        val url = prefs.getString(KEY_URL, null) ?: run { showOsd(getString(R.string.needUrl)); return }
+        tellTv(mapOf("mtvList" to url), getString(R.string.listSent))
     }
 
     fun forgetRemote() {
-        prefs.edit().remove(KEY_REMOTE).remove(KEY_REMOTE_BASE).apply()
-        tvNow = null
-    }
-
-    private var lookedForManager = false
-
-    private suspend fun refreshTv() {
-        val token = prefs.getString(KEY_REMOTE, null) ?: run { tvNow = null; return }
-        val base = managerBase ?: findRemoteBase() ?: return
-        when (val now = Remote.now(base, token)) {
-            is Remote.Now.Tv -> tvNow = now.title
-            Remote.Now.Idle -> tvNow = ""
-            Remote.Now.Unpaired -> forgetRemote() // removed from the TV or the manager's panel
-            Remote.Now.Unreachable -> Unit // keep the last known state
-        }
+        prefs.edit().remove(KEY_TV_HOST).remove(KEY_TV_KEY).remove(KEY_TV_NAME).apply()
+        tvName = null
     }
 
     // ---------- groups and lists ----------
@@ -294,12 +281,12 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val g = group ?: return
         cSel = i
         when {
-            g.kind == Kind.SETTINGS -> when (settingsRows[i]) { Setting.CHANGE -> openChangeList(); Setting.REMOTE -> openRemote(); else -> Unit }
+            g.kind == Kind.SETTINGS -> when (settingsRows[i]) { Setting.CHANGE -> openChangeList(); Setting.DELETE -> deleteList(); Setting.REMOTE -> openRemote(); else -> Unit }
             showingCountries(g) -> { g.country = g.countries[i]; g.items = g.country!!.items; cSel = 0; version++ }
             i !in g.items.indices -> Unit // empty group: nothing to open
             else -> {
                 val ch = c.channels[g.items[i]]
-                if (ch.isShortcut) launchApp(ch) else if (tvNow != null && onTv && !isTv) sendToTv(ch) else play(g.items, i)
+                if (ch.isShortcut) launchApp(ch) else if (tvName != null && onTv && !isTv) sendToTv(ch) else play(g.items, i)
             }
         }
     }
@@ -466,9 +453,10 @@ class MainActivity : ComponentActivity(), Playback.Listener {
     }
 
     private fun setupKey(code: Int): Boolean = when (code) {
-        KeyEvent.KEYCODE_DPAD_UP -> { setupFocus = 0; true }
-        KeyEvent.KEYCODE_DPAD_DOWN -> { setupFocus = 1; true }
-        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { if (setupFocus == 1) load(urlField); true }
+        // focus order: address (0), "Recordar esta lista" (2), Load (1)
+        KeyEvent.KEYCODE_DPAD_UP -> { setupFocus = if (setupFocus == 1) 2 else 0; true }
+        KeyEvent.KEYCODE_DPAD_DOWN -> { setupFocus = if (setupFocus == 0) 2 else 1; true }
+        KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { if (setupFocus == 1) load(urlField) else if (setupFocus == 2) rememberList = !rememberList; true }
         else -> false
     }
 
@@ -512,8 +500,9 @@ class MainActivity : ComponentActivity(), Playback.Listener {
         val LANGS = setOf("es", "en", "fr", "de", "it", "pt", "zh", "ja")
         const val KEY_URL = "playlistUrl"
         const val KEY_LAST = "last"
-        const val KEY_REMOTE = "remoteToken"
-        const val KEY_REMOTE_BASE = "remoteBase"
+        const val KEY_TV_HOST = "tvHost"
+        const val KEY_TV_KEY = "tvKey" // granted by the TV when its owner accepted this phone
+        const val KEY_TV_NAME = "tvName"
         const val KEY_ON_TV = "onTv"
     }
 }

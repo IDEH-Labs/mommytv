@@ -7,9 +7,6 @@
     <string name="incompatible" formatted="false">该列表中的频道与此电视不兼容。</string>
     <string name="noConnect" formatted="false">无法连接到该地址。</string>
     <string name="slow" formatted="false">列表响应时间过长。</string>
-    <string name="searching" formatted="false">正在你的网络中查找 MommyTV Manager…</string>
-    <string name="notFound" formatted="false">未找到 MommyTV Manager。请在电脑上打开它，或输入你的列表地址。</string>
-    <string name="found" formatted="false">已找到 MommyTV Manager。按“加载”使用它的列表。</string>
     <string name="shortcuts" formatted="false">快捷方式</string>
     <string name="all" formatted="false">全部</string>
     <string name="inLang" formatted="false">中文频道</string>
@@ -24,7 +21,6 @@
     <string name="noChannels" formatted="false">MommyTV 不包含任何频道或列表</string>
     <string name="lgLib" formatted="false">LG Electronics 的 webOSTV.js · Apache 2.0</string>
     <string name="font" formatted="false">Plus Jakarta Sans 字体 · SIL OFL 1.1</string>
-    <string name="data" formatted="false">频道数据：iptv-org · 公有领域</string>
     <string name="org" formatted="false">IDEH Labs · IDEH 基金会</string>
     <string name="openHint" formatted="false">按 OK 打开</string>
     <string name="nCountries">%1$s 个国家和地区</string>
@@ -49,30 +45,28 @@
     <string name="cantPlay">无法播放“%1$s”。请尝试其他频道。</string>
     <string name="favAdded">已将“%1$s”加入收藏</string>
     <string name="favRemoved">已将“%1$s”移出收藏</string>
-    <string name="pairPhone" formatted="false">用手机控制</string>
-    <string name="pairTitle" formatted="false">配对手机</string>
-    <string name="pairHelp" formatted="false">在手机上的 MommyTV 应用中打开“设置”→“控制电视”，输入此代码。代码 5 分钟后失效。</string>
-    <string name="pairPhones">已配对：%1$s</string>
-    <string name="pairNone" formatted="false">还没有配对的手机。</string>
-    <string name="pairNeedsManager" formatted="false">请先加载 MommyTV Manager 的列表。</string>
-    <string name="pairDone">“%1$s”已配对</string>
     <string name="remoteTitle" formatted="false">控制电视</string>
-    <string name="remoteCode" formatted="false">电视上显示的代码</string>
-    <string name="remotePair" formatted="false">配对</string>
-    <string name="remoteWrong" formatted="false">代码错误或已失效。</string>
-    <string name="remoteLocked" formatted="false">尝试次数过多，请等待 10 分钟。</string>
-    <string name="remoteNoTv" formatted="false">无法连接 MommyTV Manager。</string>
-    <string name="remoteOn">电视正在播放：%1$s</string>
-    <string name="remoteIdle" formatted="false">已与电视配对</string>
+    <string name="remoteNoTv" formatted="false">无法连接电视。</string>
     <string name="remoteForget" formatted="false">停止控制电视</string>
-    <string name="sentToTv">正在电视上播放“%1$s”</string>
-    <string name="tvNotListening" formatted="false">请在电视上打开 MommyTV，即可从这里选择。</string>
+    <string name="sentToTv">已发送到电视：“%1$s”</string>
     <string name="watchOnTv" formatted="false">在电视上观看</string>
     <string name="watchHere" formatted="false">在这部手机上观看</string>
     <string name="remoteGone" formatted="false">这部手机已不再与电视配对。</string>
-    <string name="tvAsksPin" formatted="false">电视正在要求输入家长控制 PIN。</string>
-    <string name="tvCantPlay">电视无法播放“%1$s”。</string>
-    <string name="tvNoAnswer" formatted="false">电视没有回应。</string>
+    <string name="remember" formatted="false">记住此列表</string>
+    <string name="needUrl" formatted="false">请输入你的 M3U 列表地址。</string>
+    <string name="usingCopy" formatted="false">列表没有响应：正在使用保存的副本。</string>
+    <string name="deleteList" formatted="false">删除列表</string>
+    <string name="deleteConfirm" formatted="false">再按一次即可删除列表、其收藏和上次观看的频道。</string>
+    <string name="listDeleted" formatted="false">列表已删除。</string>
+    <string name="remoteIntro" formatted="false">将这部手机与你的 LG 电视配对，即可从这里选择电视播放的内容。</string>
+    <string name="remoteFind" formatted="false">查找我的电视</string>
+    <string name="remoteSearching" formatted="false">正在网络中查找你的 LG 电视…</string>
+    <string name="remoteNone" formatted="false">没有找到 LG 电视。请确认电视已开机并连接同一 Wi-Fi。</string>
+    <string name="remoteAccept" formatted="false">请在电视屏幕上接受提示。</string>
+    <string name="remoteConnected">已连接到 %1$s</string>
+    <string name="sendList" formatted="false">把我的列表发送到电视</string>
+    <string name="listSent" formatted="false">列表已发送到电视。</string>
+    <string name="tvNoApp" formatted="false">电视上没有安装 MommyTV。</string>
     <string name="dChannel" formatted="false">频道</string>
     <string name="dRes" formatted="false">实际分辨率</string>
     <string name="dBuffer" formatted="false">缓冲</string>
@@ -81,14 +75,12 @@
     <string name="dDropped" formatted="false">丢帧</string>
     <string name="dOf">%1$s / %2$s</string>
     <string name="dLoading" formatted="false">加载中…</string>
-    <string name="dPc" formatted="false">仅保存在你的电脑上</string>
     <string name="dScreen" formatted="false">仅显示在屏幕上</string>
     <string name="dClose" formatted="false">按蓝色键关闭</string>
-    <string name="diagOnPc" formatted="false">诊断已开启：数据仅保存在你的电脑上</string>
     <string name="diagOn" formatted="false">诊断已开启</string>
     <string name="diagOff" formatted="false">诊断已关闭</string>
     <string name="urlLabel" formatted="false">你的 M3U 列表地址</string>
-    <string name="urlPlaceholder" formatted="false">留空：在网络中查找 MommyTV Manager</string>
+    <string name="urlPlaceholder" formatted="false">https://…/playlist.m3u</string>
     <string name="load" formatted="false">加载</string>
     <string name="live" formatted="false">直播</string>
     <string name="holdOk" formatted="false">长按</string>

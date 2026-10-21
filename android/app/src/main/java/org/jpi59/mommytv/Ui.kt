@@ -101,9 +101,9 @@ fun MommyApp(a: MainActivity) {
             Screen.BROWSER -> BrowserScreen(a)
             Screen.PLAYER -> PlayerScreen(a)
         }
-        Osd(a.osd, Modifier.align(Alignment.BottomCenter))
         if (a.pinOpen) PinDialog(a)
         if (a.remoteOpen) RemoteDialog(a)
+        Osd(a.osd, Modifier.align(Alignment.BottomCenter)) // above the dialogs: it answers what they did
     }
 }
 
@@ -196,7 +196,20 @@ private fun SetupScreen(a: MainActivity) {
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go), keyboardActions = KeyboardActions(onGo = { a.setupFocus = 1; a.load(a.urlField) }),
             colors = fieldColors(), modifier = Modifier.widthIn(max = 640.dp).fillMaxWidth().focusRequester(field),
         )
-        Spacer(Modifier.height(16.dp))
+        // "Recordar esta lista": on by default; off, the list is used this time only
+        val boxFocused = a.setupFocus == 2
+        Row(
+            Modifier.widthIn(max = 640.dp).fillMaxWidth().padding(top = 8.dp).clip(RoundedCornerShape(12.dp))
+                .background(if (boxFocused) FocusBg else Color.Transparent)
+                .combinedClickable(onClick = { a.rememberList = !a.rememberList }).padding(horizontal = 8.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.size(22.dp).clip(RoundedCornerShape(6.dp)).background(if (a.rememberList) Sky else Color.Transparent)
+                .border(2.dp, if (a.rememberList) Sky else Muted, RoundedCornerShape(6.dp)))
+            Spacer(Modifier.width(12.dp))
+            Text(stringResource(R.string.remember), color = if (boxFocused) FocusFg else Muted, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        }
+        Spacer(Modifier.height(12.dp))
         val focused = a.setupFocus == 1
         Text(
             stringResource(R.string.load), color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 18.sp,
@@ -251,17 +264,8 @@ private fun BrowserScreen(a: MainActivity) {
 private fun TopBar(a: MainActivity, compact: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     Image(painterResource(R.mipmap.ic_launcher), null, Modifier.size(34.dp).clip(RoundedCornerShape(9.dp)))
     Spacer(Modifier.width(12.dp))
-    val onTv = a.tvNow?.takeIf { it.isNotEmpty() }
-    Column(Modifier.weight(1f)) {
-        Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp)
-        // paired phone: what the TV is playing, under the title; tap to open the remote
-        if (onTv != null) Text(
-            stringResource(R.string.remoteOn, onTv),
-            color = Sky, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.combinedClickable(onClick = { a.openRemote() }),
-        )
-    }
-    if (compact && a.tvNow != null) {
+    Text("MommyTV", color = Fg, fontWeight = FontWeight.ExtraBold, fontSize = 21.sp, modifier = Modifier.weight(1f))
+    if (compact && a.tvName != null) {
         // paired phone: where a tapped channel plays, like a cast button
         val label = stringResource(if (a.onTv) R.string.watchOnTv else R.string.watchHere)
         Box(
@@ -361,8 +365,8 @@ private fun RailChips(a: MainActivity, c: Catalog) {
 private fun Hero(a: MainActivity, c: Catalog, compact: Boolean) {
     val g = a.group ?: return
     @Suppress("UNUSED_EXPRESSION") a.version // recompose when results change in place
-    val tileW = if (compact) 96 else 190
-    val tileH = if (compact) 56 else 108
+    val tileW = if (compact) 120 else 190 // the selected channel's logo, larger on phones
+    val tileH = if (compact) 68 else 108
     Row(
         Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp))
             .background(Brush.linearGradient(listOf(Color(0x290EA5E9), Color(0x1FA855F7), Color(0x99161E2C))))
@@ -487,6 +491,7 @@ private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
     val row = a.settingsRows[i]
     val (icon, text) = when (row) {
         Setting.CHANGE -> R.drawable.ic_change to stringResource(R.string.change)
+        Setting.DELETE -> R.drawable.ic_trash to stringResource(R.string.deleteList)
         Setting.REMOTE -> R.drawable.ic_phone to stringResource(R.string.remoteTitle)
         Setting.DEDICATION -> R.drawable.ic_heart to stringResource(R.string.dedication)
         Setting.VERSION -> R.drawable.ic_info to "MommyTV 0.1.0 · " + stringResource(R.string.org)
@@ -495,10 +500,9 @@ private fun SettingsRow(a: MainActivity, i: Int, focused: Boolean) {
         Setting.NO_CHANNELS -> R.drawable.ic_info to stringResource(R.string.noChannels)
         Setting.LG_LIB -> R.drawable.ic_info to stringResource(R.string.lgLib)
         Setting.FONT -> R.drawable.ic_info to stringResource(R.string.font)
-        Setting.DATA -> R.drawable.ic_info to stringResource(R.string.data)
     }
     val heart = row == Setting.DEDICATION
-    val action = row == Setting.CHANGE || row == Setting.REMOTE
+    val action = row == Setting.CHANGE || row == Setting.DELETE || row == Setting.REMOTE
     Icon(icon, if (heart) Rose else if (focused) FocusFg else if (action) Sky else Muted, 18)
     Spacer(Modifier.width(14.dp))
     Text(
@@ -557,31 +561,35 @@ private fun RemoteDialog(a: MainActivity) {
                 .border(1.dp, Line, RoundedCornerShape(24.dp)).padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(R.drawable.ic_phone, Sky, 48)
+            val center = androidx.compose.ui.text.style.TextAlign.Center
+            Icon(R.drawable.ic_tv, Sky, 48)
             Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.remoteTitle), color = Fg, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold)
-            Spacer(Modifier.height(16.dp))
-            val now = a.tvNow
-            if (now != null) {
-                Text(if (now.isEmpty()) stringResource(R.string.remoteIdle) else stringResource(R.string.remoteOn, now), color = Sky, fontSize = 18.sp, fontWeight = FontWeight.SemiBold,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Spacer(Modifier.height(22.dp))
-                DialogButton(stringResource(R.string.remoteForget), primary = false) { a.forgetRemote() }
-            } else {
-                val field = remember { FocusRequester() }
-                OutlinedTextField(
-                    value = a.remoteCode, onValueChange = { v -> a.remoteCode = v.filter { it.isDigit() }.take(6) }, singleLine = true,
-                    label = { Text(stringResource(R.string.remoteCode)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number, imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = { a.pairRemote() }),
-                    textStyle = androidx.compose.ui.text.TextStyle(fontSize = 28.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 8.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
-                    colors = fieldColors(), modifier = Modifier.fillMaxWidth().focusRequester(field),
-                )
-                LaunchedEffect(Unit) { field.requestFocus() }
-                if (a.remoteMsg.isNotEmpty()) Text(a.remoteMsg, color = Muted, fontSize = 15.sp, modifier = Modifier.padding(top = 10.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Spacer(Modifier.height(18.dp))
-                if (a.remoteBusy) CircularProgressIndicator(Modifier.size(32.dp), color = Sky, strokeWidth = 3.dp)
-                else DialogButton(stringResource(R.string.remotePair), primary = true) { a.pairRemote() }
+            Spacer(Modifier.height(14.dp))
+            val name = a.tvName
+            val found = a.remoteFound
+            when {
+                name != null -> {
+                    Text(stringResource(R.string.remoteConnected, name), color = Sky, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, textAlign = center)
+                    Spacer(Modifier.height(20.dp))
+                    DialogButton(stringResource(R.string.sendList), primary = true) { a.sendList() }
+                    Spacer(Modifier.height(10.dp))
+                    DialogButton(stringResource(R.string.remoteForget), primary = false) { a.forgetRemote() }
+                }
+                a.remoteBusy -> {
+                    Text(a.remoteMsg, color = Muted, fontSize = 16.sp, textAlign = center)
+                    Spacer(Modifier.height(18.dp))
+                    CircularProgressIndicator(Modifier.size(32.dp), color = Sky, strokeWidth = 3.dp)
+                }
+                !found.isNullOrEmpty() -> found.forEach { tv ->
+                    DialogButton(tv.name, primary = true) { a.pairTv(tv) }
+                    Spacer(Modifier.height(10.dp))
+                }
+                else -> {
+                    Text(a.remoteMsg.ifEmpty { stringResource(R.string.remoteIntro) }, color = Muted, fontSize = 16.sp, textAlign = center)
+                    Spacer(Modifier.height(18.dp))
+                    DialogButton(stringResource(R.string.remoteFind), primary = true) { a.findTvs() }
+                }
             }
         }
     }

@@ -7,9 +7,6 @@
     <string name="incompatible" formatted="false">Les chaînes de cette liste ne sont pas compatibles avec ce téléviseur.</string>
     <string name="noConnect" formatted="false">Impossible de se connecter à cette adresse.</string>
     <string name="slow" formatted="false">La liste a mis trop de temps à répondre.</string>
-    <string name="searching" formatted="false">Recherche de MommyTV Manager sur votre réseau…</string>
-    <string name="notFound" formatted="false">MommyTV Manager est introuvable. Ouvrez-le sur votre PC ou saisissez l’adresse de votre liste.</string>
-    <string name="found" formatted="false">MommyTV Manager trouvé. Appuyez sur Charger pour utiliser sa liste.</string>
     <string name="shortcuts" formatted="false">Raccourcis</string>
     <string name="all" formatted="false">Toutes</string>
     <string name="inLang" formatted="false">En français</string>
@@ -24,7 +21,6 @@
     <string name="noChannels" formatted="false">MommyTV ne fournit ni chaînes ni listes</string>
     <string name="lgLib" formatted="false">webOSTV.js de LG Electronics · Apache 2.0</string>
     <string name="font" formatted="false">Police Plus Jakarta Sans · SIL OFL 1.1</string>
-    <string name="data" formatted="false">Données des chaînes : iptv-org · domaine public</string>
     <string name="org" formatted="false">IDEH Labs · Fondation IDEH</string>
     <string name="openHint" formatted="false">OK pour ouvrir</string>
     <string name="nCountries">%1$s pays</string>
@@ -49,30 +45,28 @@
     <string name="cantPlay">Impossible de lire « %1$s ». Essayez une autre chaîne.</string>
     <string name="favAdded">« %1$s » ajoutée aux favoris</string>
     <string name="favRemoved">« %1$s » retirée des favoris</string>
-    <string name="pairPhone" formatted="false">Contrôler avec le téléphone</string>
-    <string name="pairTitle" formatted="false">Associer un téléphone</string>
-    <string name="pairHelp" formatted="false">Dans l’app MommyTV du téléphone, ouvrez Réglages → Contrôler la TV et saisissez ce code. Il expire dans 5 minutes.</string>
-    <string name="pairPhones">Associés : %1$s</string>
-    <string name="pairNone" formatted="false">Aucun téléphone associé pour l’instant.</string>
-    <string name="pairNeedsManager" formatted="false">Chargez d’abord la liste de MommyTV Manager.</string>
-    <string name="pairDone">« %1$s » est associé</string>
     <string name="remoteTitle" formatted="false">Contrôler la TV</string>
-    <string name="remoteCode" formatted="false">Code affiché sur la TV</string>
-    <string name="remotePair" formatted="false">Associer</string>
-    <string name="remoteWrong" formatted="false">Code incorrect ou expiré.</string>
-    <string name="remoteLocked" formatted="false">Trop de tentatives. Attendez 10 minutes.</string>
-    <string name="remoteNoTv" formatted="false">Impossible de joindre MommyTV Manager.</string>
-    <string name="remoteOn">Sur la TV : %1$s</string>
-    <string name="remoteIdle" formatted="false">Associé à la TV</string>
+    <string name="remoteNoTv" formatted="false">Impossible de joindre la TV.</string>
     <string name="remoteForget" formatted="false">Ne plus contrôler la TV</string>
-    <string name="sentToTv">« %1$s » passe sur la TV</string>
-    <string name="tvNotListening" formatted="false">Ouvrez MommyTV sur la TV pour choisir d’ici.</string>
+    <string name="sentToTv">Envoyé à la TV : « %1$s »</string>
     <string name="watchOnTv" formatted="false">Regarder sur la TV</string>
     <string name="watchHere" formatted="false">Regarder sur ce téléphone</string>
     <string name="remoteGone" formatted="false">Ce téléphone n’est plus associé à la TV.</string>
-    <string name="tvAsksPin" formatted="false">La TV demande le code du contrôle parental.</string>
-    <string name="tvCantPlay">La TV n’a pas pu lire « %1$s ».</string>
-    <string name="tvNoAnswer" formatted="false">La TV n’a pas répondu.</string>
+    <string name="remember" formatted="false">Mémoriser cette liste</string>
+    <string name="needUrl" formatted="false">Saisissez l’adresse de votre liste M3U.</string>
+    <string name="usingCopy" formatted="false">La liste n’a pas répondu : copie enregistrée utilisée.</string>
+    <string name="deleteList" formatted="false">Supprimer la liste</string>
+    <string name="deleteConfirm" formatted="false">Appuyez de nouveau pour supprimer la liste, ses favoris et la dernière chaîne.</string>
+    <string name="listDeleted" formatted="false">Liste supprimée.</string>
+    <string name="remoteIntro" formatted="false">Associez ce téléphone à votre TV LG pour choisir d’ici ce qu’elle affiche.</string>
+    <string name="remoteFind" formatted="false">Trouver ma TV</string>
+    <string name="remoteSearching" formatted="false">Recherche de votre TV LG sur le réseau…</string>
+    <string name="remoteNone" formatted="false">Aucune TV LG trouvée. Vérifiez qu’elle est allumée et sur le même Wi-Fi.</string>
+    <string name="remoteAccept" formatted="false">Acceptez le message sur l’écran de la TV.</string>
+    <string name="remoteConnected">Connecté à %1$s</string>
+    <string name="sendList" formatted="false">Envoyer ma liste à la TV</string>
+    <string name="listSent" formatted="false">Liste envoyée à la TV.</string>
+    <string name="tvNoApp" formatted="false">MommyTV n’est pas installé sur la TV.</string>
     <string name="dChannel" formatted="false">Chaîne</string>
     <string name="dRes" formatted="false">Résolution réelle</string>
     <string name="dBuffer" formatted="false">Réserve</string>
@@ -81,14 +75,12 @@
     <string name="dDropped" formatted="false">Images perdues</string>
     <string name="dOf">%1$s sur %2$s</string>
     <string name="dLoading" formatted="false">chargement…</string>
-    <string name="dPc" formatted="false">Enregistré uniquement sur votre PC</string>
     <string name="dScreen" formatted="false">À l’écran uniquement</string>
     <string name="dClose" formatted="false">touche bleue pour fermer</string>
-    <string name="diagOnPc" formatted="false">Diagnostic activé : les données restent sur votre PC</string>
     <string name="diagOn" formatted="false">Diagnostic activé</string>
     <string name="diagOff" formatted="false">Diagnostic désactivé</string>
     <string name="urlLabel" formatted="false">Adresse de votre liste M3U</string>
-    <string name="urlPlaceholder" formatted="false">Vide : chercher MommyTV Manager sur votre réseau</string>
+    <string name="urlPlaceholder" formatted="false">https://…/liste.m3u</string>
     <string name="load" formatted="false">Charger</string>
     <string name="live" formatted="false">EN DIRECT</string>
     <string name="holdOk" formatted="false">Maintenez</string>

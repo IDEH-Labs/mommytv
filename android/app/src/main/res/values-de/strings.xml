@@ -7,9 +7,6 @@
     <string name="incompatible" formatted="false">Die Sender dieser Liste sind mit diesem Fernseher nicht kompatibel.</string>
     <string name="noConnect" formatted="false">Keine Verbindung zu dieser Adresse.</string>
     <string name="slow" formatted="false">Die Liste hat zu lange gebraucht.</string>
-    <string name="searching" formatted="false">MommyTV Manager wird in deinem Netzwerk gesucht…</string>
-    <string name="notFound" formatted="false">MommyTV Manager wurde nicht gefunden. Öffne ihn auf deinem PC oder gib die Adresse deiner Liste ein.</string>
-    <string name="found" formatted="false">MommyTV Manager gefunden. Drücke Laden, um seine Liste zu verwenden.</string>
     <string name="shortcuts" formatted="false">Verknüpfungen</string>
     <string name="all" formatted="false">Alle</string>
     <string name="inLang" formatted="false">Auf Deutsch</string>
@@ -24,7 +21,6 @@
     <string name="noChannels" formatted="false">MommyTV enthält keine Sender oder Listen</string>
     <string name="lgLib" formatted="false">webOSTV.js von LG Electronics · Apache 2.0</string>
     <string name="font" formatted="false">Schrift Plus Jakarta Sans · SIL OFL 1.1</string>
-    <string name="data" formatted="false">Senderdaten: iptv-org · gemeinfrei</string>
     <string name="org" formatted="false">IDEH Labs · Stiftung IDEH</string>
     <string name="openHint" formatted="false">OK zum Öffnen</string>
     <string name="nCountries">%1$s Länder</string>
@@ -49,30 +45,28 @@
     <string name="cantPlay">„%1$s“ kann nicht abgespielt werden. Versuche einen anderen Sender.</string>
     <string name="favAdded">„%1$s“ zu Favoriten hinzugefügt</string>
     <string name="favRemoved">„%1$s“ aus Favoriten entfernt</string>
-    <string name="pairPhone" formatted="false">Mit dem Handy steuern</string>
-    <string name="pairTitle" formatted="false">Handy koppeln</string>
-    <string name="pairHelp" formatted="false">Öffne in der MommyTV-App auf dem Handy Einstellungen → Fernseher steuern und gib diesen Code ein. Er läuft in 5 Minuten ab.</string>
-    <string name="pairPhones">Gekoppelt: %1$s</string>
-    <string name="pairNone" formatted="false">Noch kein Handy gekoppelt.</string>
-    <string name="pairNeedsManager" formatted="false">Lade zuerst die Liste von MommyTV Manager.</string>
-    <string name="pairDone">„%1$s“ ist jetzt gekoppelt</string>
     <string name="remoteTitle" formatted="false">Fernseher steuern</string>
-    <string name="remoteCode" formatted="false">Code auf dem Fernseher</string>
-    <string name="remotePair" formatted="false">Koppeln</string>
-    <string name="remoteWrong" formatted="false">Falscher oder abgelaufener Code.</string>
-    <string name="remoteLocked" formatted="false">Zu viele Versuche. Warte 10 Minuten.</string>
-    <string name="remoteNoTv" formatted="false">MommyTV Manager ist nicht erreichbar.</string>
-    <string name="remoteOn">Auf dem Fernseher: %1$s</string>
-    <string name="remoteIdle" formatted="false">Mit dem Fernseher gekoppelt</string>
+    <string name="remoteNoTv" formatted="false">Der Fernseher ist nicht erreichbar.</string>
     <string name="remoteForget" formatted="false">Fernseher nicht mehr steuern</string>
-    <string name="sentToTv">„%1$s“ läuft gleich auf dem Fernseher</string>
-    <string name="tvNotListening" formatted="false">Öffne MommyTV auf dem Fernseher, um von hier aus zu wählen.</string>
+    <string name="sentToTv">An den Fernseher gesendet: „%1$s“</string>
     <string name="watchOnTv" formatted="false">Auf dem Fernseher ansehen</string>
     <string name="watchHere" formatted="false">Auf diesem Handy ansehen</string>
     <string name="remoteGone" formatted="false">Dieses Handy ist nicht mehr mit dem Fernseher gekoppelt.</string>
-    <string name="tvAsksPin" formatted="false">Der Fernseher fragt nach der Jugendschutz-PIN.</string>
-    <string name="tvCantPlay">Der Fernseher konnte „%1$s“ nicht abspielen.</string>
-    <string name="tvNoAnswer" formatted="false">Der Fernseher hat nicht geantwortet.</string>
+    <string name="remember" formatted="false">Diese Liste merken</string>
+    <string name="needUrl" formatted="false">Gib die Adresse deiner M3U-Liste ein.</string>
+    <string name="usingCopy" formatted="false">Die Liste antwortet nicht: gespeicherte Kopie wird verwendet.</string>
+    <string name="deleteList" formatted="false">Liste löschen</string>
+    <string name="deleteConfirm" formatted="false">Drücke noch einmal, um die Liste, ihre Favoriten und den letzten Sender zu löschen.</string>
+    <string name="listDeleted" formatted="false">Liste gelöscht.</string>
+    <string name="remoteIntro" formatted="false">Kopple dieses Handy mit deinem LG-Fernseher, um von hier aus zu wählen, was er zeigt.</string>
+    <string name="remoteFind" formatted="false">Meinen Fernseher suchen</string>
+    <string name="remoteSearching" formatted="false">Dein LG-Fernseher wird im Netzwerk gesucht…</string>
+    <string name="remoteNone" formatted="false">Kein LG-Fernseher gefunden. Prüfe, ob er eingeschaltet und im selben WLAN ist.</string>
+    <string name="remoteAccept" formatted="false">Bestätige die Meldung auf dem Fernseher.</string>
+    <string name="remoteConnected">Verbunden mit %1$s</string>
+    <string name="sendList" formatted="false">Meine Liste an den Fernseher senden</string>
+    <string name="listSent" formatted="false">Liste an den Fernseher gesendet.</string>
+    <string name="tvNoApp" formatted="false">MommyTV ist auf dem Fernseher nicht installiert.</string>
     <string name="dChannel" formatted="false">Sender</string>
     <string name="dRes" formatted="false">Tatsächliche Auflösung</string>
     <string name="dBuffer" formatted="false">Puffer</string>
@@ -81,14 +75,12 @@
     <string name="dDropped" formatted="false">Verlorene Bilder</string>
     <string name="dOf">%1$s von %2$s</string>
     <string name="dLoading" formatted="false">lädt…</string>
-    <string name="dPc" formatted="false">Nur auf deinem PC gespeichert</string>
     <string name="dScreen" formatted="false">Nur auf dem Bildschirm</string>
     <string name="dClose" formatted="false">blaue Taste zum Schließen</string>
-    <string name="diagOnPc" formatted="false">Diagnose an: Daten bleiben nur auf deinem PC</string>
     <string name="diagOn" formatted="false">Diagnose an</string>
     <string name="diagOff" formatted="false">Diagnose aus</string>
     <string name="urlLabel" formatted="false">Adresse deiner M3U-Liste</string>
-    <string name="urlPlaceholder" formatted="false">Leer: MommyTV Manager im Netzwerk suchen</string>
+    <string name="urlPlaceholder" formatted="false">https://…/liste.m3u</string>
     <string name="load" formatted="false">Laden</string>
     <string name="live" formatted="false">LIVE</string>
     <string name="holdOk" formatted="false">Gedrückt halten</string>

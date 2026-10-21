@@ -7,9 +7,6 @@
     <string name="incompatible" formatted="false">このリストのチャンネルはこのテレビに対応していません。</string>
     <string name="noConnect" formatted="false">そのアドレスに接続できませんでした。</string>
     <string name="slow" formatted="false">リストの応答に時間がかかりすぎました。</string>
-    <string name="searching" formatted="false">ネットワーク内で MommyTV Manager を探しています…</string>
-    <string name="notFound" formatted="false">MommyTV Manager が見つかりません。PC で起動するか、リストのアドレスを入力してください。</string>
-    <string name="found" formatted="false">MommyTV Manager が見つかりました。「読み込む」を押してリストを使います。</string>
     <string name="shortcuts" formatted="false">ショートカット</string>
     <string name="all" formatted="false">すべて</string>
     <string name="inLang" formatted="false">日本語のチャンネル</string>
@@ -24,7 +21,6 @@
     <string name="noChannels" formatted="false">MommyTV にはチャンネルやリストは含まれていません</string>
     <string name="lgLib" formatted="false">LG Electronics の webOSTV.js · Apache 2.0</string>
     <string name="font" formatted="false">Plus Jakarta Sans フォント · SIL OFL 1.1</string>
-    <string name="data" formatted="false">チャンネルデータ：iptv-org · パブリックドメイン</string>
     <string name="org" formatted="false">IDEH Labs · IDEH 財団</string>
     <string name="openHint" formatted="false">OK で開く</string>
     <string name="nCountries">%1$s の国と地域</string>
@@ -49,30 +45,28 @@
     <string name="cantPlay">「%1$s」を再生できません。別のチャンネルをお試しください。</string>
     <string name="favAdded">「%1$s」をお気に入りに追加しました</string>
     <string name="favRemoved">「%1$s」をお気に入りから外しました</string>
-    <string name="pairPhone" formatted="false">スマホで操作</string>
-    <string name="pairTitle" formatted="false">スマホをペアリング</string>
-    <string name="pairHelp" formatted="false">スマホの MommyTV アプリで「設定」→「テレビを操作」を開き、このコードを入力してください。5 分で無効になります。</string>
-    <string name="pairPhones">ペアリング済み：%1$s</string>
-    <string name="pairNone" formatted="false">ペアリングしたスマホはまだありません。</string>
-    <string name="pairNeedsManager" formatted="false">先に MommyTV Manager のリストを読み込んでください。</string>
-    <string name="pairDone">「%1$s」をペアリングしました</string>
     <string name="remoteTitle" formatted="false">テレビを操作</string>
-    <string name="remoteCode" formatted="false">テレビに表示されたコード</string>
-    <string name="remotePair" formatted="false">ペアリング</string>
-    <string name="remoteWrong" formatted="false">コードが違うか、期限切れです。</string>
-    <string name="remoteLocked" formatted="false">試行回数が多すぎます。10 分お待ちください。</string>
-    <string name="remoteNoTv" formatted="false">MommyTV Manager に接続できません。</string>
-    <string name="remoteOn">テレビで再生中：%1$s</string>
-    <string name="remoteIdle" formatted="false">テレビとペアリング済み</string>
+    <string name="remoteNoTv" formatted="false">テレビに接続できません。</string>
     <string name="remoteForget" formatted="false">テレビの操作をやめる</string>
-    <string name="sentToTv">「%1$s」をテレビで再生します</string>
-    <string name="tvNotListening" formatted="false">テレビで MommyTV を開くと、ここから選べます。</string>
+    <string name="sentToTv">テレビに送りました：「%1$s」</string>
     <string name="watchOnTv" formatted="false">テレビで見る</string>
     <string name="watchHere" formatted="false">このスマホで見る</string>
     <string name="remoteGone" formatted="false">このスマホはテレビとのペアリングが解除されています。</string>
-    <string name="tvAsksPin" formatted="false">テレビがペアレンタルコントロールの PIN を求めています。</string>
-    <string name="tvCantPlay">テレビで「%1$s」を再生できませんでした。</string>
-    <string name="tvNoAnswer" formatted="false">テレビから応答がありません。</string>
+    <string name="remember" formatted="false">このリストを記憶する</string>
+    <string name="needUrl" formatted="false">M3U リストのアドレスを入力してください。</string>
+    <string name="usingCopy" formatted="false">リストが応答しません。保存したコピーを使います。</string>
+    <string name="deleteList" formatted="false">リストを削除</string>
+    <string name="deleteConfirm" formatted="false">もう一度押すと、リストとお気に入り、最後のチャンネルを削除します。</string>
+    <string name="listDeleted" formatted="false">リストを削除しました。</string>
+    <string name="remoteIntro" formatted="false">このスマホを LG テレビとペアリングすると、ここからテレビの番組を選べます。</string>
+    <string name="remoteFind" formatted="false">テレビを探す</string>
+    <string name="remoteSearching" formatted="false">ネットワーク内で LG テレビを探しています…</string>
+    <string name="remoteNone" formatted="false">LG テレビが見つかりません。電源が入っていて同じ Wi-Fi に接続しているか確認してください。</string>
+    <string name="remoteAccept" formatted="false">テレビの画面に表示された確認を承認してください。</string>
+    <string name="remoteConnected">%1$s に接続しました</string>
+    <string name="sendList" formatted="false">リストをテレビに送る</string>
+    <string name="listSent" formatted="false">リストをテレビに送りました。</string>
+    <string name="tvNoApp" formatted="false">テレビに MommyTV がインストールされていません。</string>
     <string name="dChannel" formatted="false">チャンネル</string>
     <string name="dRes" formatted="false">実際の解像度</string>
     <string name="dBuffer" formatted="false">バッファ</string>
@@ -81,14 +75,12 @@
     <string name="dDropped" formatted="false">ドロップフレーム</string>
     <string name="dOf">%1$s / %2$s</string>
     <string name="dLoading" formatted="false">読み込み中…</string>
-    <string name="dPc" formatted="false">PC にのみ保存</string>
     <string name="dScreen" formatted="false">画面表示のみ</string>
     <string name="dClose" formatted="false">青ボタンで閉じる</string>
-    <string name="diagOnPc" formatted="false">診断オン：データは PC にのみ保存されます</string>
     <string name="diagOn" formatted="false">診断オン</string>
     <string name="diagOff" formatted="false">診断オフ</string>
     <string name="urlLabel" formatted="false">M3U リストのアドレス</string>
-    <string name="urlPlaceholder" formatted="false">空欄：ネットワーク内の MommyTV Manager を探す</string>
+    <string name="urlPlaceholder" formatted="false">https://…/playlist.m3u</string>
     <string name="load" formatted="false">読み込む</string>
     <string name="live" formatted="false">ライブ</string>
     <string name="holdOk" formatted="false">長押し</string>

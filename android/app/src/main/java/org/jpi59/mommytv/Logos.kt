@@ -16,10 +16,12 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 
-/** Channel logos: downloaded once, scaled down to the size shown, last 200 kept in memory. */
+/** Channel logos: downloaded once, at their own resolution up to 512 px a side, kept in 32 MB of memory. */
 object Logos {
-    private const val MAX_SIDE = 256
-    private val cache = LruCache<String, Bitmap>(200)
+    private const val MAX_SIDE = 512 // sharp on the large card, even on a TV
+    private val cache = object : LruCache<String, Bitmap>(32 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: Bitmap) = value.byteCount // bounded by bytes, not by count
+    }
     private val failed: MutableSet<String> = java.util.Collections.synchronizedSet(HashSet())
 
     suspend fun load(url: String): Bitmap? {

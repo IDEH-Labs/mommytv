@@ -7,9 +7,6 @@
     <string name="incompatible" formatted="false">Os canais desta lista não são compatíveis com este televisor.</string>
     <string name="noConnect" formatted="false">Não foi possível ligar a esse endereço.</string>
     <string name="slow" formatted="false">A lista demorou demasiado a responder.</string>
-    <string name="searching" formatted="false">A procurar o MommyTV Manager na sua rede…</string>
-    <string name="notFound" formatted="false">MommyTV Manager não encontrado. Abra-o no seu PC ou escreva o endereço da sua lista.</string>
-    <string name="found" formatted="false">MommyTV Manager encontrado. Prima Carregar para usar a sua lista.</string>
     <string name="shortcuts" formatted="false">Atalhos</string>
     <string name="all" formatted="false">Todos</string>
     <string name="inLang" formatted="false">Em português</string>
@@ -24,7 +21,6 @@
     <string name="noChannels" formatted="false">O MommyTV não inclui canais nem listas</string>
     <string name="lgLib" formatted="false">webOSTV.js da LG Electronics · Apache 2.0</string>
     <string name="font" formatted="false">Tipo de letra Plus Jakarta Sans · SIL OFL 1.1</string>
-    <string name="data" formatted="false">Dados dos canais: iptv-org · domínio público</string>
     <string name="org" formatted="false">IDEH Labs · Fundação IDEH</string>
     <string name="openHint" formatted="false">OK para abrir</string>
     <string name="nCountries">%1$s países</string>
@@ -49,30 +45,28 @@
     <string name="cantPlay">Não é possível reproduzir «%1$s». Experimente outro canal.</string>
     <string name="favAdded">«%1$s» adicionado aos Favoritos</string>
     <string name="favRemoved">«%1$s» removido dos Favoritos</string>
-    <string name="pairPhone" formatted="false">Controlar com o telemóvel</string>
-    <string name="pairTitle" formatted="false">Emparelhar telemóvel</string>
-    <string name="pairHelp" formatted="false">Na app MommyTV do telemóvel abra Definições → Controlar a TV e escreva este código. Expira em 5 minutos.</string>
-    <string name="pairPhones">Emparelhados: %1$s</string>
-    <string name="pairNone" formatted="false">Ainda não há telemóveis emparelhados.</string>
-    <string name="pairNeedsManager" formatted="false">Carregue primeiro a lista do MommyTV Manager.</string>
-    <string name="pairDone">«%1$s» ficou emparelhado</string>
     <string name="remoteTitle" formatted="false">Controlar a TV</string>
-    <string name="remoteCode" formatted="false">Código mostrado na TV</string>
-    <string name="remotePair" formatted="false">Emparelhar</string>
-    <string name="remoteWrong" formatted="false">Código incorreto ou expirado.</string>
-    <string name="remoteLocked" formatted="false">Demasiadas tentativas. Aguarde 10 minutos.</string>
-    <string name="remoteNoTv" formatted="false">Não foi possível contactar o MommyTV Manager.</string>
-    <string name="remoteOn">Na TV: %1$s</string>
-    <string name="remoteIdle" formatted="false">Emparelhado com a TV</string>
+    <string name="remoteNoTv" formatted="false">Não foi possível contactar a TV.</string>
     <string name="remoteForget" formatted="false">Deixar de controlar a TV</string>
-    <string name="sentToTv">A pôr «%1$s» na TV</string>
-    <string name="tvNotListening" formatted="false">Abra o MommyTV na TV para escolher daqui.</string>
+    <string name="sentToTv">Enviado para a TV: «%1$s»</string>
     <string name="watchOnTv" formatted="false">Ver na TV</string>
     <string name="watchHere" formatted="false">Ver neste telemóvel</string>
     <string name="remoteGone" formatted="false">Este telemóvel já não está emparelhado com a TV.</string>
-    <string name="tvAsksPin" formatted="false">A TV está a pedir o PIN do controlo parental.</string>
-    <string name="tvCantPlay">A TV não conseguiu reproduzir «%1$s».</string>
-    <string name="tvNoAnswer" formatted="false">A TV não respondeu.</string>
+    <string name="remember" formatted="false">Lembrar esta lista</string>
+    <string name="needUrl" formatted="false">Escreva o endereço da sua lista M3U.</string>
+    <string name="usingCopy" formatted="false">A lista não respondeu: a usar a cópia guardada.</string>
+    <string name="deleteList" formatted="false">Eliminar lista</string>
+    <string name="deleteConfirm" formatted="false">Prima novamente para eliminar a lista, os seus favoritos e o último canal.</string>
+    <string name="listDeleted" formatted="false">Lista eliminada.</string>
+    <string name="remoteIntro" formatted="false">Emparelhe este telemóvel com a sua TV LG para escolher daqui o que ela mostra.</string>
+    <string name="remoteFind" formatted="false">Procurar a minha TV</string>
+    <string name="remoteSearching" formatted="false">A procurar a sua TV LG na rede…</string>
+    <string name="remoteNone" formatted="false">Nenhuma TV LG encontrada. Verifique se está ligada e na mesma rede Wi-Fi.</string>
+    <string name="remoteAccept" formatted="false">Aceite o aviso no ecrã da TV.</string>
+    <string name="remoteConnected">Ligado a %1$s</string>
+    <string name="sendList" formatted="false">Enviar a minha lista para a TV</string>
+    <string name="listSent" formatted="false">Lista enviada para a TV.</string>
+    <string name="tvNoApp" formatted="false">O MommyTV não está instalado na TV.</string>
     <string name="dChannel" formatted="false">Canal</string>
     <string name="dRes" formatted="false">Resolução real</string>
     <string name="dBuffer" formatted="false">Reserva</string>
@@ -81,14 +75,12 @@
     <string name="dDropped" formatted="false">Fotogramas perdidos</string>
     <string name="dOf">%1$s de %2$s</string>
     <string name="dLoading" formatted="false">a carregar…</string>
-    <string name="dPc" formatted="false">Guardado apenas no seu PC</string>
     <string name="dScreen" formatted="false">Apenas no ecrã</string>
     <string name="dClose" formatted="false">tecla azul para fechar</string>
-    <string name="diagOnPc" formatted="false">Diagnóstico ativo: os dados ficam apenas no seu PC</string>
     <string name="diagOn" formatted="false">Diagnóstico ativo</string>
     <string name="diagOff" formatted="false">Diagnóstico desativado</string>
     <string name="urlLabel" formatted="false">Endereço da sua lista M3U</string>
-    <string name="urlPlaceholder" formatted="false">Vazio: procurar o MommyTV Manager na sua rede</string>
+    <string name="urlPlaceholder" formatted="false">https://…/lista.m3u</string>
     <string name="load" formatted="false">Carregar</string>
     <string name="live" formatted="false">AO VIVO</string>
     <string name="holdOk" formatted="false">Mantenha premido</string>

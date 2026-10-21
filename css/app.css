@@ -75,6 +75,11 @@ ul { list-style: none; margin: 0; padding: 0; }
 #url.focus, #load.focus { transform: scale(1.03); border-color: var(--focus-bg); }
 #url.focus { background: var(--focus-bg); color: var(--focus-fg); }
 #load.focus { box-shadow: 0 12px 40px rgba(14, 165, 233, 0.45); }
+.check { display: flex; align-items: center; margin: 24px 0 0 8px; padding: 10px 16px; border-radius: 14px; color: var(--muted); font-size: 28px; font-weight: 600; transition: background-color 0.2s; }
+.check .box { width: 34px; height: 34px; margin-right: 18px; border-radius: 9px; border: 3px solid var(--muted); box-sizing: border-box; }
+.check.on .box { background: var(--sky); border-color: var(--sky); box-shadow: inset 0 0 0 5px var(--panel); }
+.check.focus { background: var(--focus-bg); color: var(--focus-fg); }
+.check.focus .box { border-color: var(--focus-fg); }
 
 /* ---------- browser ---------- */
 #browser { display: flex; padding: 132px 72px 48px; box-sizing: border-box; }
@@ -113,6 +118,7 @@ ul { list-style: none; margin: 0; padding: 0; }
   color: var(--fg); font-weight: 800;
 }
 .tile img { max-width: 82%; max-height: 74%; object-fit: contain; }
+.hero-tile img { max-width: 88%; max-height: 82%; } /* the selected logo fills more of its card */
 .hero-tile { width: 304px; height: 172px; border-radius: 24px; font-size: 72px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45); }
 
 .list li {
@@ -198,7 +204,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 .list li.focus .count { color: #475569; }
 
 /* ---------- parental PIN ---------- */
-#pin, #pair { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.82); }
+#pin { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.82); }
 .pin-card { width: 760px; padding: 56px; border-radius: 32px; text-align: center; background: linear-gradient(160deg, #1e293b, #0f172a); border: 2px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); }
 .pin-lock { width: 88px; height: 88px; color: var(--sky); }
 .pin-card h3 { margin: 20px 0 8px; font-size: 48px; font-weight: 800; }
@@ -206,9 +212,6 @@ ul { list-style: none; margin: 0; padding: 0; }
 #pin-dots { display: flex; justify-content: center; }
 #pin-dots i { width: 36px; height: 36px; margin: 0 16px; border-radius: 18px; border: 4px solid var(--muted); box-sizing: border-box; }
 #pin-dots i.on { background: var(--sky); border-color: var(--sky); }
-#pair-msg { margin: 0 0 28px; color: var(--muted); font-size: 28px; line-height: 1.35; }
-#pair-code { min-height: 120px; font-size: 104px; font-weight: 800; letter-spacing: 18px; color: var(--sky); }
-#pair-phones { margin: 24px 0 0; color: var(--muted); font-size: 24px; }
 
 /* ---------- about ---------- */
 .icon.rose { color: #fb7185; }
