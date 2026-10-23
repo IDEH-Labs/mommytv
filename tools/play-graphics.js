@@ -14,10 +14,63 @@ const OUT = path.join(ROOT, 'android', 'play');
 const svg = fs.readFileSync(path.join(ROOT, 'img', 'icon.svg'), 'utf8');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mommytv-play-'));
 
+// Play wants the icon as a 32-bit PNG with alpha; librsvg writes opaque images as 24-bit RGB.
+// Rewrites an 8-bit RGB PNG as RGBA with the same pixels and full opacity.
+function toRGBA(file) {
+  const zlib = require('zlib');
+  const png = fs.readFileSync(file);
+  let pos = 8, w, h, idat = [];
+  while (pos < png.length) {
+    const len = png.readUInt32BE(pos), type = png.toString('latin1', pos + 4, pos + 8);
+    const data = png.subarray(pos + 8, pos + 8 + len);
+    if (type === 'IHDR') {
+      w = data.readUInt32BE(0); h = data.readUInt32BE(4);
+      if (data[8] !== 8 || data[9] !== 2 || data[12] !== 0) {
+        if (data[9] === 6) return; // already RGBA
+        throw new Error(file + ': expected 8-bit non-interlaced RGB');
+      }
+    } else if (type === 'IDAT') idat.push(data);
+    pos += 12 + len;
+  }
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const out = Buffer.alloc(h * (1 + w * 4));
+  let prev = Buffer.alloc(w * 3);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (1 + w * 3)], row = Buffer.from(raw.subarray(y * (1 + w * 3) + 1, (y + 1) * (1 + w * 3)));
+    for (let i = 0; i < row.length; i++) {
+      const a = i >= 3 ? row[i - 3] : 0, b = prev[i], c = i >= 3 ? prev[i - 3] : 0;
+      if (f === 1) row[i] += a;
+      else if (f === 2) row[i] += b;
+      else if (f === 3) row[i] += (a + b) >> 1;
+      else if (f === 4) {
+        const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+        row[i] += pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      }
+    }
+    out[y * (1 + w * 4)] = 0;
+    for (let x = 0; x < w; x++) {
+      row.copy(out, y * (1 + w * 4) + 1 + x * 4, x * 3, x * 3 + 3);
+      out[y * (1 + w * 4) + 1 + x * 4 + 3] = 255;
+    }
+    prev = row;
+  }
+  const chunk = (type, data) => {
+    const b = Buffer.alloc(12 + data.length);
+    b.writeUInt32BE(data.length, 0); b.write(type, 4, 'latin1'); data.copy(b, 8);
+    b.writeUInt32BE(zlib.crc32(b.subarray(4, 8 + data.length)), 8 + data.length);
+    return b;
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
+  fs.writeFileSync(file, Buffer.concat([png.subarray(0, 8), chunk('IHDR', ihdr),
+    chunk('IDAT', zlib.deflateSync(out, { level: 9 })), chunk('IEND', Buffer.alloc(0))]));
+}
+
 // Icon: the artwork without its rounded clip.
 const square = path.join(tmp, 'square.svg');
 fs.writeFileSync(square, svg.replace('<g clip-path="url(#shape)">', '<g>'));
 execFileSync('rsvg-convert', ['-w', '512', '-h', '512', square, '-o', path.join(OUT, 'icon-512.png')]);
+toRGBA(path.join(OUT, 'icon-512.png'));
 
 // Feature graphic: icon, name and the tagline, on the banner's colours.
 const iconData = execFileSync('rsvg-convert', ['-w', '280', '-h', '280', path.join(ROOT, 'img', 'icon.svg')]).toString('base64');
